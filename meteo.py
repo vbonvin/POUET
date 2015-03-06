@@ -18,6 +18,9 @@ from astropy import units as u
 import urllib2
 import re
 import getopt, sys
+import ephem
+import util
+
 
 class Meteo:
 	"""
@@ -43,8 +46,11 @@ class Meteo:
 	def updatedate(self):
 		pass
 
-	def	updatemoonpos(self):
-		pass
+	def	updatemoonpos(self, obs_time=Time.now()):
+		Az, Alt = get_moon(obs_time=obs_time)
+		self.moonalt = Alt
+		self.moonaz = Az
+		return self.moonaz, self.moonalt
 
 	def updatewind(self):
 		WD, WS = get_wind()
@@ -75,3 +81,25 @@ def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
 	WS = WS[2] # next to 3.6m telescope --> conservative choice.
 
 	return WD, WS
+
+
+def get_moon(obs_time=Time.now()):
+
+	lat, lon, elev = util.get_telescope_params()
+
+	observer = ephem.Observer()
+	observer.date = obs_time.__str__()
+	observer.lat, observer.lon, observer.elevation = lat.degree, lon.degree, elev
+
+	moon = ephem.Moon()
+	moon.compute(observer)
+
+	# Warning, ass-coding here: output of moon.ra is different from moon.ra.__str__()... clap clap clap
+	alpha = angles.Angle(moon.ra.__str__(), unit="hour")
+	delta = angles.Angle(moon.dec.__str__(), unit="degree")
+
+	# return Az, Alt as Angle object
+	return util.get_AzAlt(alpha, delta, obs_time)
+
+
+

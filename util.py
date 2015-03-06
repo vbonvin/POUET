@@ -1,5 +1,5 @@
 """
-Useful functions
+Useful functions and definitions
 """
 from numpy import sin, cos, arctan2, tan, deg2rad, floor, arcsin
 import astropy.coordinates.angles as angles
@@ -11,11 +11,15 @@ import getopt, sys
 
 
 # La Silla Telescope Parameters
-lat=angles.Angle("-29d15m33.7s") # La Silla
-lon=angles.Angle("-70.7313d") # La Silla
+def get_telescope_params():
+	# LaSilla
+	lat=angles.Angle("-29d15m33.7s")
+	lon=angles.Angle("-70.7313d")
+	elev = 2400
 
+	return lat, lon, elev
 
-def get_AzAlt(alpha,delta,obs_time=Time.now(),ref_dir=0):
+def get_AzAlt(alpha, delta, obs_time=Time.now(), ref_dir=0):
 
 	"""
 	idea from http://aa.usno.navy.mil/faq/docs/Alt_Az.php
@@ -25,6 +29,8 @@ def get_AzAlt(alpha,delta,obs_time=Time.now(),ref_dir=0):
 	WARNING ! Azimuth and altitude are computed at La Silla Observatory
 
 	"""
+
+	lat, lon, elev = get_telescope_params()
 
 	# Untouched code from Azimuth.py
 	D= obs_time.jd - 2451545.0

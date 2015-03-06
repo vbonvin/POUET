@@ -5,7 +5,6 @@ Define the Observable class, the standard object of pouet, and related functions
 from numpy import cos
 import os,sys,glob
 import copy as pythoncopy
-import Azimuth
 import util
 import meteo
 from astropy.time import Time
@@ -28,10 +27,12 @@ class Observable:
 		self.alpha = angles.Angle(alpha, unit="hour")
 		self.delta = angles.Angle(delta, unit="degree")
 
+
+
 		self.moondistance = minmoondistance
 		self.maxairmass = maxairmass
 		self.exptime = exptime
-	#self.observability = observability
+		#self.observability = observability
 
 
 	def __str__(self):
@@ -64,11 +65,8 @@ class Observable:
 	def copy(self):
 		return pythoncopy.deepcopy(self)
 
-	def getdistancetomoon(self, alphamoon, deltamoon):
-		print "undefinded"
-		distancetomoon = 0
-		self.distancetomoon = distancetomoon
-		return distancetomoon
+	def getangletomoon(self, alphamoon, deltamoon):
+		pass
 
 	def getangletowind(self, meteo):
 		"""
@@ -112,6 +110,9 @@ class Observable:
 
 		:return: actualize airmass and return it
 		"""
+
+		#TODO : see how the computation belows varies regarding Euler computation (in CoordinatesAwayFromMoon)
+
 		try:
 			zenith = angles.Angle(90-self.altitude.degree, unit="degree")
 			airmass = 1.0/cos(zenith.radian)
@@ -129,6 +130,7 @@ class Observable:
 		self.getaltaz(obs_time=obs_time)
 		self.getangletowind(meteo)
 		self.getairmass()
+		self.getangletomoon()
 
 
 def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram="None", verbose=False):
