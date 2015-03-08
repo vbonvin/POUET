@@ -2,13 +2,13 @@
 Define the Observable class, the standard object of pouet, and related functions
 """
 
-from numpy import cos
+from numpy import cos,rad2deg
 import os,sys,glob
 import copy as pythoncopy
 import util
 import meteo
 from astropy.time import Time
-import astropy.coordinates.angles as angles
+from astropy.coordinates import angles, angle_utilities
 
 class Observable:
 	"""
@@ -19,7 +19,8 @@ class Observable:
 	Variable parameters (distance to moon, azimuth, observability,...) are undefined until associated methods are called
 	"""
 
-	def __init__(self, name='emptyobservable', obsprogram=None, alpha=None, delta=None, minmoondistance=None, maxairmass=None, exptime=None):
+	def __init__(self, name='emptyobservable', obsprogram=None, alpha=None, delta=None, minangletomoon=None, maxairmass=None, exptime=None):
+
 
 		self.name = name
 		self.obsprogram = obsprogram
@@ -27,9 +28,7 @@ class Observable:
 		self.alpha = angles.Angle(alpha, unit="hour")
 		self.delta = angles.Angle(delta, unit="degree")
 
-
-
-		self.moondistance = minmoondistance
+		self.minangletomoon = minangletomoon
 		self.maxairmass = maxairmass
 		self.exptime = exptime
 		#self.observability = observability
@@ -65,8 +64,24 @@ class Observable:
 	def copy(self):
 		return pythoncopy.deepcopy(self)
 
-	def getangletomoon(self, alphamoon, deltamoon):
-		pass
+	def getangletomoon(self, meteo):
+		"""
+		Compute the distance to the moon
+
+		:param meteo:
+		:return:
+		"""
+
+		moonalt, moonaz = meteo.moonalt, meteo.moonaz
+		alt, az = self.altitude, self.azimuth
+		separation = angle_utilities.angular_separation(moonaz, moonalt, az, alt) # Warning, separation is in radian!!
+
+		angletomoon = angles.Angle(separation.value, unit="radian")
+
+		self.angletomoon = angletomoon
+
+
+
 
 	def getangletowind(self, meteo):
 		"""
@@ -84,8 +99,8 @@ class Observable:
 		winddirection = meteo.winddirection
 		try:
 			angletowind = abs(winddirection-self.azimuth.degree)
-			self.angletowind = angletowind
-			return angletowind
+			self.angletowind = angles.Angle(angletowind, unit='degree')
+
 
 		except AttributeError:
 			print "%s has no azimuth! \n Compute its azimuth first !"
@@ -101,7 +116,7 @@ class Observable:
 		azimuth, altitude = util.get_AzAlt(self.alpha, self.delta, obs_time=obs_time)
 		self.altitude = altitude
 		self.azimuth = azimuth
-		return (azimuth, altitude)
+
 
 	def getairmass(self):
 
@@ -119,7 +134,7 @@ class Observable:
 			if airmass < 0 or airmass > 10:
 				airmass = 10
 			self.airmass = airmass
-			return airmass
+
 
 		except AttributeError:
 			print "%s has no altitude! \n Compute its altutide first !"
@@ -130,7 +145,61 @@ class Observable:
 		self.getaltaz(obs_time=obs_time)
 		self.getangletowind(meteo)
 		self.getairmass()
-		self.getangletomoon()
+		self.getangletomoon(meteo)
+
+	def getobservability(self, meteo, obs_time=Time.now()):
+		"""
+		Return the observability, a value between 0 and 1 that tells if the taget can be observed at a given time
+
+		The closer to 1 the better
+		0 is impossible to observe
+		"""
+
+		self.update(meteo=meteo, obs_time=obs_time)
+		observability = 1 # by default, we can observe
+
+		# Let's start with a simple yes/no version
+		# We add a small message to display if it's impossible to observe:
+		msg = ''
+
+		# check the airmass:
+		if self.airmass > 1.5:
+			observability = 0
+			msg+='\tAirmass:%s' % self.airmass
+
+		# check the	moondistance:
+		if self.angletomoon.degree < self.minangletomoon:
+			observability = 0
+			msg+='\tMA:%s' % self.angletomoon.degree
+
+		# check the wind:
+		if self.angletowind.degree < 90 and meteo.windspeed > 15:
+			observability = 0
+			msg+='\tWA:%s/WS:%s' % (self.angletowind.degree, meteo.windspeed)
+
+		if meteo.windspeed > 20:
+			observability = 0
+			msg+='\tWS:%s' % meteo.windspeed
+		self.observability = observability
+
+		if observability == 1 :
+			print util.hilite(self.name+msg, True, True)
+		else:
+			print util.hilite(self.name+msg, False, False)
+
+
+def showstatus(observables, meteo, obs_time=Time.now()):
+	"""
+	Using a list of observables, print their observability at the given obs_time. The moon position and all observables are updated according to the given obs_time. The wind is always taken at the current time
+
+	"""
+
+	# NO, we keep meteo update outside obs functions !
+	#meteo.update(obs_time=obs_time)
+	for observable in observables:
+		observable.getobservability(meteo=meteo, obs_time=obs_time)
+
+
 
 
 def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram="None", verbose=False):
@@ -167,10 +236,10 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 
 
 		if obsprogram == "lens":
-			minmoondistance = 30
+			minangletomoon = 30
 			maxairmass = 1.5
 			exptime = 35*60 #approx 35 minutes per lens
-			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minmoondistance=minmoondistance, maxairmass=maxairmass, exptime=exptime))
+			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime))
 
 		if obsprogram == "transit":
 			pass

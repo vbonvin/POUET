@@ -10,6 +10,7 @@ import re
 import getopt, sys
 
 
+
 # La Silla Telescope Parameters
 def get_telescope_params():
 	# LaSilla
@@ -94,3 +95,20 @@ def reformat(coordinate, format):
 
 	else:
 		raise ValueError("%s, Unknown coordinate output format!" %format)
+
+
+def hilite(string, status, bold):
+	'''Graphism: colors and bold in the terminal'''
+
+	if not sys.stdout.isatty() : return '*'+string+'*'
+
+	attr = []
+	if status:
+		# green
+		attr.append('32')
+	else:
+		# red
+		attr.append('31')
+	if bold:
+		attr.append('1')
+	return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), string)

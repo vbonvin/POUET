@@ -50,18 +50,18 @@ class Meteo:
 		Az, Alt = get_moon(obs_time=obs_time)
 		self.moonalt = Alt
 		self.moonaz = Az
-		return self.moonaz, self.moonalt
+
 
 	def updatewind(self):
 		WD, WS = get_wind()
 		self.winddirection = WD
 		self.windspeed = WS
-		return self.winddirection, self.windspeed
 
-	def update(self):
+
+	def update(self, obs_time=Time.now()):
 		self.updatedate()
 		self.updatewind()
-		self.updatemoonpos()
+		self.updatemoonpos(obs_time=obs_time)
 
 
 
