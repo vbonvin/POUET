@@ -22,13 +22,13 @@ north = prefered_theta + np.deg2rad(prefered_direction['dir'])
 northx = np.cos(north) * 220 + cx
 northy = np.sin(north) * 220 + cy
 
-eastx = np.cos(north - np.pi/2.) * 250 + cx
-easty = np.sin(north - np.pi/2.) * 250 + cy
+eastx = np.cos(north - np.pi/2.) * 220 + cx
+easty = np.sin(north - np.pi/2.) * 220 + cy
 
 coordinatesx = np.cos(north + theta_coordinates) * 330 + cx
 coordinatesy = np.sin(north + theta_coordinates) * 330 + cy
 
-list_of_image = glob.glob("AllSkyImage*.JPG")
+list_of_image = glob.glob("to_test/AllSkyImage*.JPG")
 #list_of_image = glob.glob("reference*.JPG")
 for fnimg in list_of_image:
 	

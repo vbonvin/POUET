@@ -6,27 +6,25 @@ import matplotlib.cm as cm
 
 import glob
 import scipy.ndimage.filters as filters
-
+import copy
 import config
 
 pca, classifier = util.readpickle(config.cl_fname)
 
-list_of_image = glob.glob("AllSkyImage*.JPG")
+list_of_image = glob.glob("to_test/AllSkyImage*.JPG")
 for fnimg in list_of_image:
 	coords = []
 	datas = []
-	
+	print 'treating image', fnimg
 	ar = util.loadallsky(fnimg)
 	s=np.shape(ar)
 	
 	temp_observability = np.zeros_like(ar)
 	nb_passes = np.zeros_like(ar)
 	
-	
 	for y in range(config.a/2, s[0]-config.a/2, config.deltaa):
-		
 		for x in range(config.a/2, s[1]-config.a/2, config.deltaa):
-	
+
 			win = ar[y-config.a/2:y+config.a/2, x-config.a/2:x+config.a/2]
 			#win = win.flatten()
 			nb_nans = np.isnan(win)
@@ -40,9 +38,11 @@ for fnimg in list_of_image:
 			
 			winf = win.flatten()
 			#winf = winf[~np.isnan(winf)]
-			winf[np.isnan(winf)] = np.nanmedian(winf)
+			winf[np.isnan(winf)] = np.median(winf)
 			#exit()
 			datas.append(np.asarray(winf))
+			
+			#exit()
 	
 			"""
 			print y, y-a/2
@@ -66,11 +66,12 @@ for fnimg in list_of_image:
 			plt.hist(winf, bins=bins)
 			plt.show()
 			"""
+	print 'windowing done.'
 	#datas = filters.prewitt(datas)
 	#datas = filters.gaussian_filter(datas,3)
 	pca_coeffs = pca.transform(datas)
 	pca_coeffs = classifier.predict(pca_coeffs)
-
+	print 'classified.'
 	pca_coeffs -= np.amin(pca_coeffs)
 	pca_coeffs /= np.amax(pca_coeffs)
 
@@ -107,6 +108,16 @@ for fnimg in list_of_image:
 	ax3 = fig1.add_subplot(223, aspect='equal')
 	plt.imshow(medfilter, interpolation="nearest", vmin=0, vmax=1, cmap = cm.RdYlGn_r)
 
+	outres = copy.copy(medfilter)
+	threshold = 0.6
+	idt = outres < threshold
+	idf = outres > threshold
+	#print idt
+	#exit()
+	ar2 = copy.copy(ar)
+	ar2[idf] = np.nan
+	ax4 = fig1.add_subplot(224, aspect='equal')
+	plt.imshow(ar2, interpolation="nearest", vmin=0, vmax=255, cmap = cm.Greys_r)
 	#plt.figure()
 	#plt.scatter(pca_coeffs[:,0], pca_coeffs[:,1], c=cm.RdYlGn_r(pca_coeffs[:,0]))
 	plt.show()

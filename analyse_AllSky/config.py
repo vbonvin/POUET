@@ -1,6 +1,6 @@
 # Sliding windows parameters
 a = 38
-deltaa = 2
+deltaa = 5
 deltaat = a
 
 # Database configuration
