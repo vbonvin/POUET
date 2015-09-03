@@ -47,21 +47,24 @@ clabels = clabels[id_keep]
 #datas = np.log10(datas)
 
 #datas = filters.gaussian_filter(datas,3)
-pca = compute_pca(datas, n_components=100)
+print 'computing PCA',
+pca = compute_pca(datas, n_components=5)
 coeffs = pca.transform(datas)
+print 'done.'
 
 fig1 = plt.figure()
 ax = fig1.add_subplot(111)
 stuff = ax.scatter(coeffs[:,0], coeffs[:,1], color=cm.jet(clabels))
 plt.title('train')
 
+print 'Training classifier...',
 # Create and fit an AdaBoosted decision tree
 bdt = AdaBoostClassifier(DecisionTreeClassifier(max_depth=20),
                          algorithm="SAMME",
                          n_estimators=len(clabels))
 
 bdt.fit(coeffs, clabels)
-
+print 'done.'
 
 classifiedlabels = bdt.predict(coeffs)
 

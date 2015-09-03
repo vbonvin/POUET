@@ -25,7 +25,7 @@ keyMaps = [key for key in plt.rcParams.keys() if 'keymap.' in key]
 for keyMap in keyMaps:
 	plt.rcParams[keyMap] = ''   
 
-list_of_image = glob.glob("AllSkyImage*.JPG")
+list_of_image = glob.glob("to_test/AllSkyImage*.JPG")
 if os.path.exists(config.db_fname):
 	[id_im, coords, datas, labels] = util.readpickle(config.db_fname)
 	coords = coords.tolist()
@@ -65,7 +65,7 @@ for fnimg in list_of_image:
 			
 			winf = win.flatten()
 			#winf = winf[~np.isnan(winf)]
-			winf[np.isnan(winf)] = np.nanmedian(winf)
+			winf[np.isnan(winf)] = np.median(winf)
 			#exit()
 			datas.append(np.asarray(winf))
 	
