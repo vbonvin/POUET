@@ -88,19 +88,6 @@ def gaussian(params,stamp,stampsize):
 	g=i0 * np.exp (-0.5 * (r / std)**2.) / std / np.sqrt(2.*np.pi) + sky
 	g-=stamp
 
-	# The following puts weight to remove the noise
-	rhalf = np.sqrt(-2.*np.log(0.5))*std
-	wt = np.exp(-(r/rhalf - 1)**2)  #for r/rhalf > 1 only
-	wt/=np.sum(wt)
-	wt[r<rhalf]=1.
-
-	"""
-	wm = np.exp (-0.5 * (r / std)**2.) / std / np.sqrt(2.*np.pi)
-	wm[r<std*2.35]=0.
-	wm/=np.sum(wm)"""
-
-	#g*=wt
-
 	return np.ravel(g)
 
 def fwhm(data,xc,yc,stampsize,show=False, verbose=True):
