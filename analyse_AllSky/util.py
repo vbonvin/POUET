@@ -16,12 +16,7 @@ def rgb2gray(arr):
 	blue = arr[:,:,2]
 	return 0.299 * red + 0.587 * green + 0.144 * blue
 
-def loadallsky(fnimg, return_complete=False):
-	im = scipy.ndimage.imread(fnimg)
-	ar = np.array(im)
-	ar = rgb2gray(ar)
-	rest = copy.copy(ar)
-	
+def get_mask(ar):
 	s=np.shape(ar)
 	xxa, xxb = s[0]/2, s[1]/2
 	r = 280
@@ -32,6 +27,16 @@ def loadallsky(fnimg, return_complete=False):
 	ydan,xdan = np.ogrid[-adan:s[0]-adan, -bdan:s[1]-bdan]
 
 	mask = np.logical_or(x*x + y*y >= r*r, xdan*xdan + ydan*ydan <= rdan*rdan)
+	
+	return mask
+
+def loadallsky(fnimg, return_complete=False):
+	im = scipy.ndimage.imread(fnimg)
+	ar = np.array(im)
+	ar = rgb2gray(ar)
+	rest = copy.copy(ar)
+	
+	mask = get_mask(ar)
 	ar[mask] = np.nan
 	
 	if return_complete:
@@ -153,5 +158,58 @@ def fwhm(data,xc,yc,stampsize,show=False, verbose=True):
 		plt.show()
 
 	return p[2] * 2. * np.sqrt(2.*np.log(2.))
+
+def get_params(location="LaSilla"):
+	if location == "LaSilla":
+		cx = 279
+		cy = 230
+		prefered_direction = {'dir':194.3, 'posx':297, 'posy':336}
+		prefered_theta = np.arctan2(prefered_direction['posy']-cy, prefered_direction['posx']-cx)
+		north = prefered_theta + np.deg2rad(prefered_direction['dir'])
+		deltatetha=180-prefered_direction['dir']+5
+		params = {'k1': 1.96263549291*0.945,
+				'k2': 0.6,
+				'ff': 1.,
+				'r0': 330,
+				'cx': cx,
+				'cy': cy,
+				'prefered_direction':prefered_direction,
+				'prefered_theta': prefered_theta,
+				'deltatetha': deltatetha,
+				'north': north,
+				'url': "http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG"}
+	else:
+		raise ValueError("Unknown location")
+	
+	return params
+
+def get_radius(elev, ff, k1, k2, r0):
+	return ff*k1*np.tan(k2 * elev / 2.) * r0
+
+def get_image_coordinates(az, elev, location="LaSilla", params=None):
+	if params is None:
+		params = get_params(location)
+	
+	k1 = params['k1']
+	k2 = params['k2']
+	ff = params['ff']
+	r0 = params['r0']
+	north = params['north']
+	cx = params['cx']
+	cy = params['cy']
+
+	az *= -1.
+	elev = np.pi/2. - elev
+	
+	rr = get_radius(elev, ff, k1, k2, r0)
+	
+	x = np.cos(north + az) * (rr - 2) + cx 
+	y = np.sin(north + az) * (rr - 2) + cy
+	
+	if x < 0 or y < 0: 
+		x = np.nan
+		y = np.nan 
+
+	return x, y
 
 
