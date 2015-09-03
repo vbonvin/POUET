@@ -20,6 +20,7 @@ class Analyse_AllSky():
 			
 		self.im_masked, self.im_original = util.loadallsky(fimage, return_complete=True)
 		self.mask = util.get_mask(self.im_original)
+		self.observability_map = None
 	
 	def retrieve_image(self):
 		urllib.urlretrieve(self.params['url'], "current.JPG")
@@ -88,6 +89,9 @@ class Analyse_AllSky():
 	
 	def is_observable(self, az, elev):
 		xpix, ypix = util.get_image_coordinates(az, elev, location=self.location)
+		
+		if self.observability_map is None:
+			raise RuntimeError("You should run the update() method first, no image has been analysed yet.")
 		
 		try:
 			xpix = int(np.round(xpix))
