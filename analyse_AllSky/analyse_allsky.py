@@ -15,8 +15,9 @@ class Analyse_AllSky():
 		self.params = util.get_params(location)
 		
 		if fimage is None:
-			self.retrieve_image()
 			fimage = "current.JPG"
+			self.fimage = fimage
+			self.retrieve_image()
 			
 		self.im_masked, self.im_original = util.loadallsky(fimage, return_complete=True)
 		self.mask = util.get_mask(self.im_original)
@@ -24,6 +25,7 @@ class Analyse_AllSky():
 	
 	def retrieve_image(self):
 		urllib.urlretrieve(self.params['url'], "current.JPG")
+		self.im_masked, self.im_original = util.loadallsky(self.fimage, return_complete=True)
 		
 	def update(self):
 		self.retrieve_image()
