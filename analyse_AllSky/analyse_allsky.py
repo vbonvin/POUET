@@ -110,6 +110,7 @@ if __name__ == "__main__":
 	import matplotlib.pyplot as plt
 	
 	list_of_images = glob.glob("to_test/AllSkyImage*.JPG")
+	print "I found %s images" % len(list_of_images)
 	
 	imgs = []
 	for fim in list_of_images:

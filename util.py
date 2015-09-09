@@ -1,15 +1,16 @@
 """
 Useful functions and definitions
 """
-from numpy import sin, cos, arctan2, tan, deg2rad, floor, arcsin
+from numpy import sin, cos, arctan2, tan, deg2rad, floor, arcsin, arange
 import astropy.coordinates.angles as angles
 from astropy.time import Time
 from astropy import units as u
 import urllib2
 import re
 import getopt, sys
-
-
+import openpyxl  # see http://openpyxl.readthedocs.org/en/latest/index.html
+import obs
+from bisect import bisect_left
 
 # La Silla Telescope Parameters
 def get_telescope_params():
@@ -67,6 +68,8 @@ def reformat(coordinate, format):
 	Transform a coordinate (hour, degree) in the format of your choice
 
 	HHhDDdSSs <---> HH:DD:SS
+
+	update : apparently useless, can use angle objects instead
 	"""
 
 	if 'm' in coordinate:
@@ -85,16 +88,37 @@ def reformat(coordinate, format):
 		raise ValueError("%s, Unknown coordinate input format!" %coordinate)
 
 	if format == 'numeric':
-		return "%s:%s:%s" %(hd,m,s)
+		return "%s:%s:%s" % (hd, m, s)
 
 	elif format == 'alphabetic_degree':
-		return "%sd%sm%ss" %(hd,m,s)
+		return "%sd%sm%ss" % (hd, m, s)
 
 	elif format == 'alphabetic_hour':
-		return "%sh%sm%ss" %(hd,m,s)
+		return "%sh%sm%ss" % (hd, m, s)
 
 	else:
 		raise ValueError("%s, Unknown coordinate output format!" %format)
+
+
+def takeclosest(dict, key, value):
+	"""
+	Assumes dict[key] is sorted. Returns the dict value which dict[key] is closest to value.
+	If two dict[key] are equally close to value, return the highest (i.e. latest).
+	This is much faster than a simple min loop, although a bit more tedious to use.
+	"""
+	mylist = [elt[key] for elt in dict]
+
+	pos = bisect_left(mylist, value)
+	if pos == 0:
+		return dict[0]
+	if pos == len(mylist):
+		return dict[-1]
+	before = dict[pos - 1]
+	after = dict[pos]
+	if after[key] - value <= value - before[key]:
+		return after
+	else:
+		return before
 
 
 def hilite(string, status, bold):
@@ -112,3 +136,123 @@ def hilite(string, status, bold):
 	if bold:
 		attr.append('1')
 	return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), string)
+
+def excelimport(filename, obsprogram=None):
+	"""
+	Import an excel catalog(...) into a list of observables
+	I directly read the excel values, I do NOT evaluate the formulas in them.
+	It is up to you to put the right mjd in the excel sheets.
+
+
+
+	Warning : NEVER use the coordinates from an excel sheet to create an rdb night planning. ALWAYS use the rdb catalogs loaded in the edp.
+	"""
+
+	observables = []
+
+	try:
+		wb = openpyxl.load_workbook(filename, data_only=True)  # Read the excel spreadsheet, loading the values directly
+		ws = wb.active  # choose active sheet
+	except:
+		raise RuntimeError("Either %s does not exists, or it is not in .xlsx format !!" % filename)
+
+	#### For BEBOP
+	if obsprogram == 'bebop':
+		"""
+		special properties:
+
+		phases : a list of dictionnaries : [{mjd, phase, hourafterstart }]
+		comment : a string of comments (exptime, requested phase,...)
+		internalobs : a boolean (0 or 1), allowing or not observability
+		"""
+
+		# Get tabler limits
+		rows = ws.rows
+		columns = ws.columns
+		breakcolind = None
+		breakrowind = None
+		for ind, cell in enumerate(rows[1]):
+			if cell.value == None:
+				#breakcolind = cell.column
+				breakcolind = rows[1][ind-1].column
+				break
+			else:
+				pass
+
+		for ind, cell in enumerate(columns[0]):
+			if cell.value == None:
+				#breakrowind = cell.row
+				breakrowind = columns[0][ind-1].row
+				break
+			else:
+				pass
+
+		# Read only the non "None" data and put it in a table of dict, because fuck excel and fuck openpyxl.
+		data = ws['A1':'%s%s' % (breakcolind, breakrowind)]
+		"""
+		Structure of the spreadsheet:
+		Infos are from A1 to W2
+		Datas are from A3 ro W30
+		B1 : actual modified julian date
+		A : name
+		B : target
+		C : comment
+		I : observability
+		J : requested phase
+		M1 to W1 : mjd over the night
+		M2 to W2 : corresponding time after night start, in hours
+		M to W : phases
+		"""
+		phasesnames = ['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W']
+		values = {}
+		for indr, row in enumerate(data):
+			for indc, cell in enumerate(row):
+				values[cell.address] = cell.value
+
+		for i in arange(3, 31):
+			# create an observable object with the common properties
+			name = values['A%s' % str(i)]
+			minangletomoon = 70
+			maxairmass = 1.5
+			exptime = 1800  # THIS IS NOT ALWAYS THE CASE
+
+			coordinates = values['B%s' % str(i)]
+			alpha = coordinates[0:2]+':'+coordinates[2:4]+':'+coordinates[4:6]
+			delta = coordinates[7:9]+':'+coordinates[9:11]+':'+coordinates[11:13]
+			if coordinates[6] == "S":
+				delta = '-'+delta
+
+			observable = obs.Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime)
+
+			# add properties specific to this program
+			## Tricky stuff here : the jdb in the excel sheet is the mjd + 0.5.
+			phases = [{'mjd': values['%c%i' % (col, 1)]-0.5, 'hourafterstart': values['%c%i' % (col, 2)], 'phase': values['%c%i' % (col, i)]} for col in phasesnames]
+
+			observable.phases = phases
+			if values['I%s' % str(i)] == 'yes':
+				observable.internalobs = 1
+			else:
+				observable.internalobs = 0
+			comment = ''
+			if values['C%s' % str(i)] is not None:
+				comment = comment + values['C%s' % str(i)]
+			if values['J%s' % str(i)] != '/':
+				comment = comment + '\n' + 'Requested phase: ' + values['J%s' % str(i)]
+			if comment != '':
+				observable.comment = comment
+			observables.append(observable)
+
+		#TODO: check that the modified julian date corresponds to the ongoing night
+		#TODO: assert that the above structure is correct ! (use keywords in the Info fields...?)
+
+	if obsprogram == "transit":
+		pass
+
+	if obsprogram == "superwasp":
+		# http://openpyxl.readthedocs.org/en/latest/optimized.html --- that will be useful for Amaury's monstruous spreadsheet
+		pass
+
+	if obsprogram == "followup":
+		pass
+
+	return observables

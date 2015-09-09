@@ -10,6 +10,7 @@ import meteo
 from astropy.time import Time
 from astropy.coordinates import angles, angle_utilities
 
+
 class Observable:
 	"""
 	Class to hold a specific target from any observational progamm
@@ -147,9 +148,9 @@ class Observable:
 		self.getairmass()
 		self.getangletomoon(meteo)
 
-	def getobservability(self, meteo, obs_time=Time.now()):
+	def getobservability(self, meteo, obs_time=Time.now(), displayall=True):
 		"""
-		Return the observability, a value between 0 and 1 that tells if the taget can be observed at a given time
+		Return the observability, a value between 0 and 1 that tells if the target can be observed at a given time
 
 		The closer to 1 the better
 		0 is impossible to observe
@@ -162,42 +163,73 @@ class Observable:
 		# We add a small message to display if it's impossible to observe:
 		msg = ''
 
+		### General conditions:
 		# check the airmass:
 		if self.airmass > 1.5:
 			observability = 0
-			msg+='\tAirmass:%s' % self.airmass
+			msg += '\nAirmass:%s' % self.airmass
 
 		# check the	moondistance:
 		if self.angletomoon.degree < self.minangletomoon:
 			observability = 0
-			msg+='\tMA:%s' % self.angletomoon.degree
+			msg += '\nMA:%s' % self.angletomoon.degree
 
 		# check the wind:
 		if self.angletowind.degree < 90 and meteo.windspeed > 15:
 			observability = 0
-			msg+='\tWA:%s/WS:%s' % (self.angletowind.degree, meteo.windspeed)
+			msg += '\nWA:%s/WS:%s' % (self.angletowind.degree, meteo.windspeed)
 
 		if meteo.windspeed > 20:
 			observability = 0
-			msg+='\tWS:%s' % meteo.windspeed
+			msg += '\nWS:%s' % meteo.windspeed
+
+		# check the internal observability flag
+		if hasattr(self, 'internalobs'):
+			if self.internalobs == 0:
+				observability = self.internalobs
+				msg += '\nSpreadsheet NO'
+
+
+		### Program specific conditions:
+		## Bebop
+		# check the phases. time is obs_time
+		if self.obsprogram == 'bebop':
+			time = obs_time.mjd
+			phase = util.takeclosest(self.phases, 'phase', time)
+			if phase['phase'] < 0.03 or phase['phase'] > 0.97:
+				observability = 0
+			msg += '\nPhase = %.2f' % phase['phase']  # we display the phase anyway
+
+		#sys.exit()
+
+		# Finally, add the eventuel comment:
+		if hasattr(self, 'comment'):
+			msg += '\n %s' % self.comment
+
+		if observability == 1:
+			print util.hilite(self.name+msg, True, True)
+			print "="*20
+		else:
+			if displayall:
+				print util.hilite(self.name+msg, False, False)
+				print "="*20
+			else:
+				pass
+
 		self.observability = observability
 
-		if observability == 1 :
-			print util.hilite(self.name+msg, True, True)
-		else:
-			print util.hilite(self.name+msg, False, False)
 
-
-def showstatus(observables, meteo, obs_time=Time.now()):
+def showstatus(observables, meteo, obs_time=Time.now(), displayall=True):
 	"""
 	Using a list of observables, print their observability at the given obs_time. The moon position and all observables are updated according to the given obs_time. The wind is always taken at the current time
 
+	displayall = True allows all the targets to be displayed, even if they cannot be observed
 	"""
 
 	# NO, we keep meteo update outside obs functions !
 	#meteo.update(obs_time=obs_time)
 	for observable in observables:
-		observable.getobservability(meteo=meteo, obs_time=obs_time)
+		observable.getobservability(meteo=meteo, obs_time=obs_time, displayall=displayall)
 
 
 
@@ -205,6 +237,7 @@ def showstatus(observables, meteo, obs_time=Time.now()):
 def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram="None", verbose=False):
 	"""
 	Import an rdb catalog into a list of observables
+	THIS SHOULD BE IN UTIL !!
 	"""
 
 	if verbose : print "Reading \"%s\"..." % (os.path.basename(filepath))
@@ -234,7 +267,6 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 		if obsprogram not in ["lens", "transit", "bebop", "superwasp", "followup", "703", "714"]:
 			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
 
-
 		if obsprogram == "lens":
 			minangletomoon = 30
 			maxairmass = 1.5
@@ -261,16 +293,11 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 
 	return observables
 
-def excelimport():
-	"""
-	Import an excel catalog(...) into a list of observables
-	That one is going to be tricky...
-	"""
-	pass
 
 
 def rdbexport():
 	"""
 	Export a (sorted) list of observables as an rdb catalogue, to be read by edp
+	THIS SHOULD BE IN UTIL !
 	"""
 	pass
