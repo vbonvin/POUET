@@ -143,18 +143,10 @@ def excelimport(filename, obsprogram=None):
 	I directly read the excel values, I do NOT evaluate the formulas in them.
 	It is up to you to put the right mjd in the excel sheets.
 
-
-
-	Warning : NEVER use the coordinates from an excel sheet to create an rdb night planning. ALWAYS use the rdb catalogs loaded in the edp.
+	Warning : NEVER use the coordinates from an excel sheet to create an rdb night planning. ALWAYS use the rdb catalogs loaded in the edp. And double check the distance to moon !
 	"""
 
 	observables = []
-
-	try:
-		wb = openpyxl.load_workbook(filename, data_only=True)  # Read the excel spreadsheet, loading the values directly
-		ws = wb.active  # choose active sheet
-	except:
-		raise RuntimeError("Either %s does not exists, or it is not in .xlsx format !!" % filename)
 
 	#### For BEBOP
 	if obsprogram == 'bebop':
@@ -165,6 +157,13 @@ def excelimport(filename, obsprogram=None):
 		comment : a string of comments (exptime, requested phase,...)
 		internalobs : a boolean (0 or 1), allowing or not observability
 		"""
+
+		try:
+			wb = openpyxl.load_workbook(filename, data_only=True)  # Read the excel spreadsheet, loading the values directly
+			#ws = wb.active  # choose active sheet
+			ws = wb['Sheet1']
+		except:
+			raise RuntimeError("Either %s does not exists, or it is not in .xlsx format !!" % filename)
 
 		# Get tabler limits
 		rows = ws.rows
@@ -250,7 +249,62 @@ def excelimport(filename, obsprogram=None):
 
 	if obsprogram == "superwasp":
 		# http://openpyxl.readthedocs.org/en/latest/optimized.html --- that will be useful for Amaury's monstruous spreadsheet
-		pass
+		"""
+		special properties:
+
+		phases : a list of dictionnaries : [{mjd, phase, hourafterstart }]
+		comment : a string of comments (exptime, requested phase,...)
+		internalobs : a boolean (0 or 1), allowing or not observability
+		"""
+
+		print 'reading %s...' % filename
+		try:
+			wb = openpyxl.load_workbook(filename, data_only=True)  # Read the excel spreadsheet, loading the values directly
+			ws = wb['Observations']  # choose active sheet
+		except:
+			raise RuntimeError("Either %s does not exists, or it is not in .xlsx format !!" % filename)
+
+		print 'get tabler limits...'
+		# Get tabler limits
+		rows = ws.rows
+		columns = ws.columns
+		breakcolind = None
+		breakrowind = None
+		for ind, cell in enumerate(rows[1]):
+			if cell.value == None:
+				#breakcolind = cell.column
+				breakcolind = rows[1][ind-1].column
+				break
+			else:
+				pass
+
+		for ind, cell in enumerate(columns[0]):
+			if cell.value == None:
+				#breakrowind = cell.row
+				breakrowind = columns[0][ind-1].row
+				break
+			else:
+				pass
+		print breakrowind, breakcolind
+		sys.exit()
+
+
+		# Read only the non "None" data and put it in a table of dict, because fuck excel and fuck openpyxl.
+		data = ws['A1':'%s%s' % (breakcolind, breakrowind)]
+		"""
+		Structure of the spreadsheet:
+		Infos are from A1 to W2
+		Datas are from A3 ro W30
+		B1 : actual modified julian date
+		A : name
+		B : target
+		C : comment
+		I : observability
+		J : requested phase
+		M1 to W1 : mjd over the night
+		M2 to W2 : corresponding time after night start, in hours
+		M to W : phases
+		"""
 
 	if obsprogram == "followup":
 		pass
