@@ -20,7 +20,8 @@ class Observable:
 	Variable parameters (distance to moon, azimuth, observability,...) are undefined until associated methods are called
 	"""
 
-	def __init__(self, name='emptyobservable', obsprogram=None, alpha=None, delta=None, minangletomoon=None, maxairmass=None, exptime=None):
+	def __init__(self, name='emptyobservable', obsprogram=None, alpha=None, delta=None, 
+				minangletomoon=30, maxairmass=1.5, exptime=None):
 
 
 		self.name = name
@@ -165,7 +166,7 @@ class Observable:
 
 		### General conditions:
 		# check the airmass:
-		if self.airmass > 1.5:
+		if self.airmass > self.maxairmass:
 			observability = 0
 			msg += '\nAirmass:%s' % self.airmass
 
@@ -221,7 +222,9 @@ class Observable:
 
 def showstatus(observables, meteo, obs_time=Time.now(), displayall=True):
 	"""
-	Using a list of observables, print their observability at the given obs_time. The moon position and all observables are updated according to the given obs_time. The wind is always taken at the current time
+	Using a list of observables, print their observability at the given obs_time. The moon position 
+	and all observables are updated according to the given obs_time. The wind is always taken at 
+	the current time.
 
 	displayall = True allows all the targets to be displayed, even if they cannot be observed
 	"""
@@ -271,7 +274,8 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 			minangletomoon = 30
 			maxairmass = 1.5
 			exptime = 35*60 #approx 35 minutes per lens
-			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime))
+			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, 
+							minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime))
 
 		if obsprogram == "transit":
 			pass

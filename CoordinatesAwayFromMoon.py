@@ -13,7 +13,7 @@ import pylab as plt
 
 LaSilla=ephem.Observer()
 LaSilla.lon, LaSilla.lat = '-70.73291','-29.259354'
-LaSilla.date="2014/07/21 10:20" # !! CURRENT UT DATE --> AFTER MIDNIGHT CHANGE THE DATE TOO!
+LaSilla.date="2015/09/20 00:20" # !! CURRENT UT DATE --> AFTER MIDNIGHT CHANGE THE DATE TOO!
 LaSilla.elevation=2400
 
 moon_angle=40 # in degree

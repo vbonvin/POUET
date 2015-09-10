@@ -26,7 +26,8 @@ def get_AzAlt(alpha, delta, obs_time=Time.now(), ref_dir=0):
 	"""
 	idea from http://aa.usno.navy.mil/faq/docs/Alt_Az.php
 
-	Compute the azimuth and altitude of a souce at a given time (by default current time of execution), given its alpha and delta coordinates.
+	Compute the azimuth and altitude of a source at a given time (by default current time of 
+	execution), given its alpha and delta coordinates.
 
 	WARNING ! Azimuth and altitude are computed at La Silla Observatory
 
@@ -35,7 +36,7 @@ def get_AzAlt(alpha, delta, obs_time=Time.now(), ref_dir=0):
 	lat, lon, elev = get_telescope_params()
 
 	# Untouched code from Azimuth.py
-	D= obs_time.jd - 2451545.0
+	D = obs_time.jd - 2451545.0
 	GMST = 18.697374558 + 24.06570982441908*D
 	epsilon= deg2rad(23.4393 - 0.0000004*D)
 	eqeq= -0.000319*sin(deg2rad(125.04 - 0.052954*D)) - 0.000024*sin(2.*deg2rad(280.47 + 0.98565*D))*cos(epsilon)
