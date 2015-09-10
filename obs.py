@@ -21,7 +21,7 @@ class Observable:
 	"""
 
 	def __init__(self, name='emptyobservable', obsprogram=None, alpha=None, delta=None, 
-				minangletomoon=30, maxairmass=1.5, exptime=None):
+				minangletomoon=20, maxairmass=1.5, exptime=None):
 
 
 		self.name = name

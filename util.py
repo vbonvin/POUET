@@ -203,11 +203,15 @@ def excelimport(filename, obsprogram=None):
 		M2 to W2 : corresponding time after night start, in hours
 		M to W : phases
 		"""
+
 		phasesnames = ['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W']
 		values = {}
 		for indr, row in enumerate(data):
 			for indc, cell in enumerate(row):
-				values[cell.address] = cell.value
+				try:
+					values[cell.address] = cell.value # Apparently, this is an old version
+				except:
+					values[cell.coordinate] = cell.value
 
 		for i in arange(3, 31):
 			# create an observable object with the common properties
