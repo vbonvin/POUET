@@ -2,11 +2,10 @@
 Define the Observable class, the standard object of pouet, and related functions
 """
 
-from numpy import cos,rad2deg
+from numpy import cos,rad2deg, isnan
 import os,sys,glob
 import copy as pythoncopy
 import util
-import meteo
 from astropy.time import Time
 from astropy.coordinates import angles, angle_utilities
 
@@ -149,7 +148,7 @@ class Observable:
 		self.getairmass()
 		self.getangletomoon(meteo)
 
-	def getobservability(self, meteo, obs_time=Time.now(), displayall=True):
+	def getobservability(self, meteo, obs_time=Time.now(), displayall=True, check_clouds=True):
 		"""
 		Return the observability, a value between 0 and 1 that tells if the target can be observed at a given time
 
@@ -163,6 +162,7 @@ class Observable:
 		# Let's start with a simple yes/no version
 		# We add a small message to display if it's impossible to observe:
 		msg = ''
+		warnings = ''
 
 		### General conditions:
 		# check the airmass:
@@ -183,6 +183,13 @@ class Observable:
 		if meteo.windspeed > 20:
 			observability = 0
 			msg += '\nWS:%s' % meteo.windspeed
+		
+		if check_clouds:
+			clouds = meteo.is_cloudy(self.azimuth.value, self.altitude.value)
+			if clouds < 0.5 :
+				warnings += '\nWarning ! It might be cloudy at az = %0.1f; alt = %0.1f' % (rad2deg(self.azimuth.value), rad2deg(self.altitude.value))
+			elif isnan(clouds):
+				warnings += '\nWarning ! No cloud info at az = %0.1f; alt = %0.1f' % (rad2deg(self.azimuth.value), rad2deg(self.altitude.value))
 
 		# check the internal observability flag
 		if hasattr(self, 'internalobs'):
@@ -209,10 +216,12 @@ class Observable:
 
 		if observability == 1:
 			print util.hilite(self.name+msg, True, True)
+			if not warnings == '': print util.hilite(warnings, False, False)
 			print "="*20
 		else:
 			if displayall:
 				print util.hilite(self.name+msg, False, False)
+				if not warnings == '': print util.hilite(warnings, False, False)
 				print "="*20
 			else:
 				pass
@@ -220,7 +229,7 @@ class Observable:
 		self.observability = observability
 
 
-def showstatus(observables, meteo, obs_time=Time.now(), displayall=True):
+def showstatus(observables, meteo, obs_time=Time.now(), displayall=True, check_clouds=True):
 	"""
 	Using a list of observables, print their observability at the given obs_time. The moon position 
 	and all observables are updated according to the given obs_time. The wind is always taken at 
@@ -232,7 +241,8 @@ def showstatus(observables, meteo, obs_time=Time.now(), displayall=True):
 	# NO, we keep meteo update outside obs functions !
 	#meteo.update(obs_time=obs_time)
 	for observable in observables:
-		observable.getobservability(meteo=meteo, obs_time=obs_time, displayall=displayall)
+		observable.getobservability(meteo=meteo, obs_time=obs_time, displayall=displayall, 
+								check_clouds=check_clouds)
 
 
 

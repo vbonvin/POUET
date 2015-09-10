@@ -90,6 +90,9 @@ class Analyse_AllSky():
 		return observability
 	
 	def is_observable(self, az, elev):
+		"""
+		Angles must be in radians!
+		"""
 		xpix, ypix = util.get_image_coordinates(az, elev, location=self.location)
 		
 		if self.observability_map is None:

@@ -20,7 +20,7 @@ import re
 import getopt, sys
 import ephem
 import util
-
+import analyse_AllSky.analyse_allsky as cam
 
 class Meteo:
 	"""
@@ -29,14 +29,20 @@ class Meteo:
 	Typically, a Meteo object is created when POUET starts, and then update itself every XX minutes
 	"""
 
-	def __init__(self, name='emptymeteo', date=None, moonaltitude=None, moonazimuth=None, winddirection=None, windspeed=None):
+	def __init__(self, name='emptymeteo', date=None, moonaltitude=None, moonazimuth=None, 
+			winddirection=None, windspeed=None, check_clouds=True):
 
 		self.name = name
 		self.date = date
 		self.moonalt = moonaltitude
 		self.moonaz = moonazimuth
 		self.winddirection = winddirection
-		self.windspeed = windspeed
+		self.windspeed = windspeed		
+		
+		self.check_clouds = check_clouds
+		if check_clouds:
+			self.allsky = cam.Analyse_AllSky(location="LaSilla")
+
 		self.update()
 
 
@@ -62,9 +68,10 @@ class Meteo:
 		self.updatedate()
 		self.updatewind()
 		self.updatemoonpos(obs_time=obs_time)
-
-
-
+		if self.check_clouds: self.allsky.update()
+		
+	def is_cloudy(self, az, elev):
+		return self.allsky.is_observable(az, elev)
 
 def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
 	WS=[]
@@ -100,6 +107,3 @@ def get_moon(obs_time=Time.now()):
 
 	# return Az, Alt as Angle object
 	return util.get_AzAlt(alpha, delta, obs_time)
-
-
-
