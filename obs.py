@@ -158,13 +158,15 @@ class Observable:
 		self.getairmass()
 		self.getangletomoon(meteo)
 
-	def getobservability(self, meteo, obs_time=asti.Time.now(), displayall=True, check_clouds=True, limit_cloud_validity=1800):
+	def getobservability(self, meteo, obs_time=None, displayall=True, check_clouds=True, limit_cloud_validity=1800):
 		"""
 		Return the observability, a value between 0 and 1 that tells if the target can be observed at a given time
 
 		The closer to 1 the better
 		0 is impossible to observe
 		"""
+		# Otherwise we kept weird stuff because of the initialisation
+		if obs_time is None: obs_time = asti.Time.now()
 
 		self.update(meteo=meteo, obs_time=obs_time)
 		observability = 1 # by default, we can observe
@@ -197,7 +199,7 @@ class Observable:
 		if check_clouds:
 			time_since_last_refresh = (obs_time - meteo.allsky.last_im_refresh)
 			time_since_last_refresh = time_since_last_refresh.value * 86400. # By default it's in days
-
+			
 			if time_since_last_refresh < limit_cloud_validity:
 				clouds = meteo.is_cloudy(self.azimuth.value, self.altitude.value)
 				if clouds < 0.5 :
@@ -213,8 +215,8 @@ class Observable:
 
 
 		### Program specific conditions:
-		po, pmsg, pwarn = self.program.observability(self.attributes, obs_time)
-		if po == 0: observability = 0
+		pobs, pmsg, pwarn = self.program.observability(self.attributes, obs_time)
+		if pobs == 0: observability = 0
 		msg += pmsg
 		warnings += pwarn
 
@@ -239,7 +241,7 @@ class Observable:
 		self.observability = observability
 
 
-def showstatus(observables, meteo, obs_time=asti.Time.now(), displayall=True, check_clouds=True):
+def showstatus(observables, meteo, obs_time=None, displayall=True, check_clouds=True):
 	"""
 	Using a list of observables, print their observability at the given obs_time. The moon position 
 	and all observables are updated according to the given obs_time. The wind is always taken at 
