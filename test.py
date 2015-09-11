@@ -1,12 +1,9 @@
 import obs, meteo, util
-import time
-import astropy.time 
+
 prog = '714'
 check_clouds = True
 
-print 'sta', astropy.time.Time.now()
 currentmeteo = meteo.Meteo(name='LaSilla', check_clouds=check_clouds)
-time.sleep(10)
 
 if prog == '703':
 	observables = util.rdbimport('rdb/cat703.rdb', prog, col_name='code', col_alpha='alphacat', col_delta='deltacat')
