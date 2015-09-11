@@ -104,21 +104,21 @@ def reformat(coordinate, format):
 		raise ValueError("%s, Unknown coordinate output format!" %format)
 
 
-def takeclosest(dict, key, value):
+def takeclosest(dico, key, value):
 	"""
 	Assumes dict[key] is sorted. Returns the dict value which dict[key] is closest to value.
 	If two dict[key] are equally close to value, return the highest (i.e. latest).
 	This is much faster than a simple min loop, although a bit more tedious to use.
 	"""
-	mylist = [elt[key] for elt in dict]
+	mylist = [elt[key] for elt in dico]
 
 	pos = bisect_left(mylist, value)
 	if pos == 0:
-		return dict[0]
+		return dico[0]
 	if pos == len(mylist):
-		return dict[-1]
-	before = dict[pos - 1]
-	after = dict[pos]
+		return dico[-1]
+	before = dico[pos - 1]
+	after = dico[pos]
 	if after[key] - value <= value - before[key]:
 		return after
 	else:
@@ -219,9 +219,6 @@ def excelimport(filename, obsprogram=None):
 		for i in np.arange(3, 31):
 			# create an observable object with the common properties
 			name = values['A%s' % str(i)]
-			minangletomoon = 70
-			maxairmass = 1.5
-			exptime = 1800  # THIS IS NOT ALWAYS THE CASE
 
 			coordinates = values['B%s' % str(i)]
 			alpha = coordinates[0:2]+':'+coordinates[2:4]+':'+coordinates[4:6]
@@ -229,17 +226,19 @@ def excelimport(filename, obsprogram=None):
 			if coordinates[6] == "S":
 				delta = '-'+delta
 
-			observable = obs.Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime)
-
 			# add properties specific to this program
 			## Tricky stuff here : the jdb in the excel sheet is the mjd + 0.5.
 			phases = [{'mjd': values['%c%i' % (col, 1)]-0.5, 'hourafterstart': values['%c%i' % (col, 2)], 'phase': values['%c%i' % (col, i)]} for col in phasesnames]
-
-			observable.phases = phases
+			obj = {'phases': phases}
+			#observable.phases = phases
 			if values['I%s' % str(i)] == 'yes':
-				observable.internalobs = 1
+				obj['internalobs'] = 1
 			else:
-				observable.internalobs = 0
+				obj['internalobs'] = 0
+				
+			observable = obs.Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, 
+				obj=obj)
+				
 			comment = ''
 			if values['C%s' % str(i)] is not None:
 				comment = comment + values['C%s' % str(i)]
@@ -247,6 +246,7 @@ def excelimport(filename, obsprogram=None):
 				comment = comment + '\n' + 'Requested phase: ' + values['J%s' % str(i)]
 			if comment != '':
 				observable.comment = comment
+
 			observables.append(observable)
 
 		#TODO: check that the modified julian date corresponds to the ongoing night

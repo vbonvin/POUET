@@ -220,16 +220,6 @@ class Observable:
 		if po == 0: observability = 0
 		msg += pmsg
 		warnings += pwarn
-		## Bebop
-		# check the phases. time is obs_time
-		if self.obsprogram == 'bebop':
-			time = obs_time.mjd
-			phase = util.takeclosest(self.phases, 'phase', time)
-			if phase['phase'] < 0.03 or phase['phase'] > 0.97:
-				observability = 0
-			msg += '\nPhase = %.2f' % phase['phase']  # we display the phase anyway
-
-		#sys.exit()
 
 		# Finally, add the eventuel comment:
 		if hasattr(self, 'comment'):

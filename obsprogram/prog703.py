@@ -1,7 +1,6 @@
 #===================================================================================================
 # Program 703
 #===================================================================================================
-import numpy as np
 
 # Set general constraints
 # If those numbers are object dependent, set to None and compute in observability function
