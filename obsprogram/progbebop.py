@@ -28,14 +28,14 @@ def get_exptime(obj, obs_time):
 # Already checked in the observable class: angle to moon, wind, clouds, airmass
 # So this gives the possibility to have more specific tests, like say the delta v with the moon
 #===================================================================================================
-def observability(obj, obs_time):
+def observability(attributes, obs_time):
 	# check the phases. time is obs_time
 	msg = '' # This could contain messages that justify the impossibility to observe
 	warnings = '' # This contains warnings
 	observability = 1
 	
 	time = obs_time.mjd
-	phase = util.takeclosest(obj['phases'], 'phase', time)
+	phase = util.takeclosest(attributes['phases'], 'phase', time)
 	if phase['phase'] < 0.03 or phase['phase'] > 0.97:
 		observability = 0
 	msg += '\nPhase = %.2f' % phase['phase']  # we display the phase anyway

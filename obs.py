@@ -19,7 +19,7 @@ class Observable:
 	Variable parameters (distance to moon, azimuth, observability,...) are undefined until associated methods are called
 	"""
 
-	def __init__(self, name='emptyobservable', obsprogram=None, obj=None, alpha=None, delta=None, 
+	def __init__(self, name='emptyobservable', obsprogram=None, attributes=None, alpha=None, delta=None, 
 				minangletomoon=None, maxairmass=None, exptime=None):
 
 
@@ -43,7 +43,7 @@ class Observable:
 		if not maxairmass is None: self.maxairmass = maxairmass
 		if not exptime is None: self.exptime = exptime
 	
-		self.obj = obj
+		self.attributes = attributes
 		#self.observability = observability
 
 
@@ -196,11 +196,8 @@ class Observable:
 		
 		if check_clouds:
 			time_since_last_refresh = (obs_time - meteo.allsky.last_im_refresh)
-			print obs_time
-			print meteo.allsky.last_im_refresh
 			time_since_last_refresh = time_since_last_refresh.value * 86400. # By default it's in days
-			print type(time_since_last_refresh.value)
-			exit()
+
 			if time_since_last_refresh < limit_cloud_validity:
 				clouds = meteo.is_cloudy(self.azimuth.value, self.altitude.value)
 				if clouds < 0.5 :
@@ -216,7 +213,7 @@ class Observable:
 
 
 		### Program specific conditions:
-		po, pmsg, pwarn = self.program.observability(self.obj, obs_time)
+		po, pmsg, pwarn = self.program.observability(self.attributes, obs_time)
 		if po == 0: observability = 0
 		msg += pmsg
 		warnings += pwarn

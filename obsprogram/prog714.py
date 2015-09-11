@@ -1,5 +1,5 @@
 #===================================================================================================
-# Program 703
+# Program 714
 #===================================================================================================
 
 # Set general constraints
@@ -14,8 +14,7 @@ exptime = None
 # Now define the exptime function, arguments must be : attributes and obs_time
 #===================================================================================================
 def get_exptime(attributes, obs_time): # Just to have some fun
-	flux = 10 ** (attributes['mv'] / -2.5)
-	return flux / 100. 
+	return 600.
 
 #===================================================================================================
 # Now define the observable function, arguments must be : obj and obs_time; should return 1 if 

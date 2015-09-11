@@ -229,15 +229,15 @@ def excelimport(filename, obsprogram=None):
 			# add properties specific to this program
 			## Tricky stuff here : the jdb in the excel sheet is the mjd + 0.5.
 			phases = [{'mjd': values['%c%i' % (col, 1)]-0.5, 'hourafterstart': values['%c%i' % (col, 2)], 'phase': values['%c%i' % (col, i)]} for col in phasesnames]
-			obj = {'phases': phases}
+			attributes = {'phases': phases}
 			#observable.phases = phases
 			if values['I%s' % str(i)] == 'yes':
-				obj['internalobs'] = 1
+				attributes['internalobs'] = 1
 			else:
-				obj['internalobs'] = 0
+				attributes['internalobs'] = 0
 				
 			observable = obs.Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, 
-				obj=obj)
+				attributes=attributes)
 				
 			comment = ''
 			if values['C%s' % str(i)] is not None:
@@ -333,8 +333,8 @@ def rdbimport(filepath, obsprogram, col_name, col_alpha, col_delta, return_all=F
 	observables = []
 	for ii, li in enumerate(cat):
 		name, alpha, delta = li[col_name], li[col_alpha], li[col_delta]
-		obj = cat[ii]
-		observables.append(obs.Observable(name=name, obj=obj, obsprogram=obsprogram, alpha=alpha, delta=delta))
+		attributes = cat[ii]
+		observables.append(obs.Observable(name=name, attributes=attributes, obsprogram=obsprogram, alpha=alpha, delta=delta))
 
 	if return_all:
 		return observables, cat
