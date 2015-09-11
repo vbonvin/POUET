@@ -1,7 +1,6 @@
 """
 Useful functions and definitions
 """
-from numpy import sin, cos, arctan2, tan, deg2rad, floor, arcsin, arange
 import astropy.coordinates.angles as angles
 from astropy.time import Time
 from astropy import units as u
@@ -11,6 +10,9 @@ import getopt, sys
 import openpyxl  # see http://openpyxl.readthedocs.org/en/latest/index.html
 import obs
 from bisect import bisect_left
+
+import csv
+import numpy as np
 
 # La Silla Telescope Parameters
 def get_telescope_params():
@@ -38,22 +40,22 @@ def get_AzAlt(alpha, delta, obs_time=Time.now(), ref_dir=0):
 	# Untouched code from Azimuth.py
 	D = obs_time.jd - 2451545.0
 	GMST = 18.697374558 + 24.06570982441908*D
-	epsilon= deg2rad(23.4393 - 0.0000004*D)
-	eqeq= -0.000319*sin(deg2rad(125.04 - 0.052954*D)) - 0.000024*sin(2.*deg2rad(280.47 + 0.98565*D))*cos(epsilon)
+	epsilon= np.deg2rad(23.4393 - 0.0000004*D)
+	eqeq= -0.000319*np.sin(np.deg2rad(125.04 - 0.052954*D)) - 0.000024*np.sin(2.*np.deg2rad(280.47 + 0.98565*D))*np.cos(epsilon)
 	GAST = GMST + eqeq
-	GAST -= floor(GAST/24.)*24.
+	GAST -= np.floor(GAST/24.)*24.
 
 	LHA = angles.Angle((GAST-alpha.hour)*15+lon.degree, unit="degree")
-	if LHA > 0: LHA += angles.Angle(floor(LHA/360.)*360., unit="degree")
+	if LHA > 0: LHA += angles.Angle(np.floor(LHA/360.)*360., unit="degree")
 	else: LHA -= angles.Angle(floor(LHA/360.)*360., unit="degree")
 
-	sina=cos(LHA.radian)*cos(delta.radian)*cos(lat.radian)+sin(delta.radian)*sin(lat.radian)
-	Alt = angles.Angle(arcsin(sina),unit="radian")
+	sina=np.cos(LHA.radian)*np.cos(delta.radian)*np.cos(lat.radian)+np.sin(delta.radian)*np.sin(lat.radian)
+	Alt = angles.Angle(np.arcsin(sina),unit="radian")
 
-	num = -sin(LHA.radian)
-	den = tan(delta.radian)*cos(lat.radian)-sin(lat.radian)*cos(LHA.radian)
+	num = -np.sin(LHA.radian)
+	den = np.tan(delta.radian)*np.cos(lat.radian)-np.sin(lat.radian)*np.cos(LHA.radian)
 
-	Az = angles.Angle(arctan2(num,den), unit="radian")
+	Az = angles.Angle(np.arctan2(num,den), unit="radian")
 	Az-=angles.Angle(ref_dir, unit="degree")
 
 	# I changed this to get the same angle as the edp, using 0 (North) as reference
@@ -213,7 +215,7 @@ def excelimport(filename, obsprogram=None):
 				except:
 					values[cell.coordinate] = cell.value
 
-		for i in arange(3, 31):
+		for i in np.arange(3, 31):
 			# create an observable object with the common properties
 			name = values['A%s' % str(i)]
 			minangletomoon = 70
@@ -317,10 +319,7 @@ def excelimport(filename, obsprogram=None):
 	return observables
 
 def rdbimport(filepath, obsprogram, col_name, col_alpha, col_delta, return_all=False):
-	import csv
-	import numpy as np
-	
-	
+
 	f = open(filepath, 'rb')
 	reader = csv.reader(f, delimiter='\t')
 	headers = reader.next()
@@ -339,8 +338,8 @@ def rdbimport(filepath, obsprogram, col_name, col_alpha, col_delta, return_all=F
 		for h, v in zip(headers, row):
 			column[h].append(v)
 	"""
-	print data[[col_name, col_alpha, col_delta]].tolist()[1:]
-	print '-----------------------'
+	#print data[[col_name, col_alpha, col_delta]].tolist()[1:]
+	#print '-----------------------'
 	observables = []
 	for li in data.tolist()[1:]:
 		name, alpha, delta = li[0], li[1], li[2]

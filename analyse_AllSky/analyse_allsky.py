@@ -34,7 +34,7 @@ class Analyse_AllSky():
 		x, y = self.detect_stars()
 		return self.get_observability_map(x, y)
 		
-	def detect_stars(self, sigma_blur=2, threshold=7, neighborhood_size=20, fwhm_threshold=10, meas_star=True, return_all=False):
+	def detect_stars(self, sigma_blur=2, threshold=7, neighborhood_size=20, fwhm_threshold=12, meas_star=True, return_all=False):
 		original = self.im_original
 		image = filters.gaussian_filter(self.im_masked, sigma_blur)
 		data_max = filters.maximum_filter(image, neighborhood_size)
@@ -153,17 +153,18 @@ if __name__ == "__main__":
 		plt.figure(figsize=(18,6))
 		plt.subplot(1, 3, 1)
 		plt.imshow(imo, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
-		#plt.scatter(ids[1], ids[0], s=4, marker='o', edgecolors='r', color='none')
-		
 		plt.scatter(ax, ay, s=4, marker='o', edgecolors='g', color='none')
-		plt.scatter(x, y, s=4, marker='o', edgecolors='r', color='none')
+		#plt.scatter(x, y, s=4, marker='o', edgecolors='r', color='none')
+		plt.title('Detected peaks')
 		
 		plt.subplot(1, 3, 2)
 		plt.imshow(imo, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
 		plt.scatter(x, y, s=4, marker='o', edgecolors='r', color='none')
+		plt.title('Detected stars')
 		
 		plt.subplot(1, 3, 3)
 		plt.imshow(imo, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
 		plt.imshow(observability, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
+		plt.title("Observability")
 	
-		plt.show()
+	plt.show()

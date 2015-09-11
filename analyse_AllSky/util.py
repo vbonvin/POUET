@@ -19,11 +19,11 @@ def rgb2gray(arr):
 def get_mask(ar):
 	s=np.shape(ar)
 	xxa, xxb = s[0]/2, s[1]/2
-	r = 280
+	r = 285
 	y,x = np.ogrid[-xxa:s[0]-xxa, -xxb:s[1]-xxb]
 	
 	adan, bdan = 145, 570
-	rdan = 100
+	rdan = 88
 	ydan,xdan = np.ogrid[-adan:s[0]-adan, -bdan:s[1]-bdan]
 
 	mask = np.logical_or(x*x + y*y >= r*r, xdan*xdan + ydan*ydan <= rdan*rdan)
