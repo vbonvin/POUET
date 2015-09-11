@@ -48,7 +48,7 @@ def get_AzAlt(alpha, delta, obs_time=Time.now(), ref_dir=0):
 
 	LHA = angles.Angle((GAST-alpha.hour)*15+lon.degree, unit="degree")
 	if LHA > 0: LHA += angles.Angle(np.floor(LHA/360.)*360., unit="degree")
-	else: LHA -= angles.Angle(floor(LHA/360.)*360., unit="degree")
+	else: LHA -= angles.Angle(np.floor(LHA/360.)*360., unit="degree")
 
 	sina=np.cos(LHA.radian)*np.cos(delta.radian)*np.cos(lat.radian)+np.sin(delta.radian)*np.sin(lat.radian)
 	Alt = angles.Angle(np.arcsin(sina),unit="radian")
@@ -325,7 +325,7 @@ def rdbimport(filepath, obsprogram, col_name, col_alpha, col_delta, return_all=F
 	reader = csv.reader(f, delimiter='\t')
 	headers = reader.next()
 	
-	# print Table.read(filepath, format='rdb') # This will be removed in next version of astropy so
+	#print Table.read(filepath, format='ascii.rdb', comment='---') # This does not work for some reason
 	# let's do it in another way:
 	cat = np.recfromtxt(filepath, names=headers, comments='--', delimiter='\t')
 	cat = Table(cat[1:], names=cat[0])

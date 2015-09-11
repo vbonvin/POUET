@@ -116,8 +116,7 @@ class Observable:
 
 
 		except AttributeError:
-			print "%s has no azimuth! \n Compute its azimuth first !"
-			sys.exit()
+			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
 
 	def getaltaz(self, obs_time=asti.Time.now()):
 		"""
@@ -150,8 +149,7 @@ class Observable:
 
 
 		except AttributeError:
-			print "%s has no altitude! \n Compute its altutide first !"
-			sys.exit()
+			raise AttributeError("%s has no altitude! \n Compute its altutide first !")
 
 	def update(self, meteo, obs_time=asti.Time.now()):
 
@@ -196,14 +194,19 @@ class Observable:
 			observability = 0
 			msg += '\nWS:%s' % meteo.windspeed
 		
-		time_since_last_refresh = (obs_time - meteo.allsky.last_im_refresh) * 86400. # By default it's in days
-
-		if check_clouds or time_since_last_refresh < limit_cloud_validity:
-			clouds = meteo.is_cloudy(self.azimuth.value, self.altitude.value)
-			if clouds < 0.5 :
-				warnings += '\nWarning ! It might be cloudy'
-			elif isnan(clouds):
-				warnings += '\nWarning ! No cloud info'
+		if check_clouds:
+			time_since_last_refresh = (obs_time - meteo.allsky.last_im_refresh)
+			print obs_time
+			print meteo.allsky.last_im_refresh
+			time_since_last_refresh = time_since_last_refresh.value * 86400. # By default it's in days
+			print type(time_since_last_refresh.value)
+			exit()
+			if time_since_last_refresh < limit_cloud_validity:
+				clouds = meteo.is_cloudy(self.azimuth.value, self.altitude.value)
+				if clouds < 0.5 :
+					warnings += '\nWarning ! It might be cloudy'
+				elif isnan(clouds):
+					warnings += '\nWarning ! No cloud info'
 
 		# check the internal observability flag
 		if hasattr(self, 'internalobs'):
@@ -213,6 +216,10 @@ class Observable:
 
 
 		### Program specific conditions:
+		po, pmsg, pwarn = self.program.observability(self.obj, obs_time)
+		if po == 0: observability = 0
+		msg += pmsg
+		warnings += pwarn
 		## Bebop
 		# check the phases. time is obs_time
 		if self.obsprogram == 'bebop':
