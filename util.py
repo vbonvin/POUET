@@ -2,6 +2,7 @@
 Useful functions and definitions
 """
 import astropy.coordinates.angles as angles
+from astropy.table import Table
 from astropy.time import Time
 from astropy import units as u
 import urllib2
@@ -324,35 +325,18 @@ def rdbimport(filepath, obsprogram, col_name, col_alpha, col_delta, return_all=F
 	reader = csv.reader(f, delimiter='\t')
 	headers = reader.next()
 	
-	data = np.recfromtxt(filepath, names=headers, comments='----', delimiter='\t')
-	"""
-	_ = reader.next()
-	
-	column = {}
-	for h in headers:
-		column[h] = []
-	
-	count_obj = 0
-	for row in reader:
-		count_obj += 1
-		for h, v in zip(headers, row):
-			column[h].append(v)
-	"""
-	#print data[[col_name, col_alpha, col_delta]].tolist()[1:]
-	#print '-----------------------'
-	observables = []
-	for li in data.tolist()[1:]:
-		name, alpha, delta = li[0], li[1], li[2]
-		observables.append(obs.Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
+	# print Table.read(filepath, format='rdb') # This will be removed in next version of astropy so
+	# let's do it in another way:
+	cat = np.recfromtxt(filepath, names=headers, comments='--', delimiter='\t')
+	cat = Table(cat[1:], names=cat[0])
 
-	"""
-	ii = 0
-	for ii in range(count_obj):
-		name = column[col_name][ii]
-		
-		print ii, column[col_name][ii], column[col_alpha][ii], column[col_delta][ii]
-	"""
+	observables = []
+	for ii, li in enumerate(cat):
+		name, alpha, delta = li[col_name], li[col_alpha], li[col_delta]
+		obj = cat[ii]
+		observables.append(obs.Observable(name=name, obj=obj, obsprogram=obsprogram, alpha=alpha, delta=delta))
+
 	if return_all:
-		return observables, data
+		return observables, cat
 	else:
 		return observables

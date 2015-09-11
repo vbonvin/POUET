@@ -2,8 +2,8 @@
 Define the Observable class, the standard object of pouet, and related functions
 """
 
-from numpy import cos,rad2deg, isnan
-import os,sys,glob
+from numpy import cos, rad2deg, isnan
+import os, sys
 import copy as pythoncopy
 import util
 import astropy.time as asti
@@ -19,19 +19,31 @@ class Observable:
 	Variable parameters (distance to moon, azimuth, observability,...) are undefined until associated methods are called
 	"""
 
-	def __init__(self, name='emptyobservable', obsprogram=None, alpha=None, delta=None, 
-				minangletomoon=20, maxairmass=1.5, exptime=None):
+	def __init__(self, name='emptyobservable', obsprogram=None, obj=None, alpha=None, delta=None, 
+				minangletomoon=None, maxairmass=None, exptime=None):
 
 
 		self.name = name
 		self.obsprogram = obsprogram
+		
+		try:
+			exec("import obsprogram.prog%s as program" % (self.obsprogram))
+			self.minangletomoon = program.minangletomoon
+			self.maxairmass = program.maxairmass
+			self.exptime = program.exptime
+			self.program = program
+		except SyntaxError:
+			self.program = None
+			raise SyntaxError("I could not find the prog%s.py definition file in obsprogram/" % self.obsprogram)
 
 		self.alpha = angles.Angle(alpha, unit="hour")
 		self.delta = angles.Angle(delta, unit="degree")
 
-		self.minangletomoon = minangletomoon
-		self.maxairmass = maxairmass
-		self.exptime = exptime
+		if not minangletomoon is None: self.minangletomoon = minangletomoon
+		if not maxairmass is None: self.maxairmass = maxairmass
+		if not exptime is None: self.exptime = exptime
+	
+		self.obj = obj
 		#self.observability = observability
 
 
