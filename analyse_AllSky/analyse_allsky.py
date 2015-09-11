@@ -5,6 +5,7 @@ import util
 import copy
 from scipy.spatial import cKDTree
 import urllib
+from astropy.time import Time
 
 class Analyse_AllSky():
 	
@@ -26,6 +27,7 @@ class Analyse_AllSky():
 	def retrieve_image(self):
 		urllib.urlretrieve(self.params['url'], "current.JPG")
 		self.im_masked, self.im_original = util.loadallsky(self.fimage, return_complete=True)
+		self.last_im_refresh = Time.now()
 		
 	def update(self):
 		self.retrieve_image()
@@ -39,7 +41,12 @@ class Analyse_AllSky():
 		maxima = (image == data_max)
 		
 		data_min = filters.minimum_filter(image, neighborhood_size)
-		diff = ((data_max - data_min) > threshold)
+		
+		# In order to avoid outputing warnings, remove all nans (not the Indian bread)
+		delta_arr = data_max - data_min
+		delta_arr[np.isnan(delta_arr)] = 0.
+
+		diff = (delta_arr > threshold)
 		maxima[diff == 0] = 0
 		
 		labeled, _ = ndimage.label(maxima)

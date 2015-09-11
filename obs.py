@@ -6,7 +6,7 @@ from numpy import cos,rad2deg, isnan
 import os,sys,glob
 import copy as pythoncopy
 import util
-from astropy.time import Time
+import astropy.time as asti
 from astropy.coordinates import angles, angle_utilities
 
 
@@ -107,7 +107,7 @@ class Observable:
 			print "%s has no azimuth! \n Compute its azimuth first !"
 			sys.exit()
 
-	def getaltaz(self, obs_time=Time.now()):
+	def getaltaz(self, obs_time=asti.Time.now()):
 		"""
 		Actualize altitude and azimuth of the observable at the given observation time.
 
@@ -141,14 +141,14 @@ class Observable:
 			print "%s has no altitude! \n Compute its altutide first !"
 			sys.exit()
 
-	def update(self, meteo, obs_time=Time.now()):
+	def update(self, meteo, obs_time=asti.Time.now()):
 
 		self.getaltaz(obs_time=obs_time)
 		self.getangletowind(meteo)
 		self.getairmass()
 		self.getangletomoon(meteo)
 
-	def getobservability(self, meteo, obs_time=Time.now(), displayall=True, check_clouds=True):
+	def getobservability(self, meteo, obs_time=asti.Time.now(), displayall=True, check_clouds=True, limit_cloud_validity=1800):
 		"""
 		Return the observability, a value between 0 and 1 that tells if the target can be observed at a given time
 
@@ -168,28 +168,30 @@ class Observable:
 		# check the airmass:
 		if self.airmass > self.maxairmass:
 			observability = 0
-			msg += '\nAirmass:%s' % self.airmass
+			msg += '\nAirmass:%0.2f' % self.airmass
 
 		# check the	moondistance:
 		if self.angletomoon.degree < self.minangletomoon:
 			observability = 0
-			msg += '\nMA:%s' % self.angletomoon.degree
+			msg += '\nMoonDist:%0.1f' % self.angletomoon.degree
 
 		# check the wind:
 		if self.angletowind.degree < 90 and meteo.windspeed > 15:
 			observability = 0
-			msg += '\nWA:%s/WS:%s' % (self.angletowind.degree, meteo.windspeed)
+			msg += '\nWA:%0.1f/WS:%0.1f' % (self.angletowind.degree, meteo.windspeed)
 
 		if meteo.windspeed > 20:
 			observability = 0
 			msg += '\nWS:%s' % meteo.windspeed
 		
-		if check_clouds:
+		time_since_last_refresh = (obs_time - meteo.allsky.last_im_refresh) * 86400. # By default it's in days
+
+		if check_clouds or time_since_last_refresh < limit_cloud_validity:
 			clouds = meteo.is_cloudy(self.azimuth.value, self.altitude.value)
 			if clouds < 0.5 :
-				warnings += '\nWarning ! It might be cloudy at az = %0.1f; alt = %0.1f' % (rad2deg(self.azimuth.value), rad2deg(self.altitude.value))
+				warnings += '\nWarning ! It might be cloudy'
 			elif isnan(clouds):
-				warnings += '\nWarning ! No cloud info at az = %0.1f; alt = %0.1f' % (rad2deg(self.azimuth.value), rad2deg(self.altitude.value))
+				warnings += '\nWarning ! No cloud info'
 
 		# check the internal observability flag
 		if hasattr(self, 'internalobs'):
@@ -214,13 +216,15 @@ class Observable:
 		if hasattr(self, 'comment'):
 			msg += '\n %s' % self.comment
 
+		to_print = "%s\nalpha=%s, delta=%s\naz=%0.2f, alt=%0.2f%s" % (self.name, self.alpha, self.delta, 
+			rad2deg(self.azimuth.value), rad2deg(self.altitude.value), msg)
 		if observability == 1:
-			print util.hilite(self.name+msg, True, True)
+			print util.hilite(to_print, True, True)
 			if not warnings == '': print util.hilite(warnings, False, False)
 			print "="*20
 		else:
 			if displayall:
-				print util.hilite(self.name+msg, False, False)
+				print util.hilite(to_print, False, False)
 				if not warnings == '': print util.hilite(warnings, False, False)
 				print "="*20
 			else:
@@ -229,7 +233,7 @@ class Observable:
 		self.observability = observability
 
 
-def showstatus(observables, meteo, obs_time=Time.now(), displayall=True, check_clouds=True):
+def showstatus(observables, meteo, obs_time=asti.Time.now(), displayall=True, check_clouds=True):
 	"""
 	Using a list of observables, print their observability at the given obs_time. The moon position 
 	and all observables are updated according to the given obs_time. The wind is always taken at 
@@ -244,9 +248,7 @@ def showstatus(observables, meteo, obs_time=Time.now(), displayall=True, check_c
 		observable.getobservability(meteo=meteo, obs_time=obs_time, displayall=displayall, 
 								check_clouds=check_clouds)
 
-
-
-
+	
 def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram="None", verbose=False):
 	"""
 	Import an rdb catalog into a list of observables
