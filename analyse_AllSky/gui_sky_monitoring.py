@@ -6,6 +6,8 @@ import util
 import pylab as plt
 import time
 import numpy as np
+import re, urllib2
+from matplotlib.patches import Wedge
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -90,6 +92,9 @@ class MyWindow(QtGui.QWidget):
 		cy = params['cy']
 		north = params['north']
 		deltatetha = params['deltatetha']
+		url_weather = params['url_weather']
+		wpl = params['wind_pointing_limit']
+		wsl = params['wind_stopping_limit']
 		
 		coordinatesx = np.cos(north + theta_coordinates) * r0 + cx
 		coordinatesy = np.sin(north + theta_coordinates) * r0 + cy
@@ -114,6 +119,32 @@ class MyWindow(QtGui.QWidget):
 			texty = np.sin(north + np.deg2rad(180)) * (rr - 2) + cy
 			self.matplotlibWidget.axis.annotate('%d' % (90-np.ceil(np.rad2deg(angle))), xy=(textx, texty), rotation=deltatetha,#prefered_direction['dir'],
 			  horizontalalignment='left', verticalalignment='center', size=10)
+			
+		WD, WS = get_wind(url_weather)
+		WDd = WD
+		WD = np.deg2rad(WD)
+
+		if WS is not None and WS > wpl:
+			wdcoordinatesx = np.cos(north - WD) * r0 + cx
+			wdcoordinatesy = np.sin(north - WD) * r0 + cy
+			Nd = np.rad2deg(north)# + 90.
+
+			if WS > wsl :
+				cw = 'r'
+				self.matplotlibWidget.axis.add_patch(Wedge([cx, cy], r0, Nd - WDd, Nd - WDd+360, fill=False, hatch='//', edgecolor=cw))
+				self.matplotlibWidget.axis.annotate('WIND LIMIT\nREACHED', xy=(cx, cy), rotation=0,
+		  			horizontalalignment='center', verticalalignment='center', color=cw, fontsize=35)
+			elif WS > wpl :
+				cw = 'darkorange'
+				wtcoordinatesx = np.cos(north - WD) * r0 / 2. + cx
+				wtcoordinatesy = np.sin(north - WD) * r0 / 2. + cy
+
+				self.matplotlibWidget.axis.add_patch(Wedge([cx, cy], r0, -90+Nd-WDd, 90+Nd-WDd, fill=False, hatch='//', edgecolor=cw))
+				self.matplotlibWidget.axis.annotate('Pointing limit!', xy=(wtcoordinatesx, wtcoordinatesy), rotation=0,
+		  			horizontalalignment='center', verticalalignment='center', color=cw, fontsize=25)
+				
+			self.matplotlibWidget.axis.plot([cx, wdcoordinatesx], [cy, wdcoordinatesy], lw=3, color=cw)
+
 		
 		#plt.plot([cx, northx], [cy, northy], lw=2, color='k')
 		for ccx, ccy in zip(coordinatesx, coordinatesy):
@@ -123,6 +154,29 @@ class MyWindow(QtGui.QWidget):
 		
 		self.matplotlibWidget.axis.set_axis_off()
 		self.matplotlibWidget.canvas.draw()
+
+		
+def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
+	"""
+	This is taken from pouet/meteo.py, but is there such that analyse_allsky is stand-alone
+	"""
+	WS=[]
+	WD=[]
+	if url_weather is None:
+		return None, None
+	data=urllib2.urlopen(url_weather).read()
+	
+	data=data.split("\n") # then split it into lines
+	for line in data:
+		if re.match( r'WD', line, re.M|re.I):
+			WD.append(int(line[20:25])) # AVG
+		if re.match( r'WS', line, re.M|re.I):
+			WS.append(float(line[20:25])) # AVG
+
+	WD = WD[0] # WD is chosen between station 1 or 2 in EDP pour la Silla.
+	WS = WS[2] # next to 3.6m telescope --> conservative choice.
+
+	return WD, WS
 
 if __name__ == "__main__":
 	import sys

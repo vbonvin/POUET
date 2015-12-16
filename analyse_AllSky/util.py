@@ -10,10 +10,13 @@ import copy
 import scipy.ndimage
 import numpy as np
 
+import urllib2, re
+
 def rgb2gray(arr):
 	red = arr[:,:,0]
 	green = arr[:,:,1]
 	blue = arr[:,:,2]
+	
 	return 0.299 * red + 0.587 * green + 0.144 * blue
 
 def get_mask(ar):
@@ -164,7 +167,10 @@ def get_params(location="LaSilla"):
 				'prefered_theta': prefered_theta,
 				'deltatetha': deltatetha,
 				'north': north,
-				'url': "http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG"}
+				'url': "http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG",
+				'url_weather':"http://www.ls.eso.org/lasilla/dimm/meteo.last",
+				'wind_pointing_limit':15.,
+				'wind_stopping_limit':20.}
 	else:
 		raise ValueError("Unknown location")
 	
@@ -198,5 +204,22 @@ def get_image_coordinates(az, elev, location="LaSilla", params=None):
 		y = np.nan 
 
 	return x, y
+
+
+def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
+	WS=[]
+	WD=[]
+	data=urllib2.urlopen(url_weather).read()
+	data=data.split("\n") # then split it into lines
+	for line in data:
+		if re.match( r'WD', line, re.M|re.I):
+			WD.append(int(line[20:25])) # AVG
+		if re.match( r'WS', line, re.M|re.I):
+			WS.append(float(line[20:25])) # AVG
+
+	WD = WD[0] # WD is chosen between station 1 or 2 in EDP pour la Silla.
+	WS = WS[2] # next to 3.6m telescope --> conservative choice.
+
+	return WD, WS
 
 

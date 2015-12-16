@@ -7,6 +7,7 @@ from scipy.spatial import cKDTree
 import urllib
 from astropy.time import Time
 
+
 class Analyse_AllSky():
 	
 	def __init__(self, fimage=None, location="LaSilla"):
@@ -34,7 +35,7 @@ class Analyse_AllSky():
 		x, y = self.detect_stars()
 		return self.get_observability_map(x, y)
 		
-	def detect_stars(self, sigma_blur=2, threshold=7, neighborhood_size=20, fwhm_threshold=12, meas_star=True, return_all=False):
+	def detect_stars(self, sigma_blur=1.5, threshold=8, neighborhood_size=20, fwhm_threshold=5, meas_star=True, return_all=False):
 		original = self.im_original
 		image = filters.gaussian_filter(self.im_masked, sigma_blur)
 		data_max = filters.maximum_filter(image, neighborhood_size)
@@ -76,7 +77,7 @@ class Analyse_AllSky():
 		else:
 			return resx, resy
 		
-	def get_observability_map(self, x, y, threshold=60):
+	def get_observability_map(self, x, y, threshold=50):
 		
 		observability = copy.copy(self.im_masked) * 0.
 		
@@ -87,7 +88,8 @@ class Analyse_AllSky():
 			for nx, ny in notnans:
 				obs = len(tree.query_ball_point((ny,nx), threshold))
 				if obs > 2 : observability[nx,ny] = 1. 
-				elif obs > 1 : observability[nx,ny] = 0.5
+				elif obs > 1 : observability[nx,ny] = 0.5#0.5
+				#elif obs == 1 : observability[nx,ny] = 0.3
 			#res = tree.count_neighbors(pixels, 10)
 			#print res
 			observability = filters.gaussian_filter(observability, 2)
@@ -114,6 +116,7 @@ class Analyse_AllSky():
 			return self.observability_map[xpix, ypix]
 		except IndexError:
 			return np.nan 
+
 			
 if __name__ == "__main__":
 	import glob
@@ -168,3 +171,4 @@ if __name__ == "__main__":
 		plt.title("Observability")
 	
 	plt.show()
+

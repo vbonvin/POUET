@@ -9,15 +9,10 @@ It is the only object that interact outside POUET, i.e. communicate with website
 Observables interact only with Meteo to get their constaints (position to the moon, angle to wind, ...)
 """
 
-
-import copy as pythoncopy
-from numpy import sin, cos, arctan2, tan, deg2rad, floor, arcsin
 import astropy.coordinates.angles as angles
 from astropy.time import Time
-from astropy import units as u
 import urllib2
 import re
-import getopt, sys
 import ephem
 import util
 import analyse_AllSky.analyse_allsky as cam
