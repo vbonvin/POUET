@@ -81,6 +81,10 @@ except:
 	wpl = 15.
 	wsl = 20.
 
+WD = 20. 
+wpl = 1.
+wsl = 2.
+
 for i,ra in enumerate(ras):
 	for j,dec in enumerate(decs):
 		star = ephem.FixedBody()
@@ -104,7 +108,7 @@ for i,ra in enumerate(ras):
 				cw = 'darkorange'
 				ct = 'Pointing limit!'
 				cts = 20
-				ws = ephem.separation((star.alt, WD), (star.alt, star.az))
+				ws = ephem.separation((star.alt, np.deg2rad(WD)), (star.alt, star.az))
 				if ws < np.pi/2.:
 					wind[j,i]=1.
 		else: 
