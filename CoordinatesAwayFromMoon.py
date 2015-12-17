@@ -7,7 +7,6 @@ Aim: Plots all coordinates that are a minimum of <moon_angle> degrees from the M
 
 import ephem
 import numpy as np
-import pylab as plt
 import meteo
 
 
@@ -15,8 +14,11 @@ import meteo
 
 LaSilla=ephem.Observer()
 LaSilla.lon, LaSilla.lat = '-70.73291','-29.259354'
-LaSilla.date="2015/06/21 21:16" # !! CURRENT UT DATE --> AFTER MIDNIGHT CHANGE THE DATE TOO!
+LaSilla.date="2015/12/17 03:30" # !! CURRENT UT DATE --> AFTER MIDNIGHT CHANGE THE DATE TOO!
 LaSilla.elevation=2400
+
+airmass = 1.5
+min_moon_separation = 30
 
 
 def hpos(body): return body.ra, body.dec
@@ -53,6 +55,11 @@ def Elev2Airmass(el,lat,alt):
 	return airmass
 
 if __name__ == '__main__':
+	import pylab as plt
+	
+	"""
+	This is an example of what it should look like in the GUI
+	"""
 	
 	#########################################################
 	moon_angle=40 # in degree

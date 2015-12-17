@@ -19,9 +19,11 @@ class MatplotlibWidget(QtGui.QWidget):
 
 		self.figure = Figure()
 		self.canvas = FigureCanvasQTAgg(self.figure)
+		self.figure.patch.set_facecolor((0.95,0.94,0.94,1.))
 
 		self.axis = self.figure.add_subplot(111)
-
+		self.axis.axis('off')
+		
 		self.layoutVertical = QtGui.QVBoxLayout(self)
 		self.layoutVertical.addWidget(self.canvas)
 
@@ -44,6 +46,8 @@ class ThreadSample(QtCore.QThread):
 class MyWindow(QtGui.QWidget):
 	def __init__(self, parent=None):
 		super(MyWindow, self).__init__(parent)
+		
+		self.setWindowTitle('Cloud Monitor')
 
 		self.pushButtonPlot = QtGui.QPushButton(self)
 		self.pushButtonPlot.setText("Start / refresh (auto-refresh every 2 min)")
@@ -185,7 +189,7 @@ if __name__ == "__main__":
 	app.setApplicationName('Cloud Monitor')
 
 	main = MyWindow()
-	main.resize(666, 666)
+	main.resize(800, 650)
 	main.show()
 
 	sys.exit(app.exec_())
