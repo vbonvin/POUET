@@ -88,12 +88,33 @@ class Analyse_AllSky():
 			for nx, ny in notnans:
 				obs = len(tree.query_ball_point((ny,nx), threshold))
 				if obs > 2 : observability[nx,ny] = 1. 
-				elif obs > 1 : observability[nx,ny] = 0.5#0.5
+				elif obs > 1 : observability[nx,ny] = 1.#0.5
 				#elif obs == 1 : observability[nx,ny] = 0.3
 			#res = tree.count_neighbors(pixels, 10)
 			#print res
 			observability = filters.gaussian_filter(observability, 2)
-		
+		"""
+		#print np.size(np.where(observability > 0.5)[0])
+		if np.size(np.where(observability > 0.5)[0]) < 100000:
+			obsmap = np.ones_like(observability)
+			hstep = 30
+			medim = np.nanmedian(self.im_masked)
+			#print medim 
+			#medim = 150
+			for ix in range(hstep,np.shape(self.im_masked)[0],5):#range(hstep,np.shape(self.im_masked)[0],hstep*2):
+				for iy in range(hstep,np.shape(self.im_masked)[1],5):
+					if not np.isnan(np.nanmedian(self.im_masked[ix-hstep:ix+hstep,iy-hstep:iy+hstep])):
+						mar = self.im_masked[ix-hstep:ix+hstep,iy-hstep:iy+hstep]
+						res = np.nanmedian(mar) < 0.9*medim
+						obsmap[ix-hstep:ix+hstep,iy-hstep:iy+hstep] = res
+						#= np.ones_like(mar) * res
+			obsmap[np.isnan(self.im_masked)] = np.nan
+			#print np.nanmedian(self.im_masked)
+			#exit()
+	
+
+			observability = np.logical_and(observability, obsmap)
+		"""
 		self.observability_map = observability.T
 		
 		return observability
@@ -149,10 +170,6 @@ if __name__ == "__main__":
 		x, y, ax, ay = analysis.detect_stars(return_all=True)
 		observability = analysis.get_observability_map(x, y)
 		
-		print '0, 30,', analysis.is_observable(np.deg2rad(0), np.deg2rad(30))
-		print '0, -30,', analysis.is_observable(np.deg2rad(0), np.deg2rad(-30))
-		print '180, 0,', analysis.is_observable(np.deg2rad(180), np.deg2rad(0))
-		
 		plt.figure(figsize=(18,6))
 		plt.subplot(1, 3, 1)
 		plt.imshow(imo, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
@@ -171,4 +188,3 @@ if __name__ == "__main__":
 		plt.title("Observability")
 	
 	plt.show()
-

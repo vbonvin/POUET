@@ -69,7 +69,7 @@ if __name__ == '__main__':
 	moon.compute(LaSilla)
 	
 	#########################################################
-	
+
 	ras,decs=grid_points()
 	ra_g, dec_g = np.meshgrid(ras,decs)
 	sep=np.zeros_like(ra_g)
