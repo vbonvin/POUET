@@ -320,7 +320,7 @@ def excelimport(filename, obsprogram=None):
 	return observables
 
 def rdbimport(filepath, obsprogram, col_name, col_alpha, col_delta, return_all=False):
-
+	#todo: replace with the rdbimport from obs.py !!
 	f = open(filepath, 'rb')
 	reader = csv.reader(f, delimiter='\t')
 	headers = reader.next()
