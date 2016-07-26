@@ -5,9 +5,15 @@ import numpy as np
 import pylab as plt
 import meteo
 
+<<<<<<< HEAD
 from datetime import datetime
 
 from matplotlib import gridspec
+=======
+import time
+from datetime import datetime
+
+>>>>>>> 615eba1cb5c5e7981da440389f7052361227d4fe
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PyQt4 import QtGui, QtCore
@@ -18,6 +24,7 @@ class MatplotlibWidget(QtGui.QWidget):
 		super(MatplotlibWidget, self).__init__(parent)
 
 		self.figure = Figure()
+<<<<<<< HEAD
 		self.figure.patch.set_facecolor((0.95,0.94,0.94,1.))
 		gs = gridspec.GridSpec(1, 2, width_ratios=[20, 1]) 
 		self.axis = self.figure.add_subplot(gs[0])
@@ -26,6 +33,11 @@ class MatplotlibWidget(QtGui.QWidget):
 
 		self.axis.axis('off')
 		self.cax.axis('off')
+=======
+		self.canvas = FigureCanvasQTAgg(self.figure)
+
+		self.axis = self.figure.add_subplot(111)
+>>>>>>> 615eba1cb5c5e7981da440389f7052361227d4fe
 
 		self.layoutVertical = QtGui.QVBoxLayout(self)
 		self.layoutVertical.addWidget(self.canvas)
@@ -37,11 +49,21 @@ class ThreadSample(QtCore.QThread):
 		super(ThreadSample, self).__init__(parent)
 
 	def run(self):
+<<<<<<< HEAD
+=======
+		print (time.strftime("%d/%m/%Y %H:%M:%S : refresh"))
+		#urllib.urlretrieve("http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG", "current.JPG")
+		#im, rest = util.loadallsky("current.JPG", return_complete=True)
+		#x, y = self.allskyanalyse_allsky.detect_stars(im)
+		#observability = self.allsky.update()#analyse_allsky.get_observability(im, x, y)
+
+>>>>>>> 615eba1cb5c5e7981da440389f7052361227d4fe
 		self.newSample.emit()
 
 class MyWindow(QtGui.QWidget):
 	def __init__(self, parent=None):
 		super(MyWindow, self).__init__(parent)
+<<<<<<< HEAD
 		
 		self.setWindowTitle('Visible coordinates (La Silla)')
 
@@ -65,10 +87,30 @@ class MyWindow(QtGui.QWidget):
 		self.label_time.move(6, 10)
 		self.label_time.resize(150,30)
 		self.label_time.setText('Current UTC date')
+=======
+
+		self.time = '%s' % datetime.utcnow()
+		self.time = self.time[:-7]
+		self.airmass = 1.5
+		self.moon_cutoff = 30
+
+		self.pushButtonPlot = QtGui.QPushButton(self)
+		self.pushButtonPlot.setText("Plot")
+		self.pushButtonPlot.clicked.connect(self.on_pushButtonPlot_clicked)
+		
+		self.label_time = QtGui.QLabel(self)
+		self.qle_time = QtGui.QLineEdit(self)
+		self.qle_time.move(70, 10)
+		self.qle_time.resize(160,30)
+		self.qle_time.setText(self.time)
+		self.label_time.move(6, 10)
+		self.label_time.setText('UTC date')
+>>>>>>> 615eba1cb5c5e7981da440389f7052361227d4fe
 		self.qle_time.setAlignment(QtCore.Qt.AlignLeft)
 		
 		self.label_am = QtGui.QLabel(self)
 		self.qle_am = QtGui.QLineEdit(self)
+<<<<<<< HEAD
 		self.qle_am.move(420, 10)
 		self.qle_am.resize(30,30)
 		self.qle_am.setText('%1.1f' % self.airmass)
@@ -98,6 +140,29 @@ class MyWindow(QtGui.QWidget):
 
 		self.threadSample = ThreadSample(self)
 		self.threadSample.newSample.connect(self.on_threadSample_newSample)
+=======
+		self.qle_am.move(340, 10)
+		self.qle_am.resize(30,30)
+		self.qle_am.setText('%1.1f' % self.airmass)
+		self.label_am.move(250, 10)
+		self.label_am.setText('Max. airmass')
+		self.qle_am.setAlignment(QtCore.Qt.AlignLeft)
+		
+		self.timer = QtCore.QTimer()
+		self.timer.timeout.connect(self.update)
+		self.timer.start(120000) #trigger every 2 minutes.
+		self.timer.timeout.connect(self.on_pushButtonPlot_clicked)
+
+		self.matplotlibWidget = MatplotlibWidget(self)
+
+		self.layoutVertical = QtGui.QVBoxLayout(self)
+		self.layoutVertical.addWidget(self.pushButtonPlot)
+		self.layoutVertical.addWidget(self.matplotlibWidget)
+
+		self.threadSample = ThreadSample(self)
+		self.threadSample.newSample.connect(self.on_threadSample_newSample)
+		#self.threadSample.finished.connect(self.on_threadSample_finished)
+>>>>>>> 615eba1cb5c5e7981da440389f7052361227d4fe
 
 	@QtCore.pyqtSlot()
 	def on_pushButtonPlot_clicked(self):
@@ -108,12 +173,18 @@ class MyWindow(QtGui.QWidget):
 	@QtCore.pyqtSlot(list)
 	def on_threadSample_newSample(self):
 		
+<<<<<<< HEAD
 		self.time = str(self.qle_time.text())
 		self.moon_cutoff = int(self.qle_ac.text())
 		self.airmass = float(self.qle_am.text())
 
 		self.matplotlibWidget.axis.clear()
 		self.matplotlibWidget.cax.clear()
+=======
+		print self.qle_time.text()
+
+		self.matplotlibWidget.axis.clear()
+>>>>>>> 615eba1cb5c5e7981da440389f7052361227d4fe
 
 		moon = ephem.Moon()
 		vm.LaSilla.date=self.time
@@ -173,6 +244,11 @@ class MyWindow(QtGui.QWidget):
 			
 		#########################################################
 		
+<<<<<<< HEAD
+=======
+		#self.matplotlibWidget.figure.tight_layout()
+		
+>>>>>>> 615eba1cb5c5e7981da440389f7052361227d4fe
 
 		ra_g=ra_g/2/np.pi*24
 		dec_g=dec_g/np.pi*180
@@ -182,7 +258,11 @@ class MyWindow(QtGui.QWidget):
 		self.matplotlibWidget.axis.clabel(CS,fontsize=10,fmt='%d')
 		CS=self.matplotlibWidget.axis.contourf(ra_g,dec_g,sep,v,)
 		t= np.arange(self.moon_cutoff, 190, 10)
+<<<<<<< HEAD
 		self.matplotlibWidget.figure.colorbar(CS,ax=self.matplotlibWidget.axis,cax=self.matplotlibWidget.cax, ticks=t)
+=======
+		self.matplotlibWidget.figure.colorbar(CS,ticks=t)
+>>>>>>> 615eba1cb5c5e7981da440389f7052361227d4fe
 		
 		if check_wind and WS > wpl:
 			cs = self.matplotlibWidget.axis.contourf(ra_g,dec_g, wind, hatches=['', '//'],
@@ -219,7 +299,11 @@ if __name__ == "__main__":
 	app.setApplicationName('Visible coordinates')
 
 	main = MyWindow()
+<<<<<<< HEAD
 	main.resize(800, 650)
+=======
+	main.resize(666, 666)
+>>>>>>> 615eba1cb5c5e7981da440389f7052361227d4fe
 	main.show()
 
 	sys.exit(app.exec_())

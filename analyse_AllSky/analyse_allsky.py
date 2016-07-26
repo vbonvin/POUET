@@ -88,7 +88,7 @@ class Analyse_AllSky():
 			for nx, ny in notnans:
 				obs = len(tree.query_ball_point((ny,nx), threshold))
 				if obs > 2 : observability[nx,ny] = 1. 
-				elif obs > 1 : observability[nx,ny] = 1.#0.5
+				elif obs > 1 : observability[nx,ny] = 0.5#0.5
 				#elif obs == 1 : observability[nx,ny] = 0.3
 			#res = tree.count_neighbors(pixels, 10)
 			#print res
@@ -170,6 +170,10 @@ if __name__ == "__main__":
 		x, y, ax, ay = analysis.detect_stars(return_all=True)
 		observability = analysis.get_observability_map(x, y)
 		
+		print '0, 30,', analysis.is_observable(np.deg2rad(0), np.deg2rad(30))
+		print '0, -30,', analysis.is_observable(np.deg2rad(0), np.deg2rad(-30))
+		print '180, 0,', analysis.is_observable(np.deg2rad(180), np.deg2rad(0))
+		
 		plt.figure(figsize=(18,6))
 		plt.subplot(1, 3, 1)
 		plt.imshow(imo, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
@@ -188,3 +192,4 @@ if __name__ == "__main__":
 		plt.title("Observability")
 	
 	plt.show()
+

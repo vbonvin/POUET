@@ -22,11 +22,15 @@ def rgb2gray(arr):
 def get_mask(ar):
 	s=np.shape(ar)
 	#xxa, xxb = s[0]/2, s[1]/2
-	r = 210#285
-	xxb = 279
-	xxa = 230
+	#r = 210#285
+	#xxb = 279
+	#xxa = 230
 	
+	#	y,x = np.ogrid[-xxa:s[0]-xxa, -xxb:s[1]-xxb]
+	xxa, xxb = s[0]/2, s[1]/2
+	r = 285
 	y,x = np.ogrid[-xxa:s[0]-xxa, -xxb:s[1]-xxb]
+	
 	adan, bdan = 145, 570
 	rdan = 88
 	ydan,xdan = np.ogrid[-adan:s[0]-adan, -bdan:s[1]-bdan]
