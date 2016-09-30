@@ -4,8 +4,6 @@ Define the Meteo class and related functions
 Meteo is an object containing all the external weather condition (wind speed and direction, temperature, moon position, clouds pattern,...)
 It is the only object that interact outside POUET, i.e. communicate with website to get the meteo,...
 
-
-
 Observables interact only with Meteo to get their constaints (position to the moon, angle to wind, ...)
 """
 
