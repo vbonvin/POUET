@@ -15,6 +15,12 @@ import meteo
 
 LaSilla=ephem.Observer()
 LaSilla.lon, LaSilla.lat = '-70.73291','-29.259354'
+LaSilla.date="2015/12/17 03:30" # !! CURRENT UT DATE --> AFTER MIDNIGHT CHANGE THE DATE TOO!
+LaSilla.elevation=2400
+
+airmass = 1.5
+min_moon_separation = 30
+
 LaSilla.date="2015/06/21 21:16" # !! CURRENT UT DATE --> AFTER MIDNIGHT CHANGE THE DATE TOO!
 LaSilla.elevation=2400
 
@@ -53,6 +59,11 @@ def Elev2Airmass(el,lat,alt):
 	return airmass
 
 if __name__ == '__main__':
+	import pylab as plt
+	
+	"""
+	This is an example of what it should look like in the GUI
+	"""
 	
 	#########################################################
 	moon_angle=40 # in degree
@@ -62,7 +73,6 @@ if __name__ == '__main__':
 	moon.compute(LaSilla)
 	
 	#########################################################
-	
 	ras,decs=grid_points()
 	ra_g, dec_g = np.meshgrid(ras,decs)
 	sep=np.zeros_like(ra_g)

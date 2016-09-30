@@ -93,7 +93,28 @@ class Analyse_AllSky():
 			#res = tree.count_neighbors(pixels, 10)
 			#print res
 			observability = filters.gaussian_filter(observability, 2)
-		
+		"""
+		#print np.size(np.where(observability > 0.5)[0])
+		if np.size(np.where(observability > 0.5)[0]) < 100000:
+			obsmap = np.ones_like(observability)
+			hstep = 30
+			medim = np.nanmedian(self.im_masked)
+			#print medim 
+			#medim = 150
+			for ix in range(hstep,np.shape(self.im_masked)[0],5):#range(hstep,np.shape(self.im_masked)[0],hstep*2):
+				for iy in range(hstep,np.shape(self.im_masked)[1],5):
+					if not np.isnan(np.nanmedian(self.im_masked[ix-hstep:ix+hstep,iy-hstep:iy+hstep])):
+						mar = self.im_masked[ix-hstep:ix+hstep,iy-hstep:iy+hstep]
+						res = np.nanmedian(mar) < 0.9*medim
+						obsmap[ix-hstep:ix+hstep,iy-hstep:iy+hstep] = res
+						#= np.ones_like(mar) * res
+			obsmap[np.isnan(self.im_masked)] = np.nan
+			#print np.nanmedian(self.im_masked)
+			#exit()
+	
+
+			observability = np.logical_and(observability, obsmap)
+		"""
 		self.observability_map = observability.T
 		
 		return observability
