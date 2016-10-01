@@ -57,16 +57,22 @@ class Meteo:
 		self.windspeed = WS
 
 
-	def update(self, obs_time=Time.now()):
+	def update(self, obs_time=Time.now(), minimal=False):
+		"""
+		minimal=True update only the moon position. Useful for predictions (as you can't predict the clouds of winds, no need to refresh them)
+		"""
 		self.updatedate()
-		self.updatewind()
 		self.updatemoonpos(obs_time=obs_time)
-		if self.check_clouds: self.allsky.update()
-		
+		if not minimal:
+			self.updatewind()
+			if self.check_clouds: self.allsky.update()
+
 	def is_cloudy(self, az, elev):
 		return self.allsky.is_observable(az, elev)
 
 def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
+
+	#todo: add a "no connection" message if page is not reachable instead of an error
 	WS=[]
 	WD=[]
 	data=urllib2.urlopen(url_weather).read()
@@ -76,6 +82,7 @@ def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
 			WD.append(int(line[20:25])) # AVG
 		if re.match( r'WS', line, re.M|re.I):
 			WS.append(float(line[20:25])) # AVG
+
 
 	WD = WD[0] # WD is chosen between station 1 or 2 in EDP pour la Silla.
 	WS = WS[2] # next to 3.6m telescope --> conservative choice.
@@ -88,7 +95,7 @@ def get_moon(obs_time=Time.now()):
 	lat, lon, elev = util.get_telescope_params()
 
 	observer = ephem.Observer()
-	observer.date = obs_time.__str__()
+	observer.date = obs_time.iso
 	observer.lat, observer.lon, observer.elevation = lat.degree, lon.degree, elev
 
 	moon = ephem.Moon()

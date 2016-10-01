@@ -2,17 +2,19 @@
 Useful functions and definitions
 """
 import astropy.coordinates.angles as angles
-from astropy.table import Table
+#from astropy.table import Table
 from astropy.time import Time
 from astropy import units as u
 import urllib2
 import re
-import getopt, sys
+import getopt, sys, os
 import openpyxl  # see http://openpyxl.readthedocs.org/en/latest/index.html
 import obs
 from bisect import bisect_left
+import cPickle as pickle
+import ephem
 
-import csv
+#import csv
 import numpy as np
 
 # La Silla Telescope Parameters
@@ -65,6 +67,38 @@ def get_AzAlt(alpha, delta, obs_time=Time.now(), ref_dir=0):
 
 	return Az, Alt
 
+
+def get_nighthours(obs_night):
+	"""
+	return a list of astropy Time objects, corresponding to the different hours of the obs_night
+	"""
+
+	lat, lon, elev = get_telescope_params()
+
+	obs_time = Time('%s 05:00:00' % obs_night, format='iso', scale='utc') #5h UT is approx. the middle of the night
+
+	obs_time = Time(obs_time.mjd + 1, format='mjd', scale='utc') # That corresponds to the next middle of the observing night
+
+	observer = ephem.Observer()
+	observer.pressure=0
+	observer.date = obs_time.iso
+	observer.lat, observer.lon, observer.elevation = str(lat.degree), str(lon.degree), elev
+
+	observer.horizon = '-12'
+
+	sun = ephem.Sun()
+
+	# these fuckers are in YYYY/M(M)/D(D) HH:MM:SS format... 'murica !
+	sunset = observer.previous_setting(sun).tuple()
+	sunrise = observer.next_rising(sun).tuple()
+
+	sunset_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunset, format='iso', scale='utc').mjd
+	sunrise_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunrise, format='iso', scale='utc').mjd
+
+	mjds = np.linspace(sunset_time, sunrise_time, num=100)
+	times = [Time(mjd, format='mjd', scale='utc') for mjd in mjds]
+
+	return times
 
 
 def reformat(coordinate, format):
@@ -319,24 +353,93 @@ def excelimport(filename, obsprogram=None):
 
 	return observables
 
-def rdbimport(filepath, obsprogram, col_name, col_alpha, col_delta, return_all=False):
-	#todo: replace with the rdbimport from obs.py !!
-	f = open(filepath, 'rb')
-	reader = csv.reader(f, delimiter='\t')
-	headers = reader.next()
-	
-	#print Table.read(filepath, format='ascii.rdb', comment='---') # This does not work for some reason
-	# let's do it in another way:
-	cat = np.recfromtxt(filepath, names=headers, comments='--', delimiter='\t')
-	cat = Table(cat[1:], names=cat[0])
+def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram="None", verbose=False):
+	"""
+	Import an rdb catalog into a list of observables
+	THIS SHOULD BE IN UTIL !!
+	"""
+
+	if verbose : print "Reading \"%s\"..." % (os.path.basename(filepath))
+	rdbfile = open(filepath, "r")
+	rdbfilelines = rdbfile.readlines()[startline:] # we directly "skip" the first lines of eventual headers
+	rdbfile.close()
 
 	observables = []
-	for ii, li in enumerate(cat):
-		name, alpha, delta = li[col_name], li[col_alpha], li[col_delta]
-		attributes = cat[ii]
-		observables.append(obs.Observable(name=name, attributes=attributes, obsprogram=obsprogram, alpha=alpha, delta=delta))
 
-	if return_all:
-		return observables, cat
+	for ind, line in enumerate(rdbfilelines) :
+
+		if line[0] == "-" or line[0] == "#":
+			continue
+
+		if len(line.strip()) < 5:
+			print "Skipping empty line %i : %s" % (ind+startline, repr(line))
+			continue
+
+		elements = line.split()
+
+		name = str(elements[namecol-1])
+		alpha = str(elements[alphacol-1])
+		delta = str(elements[deltacol-1])
+
+		# This is the minimal stuff necessary to define an observable. Now, let's go into the per-obsprogram details
+
+		if obsprogram not in ["lens", "transit", "bebop", "superwasp", "followup", "703", "714"]:
+			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
+
+		if obsprogram == "lens":
+			minangletomoon = 30
+			maxairmass = 1.5
+			exptime = 35*60 #approx 35 minutes per lens
+			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime))
+
+		if obsprogram == "transit":
+			pass
+
+		if obsprogram == "bebop":
+			pass
+
+		if obsprogram == "superwasp":
+			pass
+
+		if obsprogram == "followup":
+			pass
+
+		if obsprogram == "703":
+			pass
+
+		if obsprogram == "714":
+			pass
+
+	return observables
+
+
+
+def writepickle(obj, filepath, verbose=True, protocol = -1):
+	"""
+	I write your python object obj into a pickle file at filepath.
+	If filepath ends with .gz, I'll use gzip to compress the pickle.
+	Leave protocol = -1 : I'll use the latest binary protocol of pickle.
+	"""
+	if os.path.splitext(filepath)[1] == ".gz":
+		pkl_file = gzip.open(filepath, 'wb')
 	else:
-		return observables
+		pkl_file = open(filepath, 'wb')
+
+	pickle.dump(obj, pkl_file, protocol)
+	pkl_file.close()
+	if verbose: print "Wrote %s" % filepath
+
+
+def readpickle(filepath, verbose=True):
+	"""
+	I read a pickle file and return whatever object it contains.
+	If the filepath ends with .gz, I'll unzip the pickle file.
+	"""
+	if os.path.splitext(filepath)[1] == ".gz":
+		pkl_file = gzip.open(filepath,'rb')
+	else:
+		pkl_file = open(filepath, 'rb')
+	obj = pickle.load(pkl_file)
+	pkl_file.close()
+	if verbose: print "Read %s" % filepath
+	return obj

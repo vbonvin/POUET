@@ -2,12 +2,14 @@
 Define the Observable class, the standard object of pouet, and related functions
 """
 
-from numpy import cos, rad2deg, isnan
+from numpy import cos, rad2deg, isnan, arange
 import os, sys
 import copy as pythoncopy
 import util
-import astropy.time as asti
+from astropy.time import Time
 from astropy.coordinates import angles, angle_utilities
+
+import matplotlib.pyplot as plt
 
 
 class Observable:
@@ -60,7 +62,8 @@ class Observable:
 		except AttributeError:
 			msg+= "Altitude:\tNone\n"
 
-		try:
+		try:	# let's behave like real people and use a correct iso system
+
 			msg+= "Azimuth:\t%s\n"%self.azimuth.degree
 		except AttributeError:
 			msg+= "Azimuth:\tNone\n"
@@ -118,7 +121,7 @@ class Observable:
 		except AttributeError:
 			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
 
-	def getaltaz(self, obs_time=asti.Time.now()):
+	def getaltaz(self, obs_time=Time.now()):
 		"""
 		Actualize altitude and azimuth of the observable at the given observation time.
 
@@ -151,14 +154,14 @@ class Observable:
 		except AttributeError:
 			raise AttributeError("%s has no altitude! \n Compute its altutide first !")
 
-	def update(self, meteo, obs_time=asti.Time.now()):
+	def update(self, meteo, obs_time=Time.now()):
 
 		self.getaltaz(obs_time=obs_time)
 		self.getangletowind(meteo)
 		self.getairmass()
 		self.getangletomoon(meteo)
 
-	def getobservability(self, meteo, obs_time=None, displayall=True, check_clouds=True, limit_cloud_validity=1800):
+	def getobservability(self, meteo, obs_time=None, displayall=True, check_clouds=True, limit_cloud_validity=1800, verbose=True):
 		"""
 		Return the observability, a value between 0 and 1 that tells if the target can be observed at a given time
 
@@ -166,7 +169,7 @@ class Observable:
 		0 is impossible to observe
 		"""
 		# Otherwise we kept weird stuff because of the initialisation
-		if obs_time is None: obs_time = asti.Time.now()
+		if obs_time is None: obs_time = Time.now()
 
 		self.update(meteo=meteo, obs_time=obs_time)
 		observability = 1 # by default, we can observe
@@ -177,15 +180,18 @@ class Observable:
 		warnings = ''
 
 		### General conditions:
+
+
+		# check the	moondistance:
+		if self.angletomoon.degree < self.minangletomoon:
+			observability -= 0.2
+			msg += '\nMoonDist:%0.1f' % self.angletomoon.degree
+
 		# check the airmass:
 		if self.airmass > self.maxairmass:
 			observability = 0
 			msg += '\nAirmass:%0.2f' % self.airmass
 
-		# check the	moondistance:
-		if self.angletomoon.degree < self.minangletomoon:
-			observability = 0
-			msg += '\nMoonDist:%0.1f' % self.angletomoon.degree
 
 		# check the wind:
 		if self.angletowind.degree < 90 and meteo.windspeed > 15:
@@ -195,7 +201,7 @@ class Observable:
 		if meteo.windspeed > 20:
 			observability = 0
 			msg += '\nWS:%s' % meteo.windspeed
-		
+
 		if check_clouds:
 			time_since_last_refresh = (obs_time - meteo.allsky.last_im_refresh)
 			time_since_last_refresh = time_since_last_refresh.value * 86400. # By default it's in days
@@ -224,19 +230,19 @@ class Observable:
 		if hasattr(self, 'comment'):
 			msg += '\n %s' % self.comment
 
-		to_print = "%s\nalpha=%s, delta=%s\naz=%0.2f, alt=%0.2f%s" % (self.name, self.alpha, self.delta, 
-			rad2deg(self.azimuth.value), rad2deg(self.altitude.value), msg)
-		if observability == 1:
-			print util.hilite(to_print, True, True)
-			if not warnings == '': print util.hilite(warnings, False, False)
-			print "="*20
-		else:
-			if displayall:
-				print util.hilite(to_print, False, False)
+		if verbose:
+			to_print = "%s | %s\nalpha=%s, delta=%s\naz=%0.2f, alt=%0.2f%s" % (self.name, obs_time.iso, self.alpha, self.delta, rad2deg(self.azimuth.value), rad2deg(self.altitude.value), msg)
+			if observability == 1:
+				print util.hilite(to_print, True, True)
 				if not warnings == '': print util.hilite(warnings, False, False)
 				print "="*20
 			else:
-				pass
+				if displayall:
+					print util.hilite(to_print, False, False)
+					if not warnings == '': print util.hilite(warnings, False, False)
+					print "="*20
+				else:
+					pass
 
 		self.observability = observability
 
@@ -254,9 +260,94 @@ def showstatus(observables, meteo, obs_time=None, displayall=True, check_clouds=
 	#meteo.update(obs_time=obs_time)
 	for observable in observables:
 		observable.getobservability(meteo=meteo, obs_time=obs_time, displayall=displayall, 
-								check_clouds=check_clouds)
+								check_clouds=check_clouds, verbose=True)
 
-	
+
+def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=None, verbose=False):
+	"""
+	Plot the observability of one observable along the night
+	"""
+
+	# list of times between nautical twilights
+	times = util.get_nighthours(obs_night)
+
+	mymeteo = pythoncopy.deepcopy(meteo) # as we don't want to affect the current meteo, we make a copy that we update with the time
+
+	obss = []
+	moonseps = []
+	for time in times:
+		mymeteo.update(obs_time=time, minimal=True) # This is the ONLY function in obs that updates the meteo !!
+		observable.getobservability(meteo=mymeteo, obs_time=time, displayall=True, check_clouds=False, verbose=verbose)
+		observable.getairmass()
+		obss.append(observable.observability)
+		moonseps.append(observable.angletomoon.degree)
+
+
+	# create the x ticks labels every hour
+	Time('%s 05:00:00' % obs_night, format='iso', scale='utc')
+	hstart=22
+	hend=12
+	nhbm = 24-hstart  # number of hours before midnight...
+	myhours = []
+	for hour in arange(nhbm)[::-1]:
+		myhours.append(24-(hour+1))
+	for hour in arange(hend+1):
+		myhours.append(hour)
+
+	myhours = ["%02i:00:00" % h for h in myhours]
+	mytimes = [Time('%s %s' % (obs_night, h), format='iso', scale='utc') for h in myhours[:nhbm]]
+
+	for h in myhours[nhbm:]:
+		t = Time('%s %s' % (obs_night, h), format='iso', scale='utc')
+		t = Time(t.mjd + 1, format='mjd', scale='utc')
+		mytimes.append(t)
+
+	tmin, tmax = times[0].mjd, times[-1].mjd
+	xmax=len(obss)
+	xs = [(t.mjd-tmin)*xmax/(tmax-tmin) for t in mytimes]
+	labels = [str(h[:5]) for h in myhours]
+
+	try:
+		starttime, stoptime = times[obss.index(1)+1].iso, times[::-1][obss[::-1].index(1)+1].iso
+	except:
+		try:
+			starttime, stoptime = times[obss.index(0.8)+1].iso, times[::-1][obss[::-1].index(0.8)+1].iso
+		except:
+			print "%s is not observable tonight !" % observable.name
+			return
+
+	msg = ''
+	plt.figure(figsize=(8,1.3))
+	plt.subplots_adjust(left=0.02, right=0.98, bottom=0.45, top=0.7)
+	ax = plt.subplot(1, 1, 1)
+	xticks = arange(len(obss))
+	plt.xticks(xs, labels, fontsize=16)
+	# green, everything is fine
+	if 1 in obss:
+		plt.plot(obss, linewidth=25.0, color='chartreuse')
+	# yellow, problem with moon sep
+	if 0.8 in obss:
+		plt.plot([o+0.2 for o in obss], linewidth=25.0, color='royalblue')
+		msg += "Moonsep = %i" % int(min(moonseps))
+	plt.axis([min(xticks), max(xticks), 0.9, 1.1])
+	ax.get_yaxis().set_visible(False)
+	plt.xlabel('UT', fontsize=18)
+	if msg != '':
+		plt.annotate(msg, xy=(0, -1.5),  xycoords='axes fraction', fontsize=14, color="royalblue")
+	plt.suptitle(observable.name+" ("+starttime.split(" ")[1][:5]+" --> "+stoptime.split(" ")[1][:5]+")", fontsize=25, y=0.93)
+
+	if savefig:
+		assert dirpath != None
+		if not os.path.isdir(os.path.join(dirpath, obs_night)):
+			os.mkdir(os.path.join(dirpath, obs_night))
+		path = os.path.join(dirpath, obs_night, observable.name+'.png')
+		plt.savefig(path)
+		print "Plot saved on %s" % path
+	else:
+		plt.show()
+
+
+
 def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram="None", verbose=False):
 	"""
 	Import an rdb catalog into a list of observables
@@ -294,8 +385,7 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 			minangletomoon = 30
 			maxairmass = 1.5
 			exptime = 35*60 #approx 35 minutes per lens
-			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, 
-							minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime))
+			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime))
 
 		if obsprogram == "transit":
 			pass
