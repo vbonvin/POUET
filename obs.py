@@ -307,14 +307,33 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 	xs = [(t.mjd-tmin)*xmax/(tmax-tmin) for t in mytimes]
 	labels = [str(h[:5]) for h in myhours]
 
-	try:
-		starttime, stoptime = times[obss.index(1)+1].iso, times[::-1][obss[::-1].index(1)+1].iso
-	except:
-		try:
-			starttime, stoptime = times[obss.index(0.8)+1].iso, times[::-1][obss[::-1].index(0.8)+1].iso
-		except:
+	starttimes = []
+	stoptimes = []
+	if 1 in obss:
+		starttimes.append(times[obss.index(1)])
+		stoptimes.append(times[::-1][obss[::-1].index(1)])
+
+	if 0.8 in obss:
+		starttimes.append(times[obss.index(0.8)])
+		stoptimes.append(times[::-1][obss[::-1].index(0.8)])
+
+	if not 1 in obss and not 0.8 in obss:
 			print "%s is not observable tonight !" % observable.name
 			return
+
+	starttime = min(starttimes)
+	stoptime = max(stoptimes)
+
+	# shift the start and stoptime if needed
+	if starttime.mjd > stoptime.mjd - (observable.exptime/60./1440.):
+		starttime = Time(stoptime.mjd - (observable.exptime/60./1440.), format='mjd', scale='utc')
+
+	if stoptime.mjd < starttime.mjd + (observable.exptime/60./1440.):
+		stoptime = Time(starttime.mjd + (observable.exptime/60./1440.), format='mjd', scale='utc')
+
+	starttime = starttime.iso
+	stoptime = stoptime.iso
+
 
 	msg = ''
 	plt.figure(figsize=(8,1.3))
@@ -324,12 +343,12 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 	plt.xticks(xs, labels, fontsize=16)
 	# green, everything is fine
 	if 1 in obss:
-		plt.plot(obss, linewidth=25.0, color='chartreuse')
-	# yellow, problem with moon sep
+		plt.axvspan(obss.index(1), len(obss)-obss[::-1].index(1), color='chartreuse')
+	# blue, problem with moon sep
 	if 0.8 in obss:
-		plt.plot([o+0.2 for o in obss], linewidth=25.0, color='royalblue')
+		plt.axvspan(obss.index(0.8), len(obss)-obss[::-1].index(0.8), color='royalblue')
 		msg += "Moonsep = %i" % int(min(moonseps))
-	plt.axis([min(xticks), max(xticks), 0.9, 1.1])
+	plt.axis([min(xticks), max(xticks), 0.0, 1.0])
 	ax.get_yaxis().set_visible(False)
 	plt.xlabel('UT', fontsize=18)
 	if msg != '':

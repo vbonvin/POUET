@@ -59,7 +59,7 @@ class Meteo:
 
 	def update(self, obs_time=Time.now(), minimal=False):
 		"""
-		minimal=True update only the moon position. Useful for predictions (as you can't predict the clouds of winds, no need to refresh them)
+		minimal=True update only the moon position. Useful for predictions (as you can't predict the clouds or winds, no need to refresh them)
 		"""
 		self.updatedate()
 		self.updatemoonpos(obs_time=obs_time)
