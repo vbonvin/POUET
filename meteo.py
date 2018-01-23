@@ -23,13 +23,15 @@ class Meteo:
 	Typically, a Meteo object is created when POUET starts, and then update itself every XX minutes
 	"""
 
-	def __init__(self, name='emptymeteo', date=None, moonaltitude=None, moonazimuth=None, 
+	def __init__(self, name='emptymeteo', date=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None,
 			winddirection=None, windspeed=None, check_clouds=True):
 
 		self.name = name
 		self.date = date
 		self.moonalt = moonaltitude
 		self.moonaz = moonazimuth
+		self.sunalt = sunaltitude
+		self.sunaz = sunazimuth
 		self.winddirection = winddirection
 		self.windspeed = windspeed		
 		
@@ -51,6 +53,10 @@ class Meteo:
 		self.moonalt = Alt
 		self.moonaz = Az
 
+	def	updatesunpos(self, obs_time=Time.now()):
+		Az, Alt = get_sun(obs_time=obs_time)
+		self.sunalt = Alt
+		self.sunaz = Az
 
 	def updatewind(self):
 		WD, WS = get_wind()
@@ -124,3 +130,25 @@ def get_moon(obs_time=Time.now()):
 
 	# return Az, Alt as Angle object
 	return util.get_AzAlt(alpha, delta, obs_time)
+
+
+def get_sun(obs_time=Time.now()):
+
+	lat, lon, elev = util.get_telescope_params()
+
+	observer = ephem.Observer()
+	observer.date = obs_time.iso
+	observer.lat, observer.lon, observer.elevation = lat.degree, lon.degree, elev
+
+	sun = ephem.Mun()
+	sun.compute(observer)
+
+	# Warning, ass-coding here: output of sun.ra is different from sun.ra.__str__()... clap clap clap - again
+	alpha = angles.Angle(sun.ra.__str__(), unit="hour")
+	delta = angles.Angle(sun.dec.__str__(), unit="degree")
+
+	# return Az, Alt as Angle object
+	return util.get_AzAlt(alpha, delta, obs_time)
+
+
+#todo: generalize get_sun and get_moon into a single get_distance_to_obj function.

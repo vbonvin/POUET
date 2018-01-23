@@ -93,10 +93,23 @@ class Observable:
 		separation = angle_utilities.angular_separation(moonaz, moonalt, az, alt) # Warning, separation is in radian!!
 
 		angletomoon = angles.Angle(separation.value, unit="radian")
-
 		self.angletomoon = angletomoon
 
 
+	def getangletosun(self, meteo):
+		"""
+		compute distance to the Sun
+
+		:param meteo:
+		:return:
+		"""
+
+		moonalt, moonaz = meteo.moonalt, meteo.moonaz
+		alt, az = self.altitude, self.azimuth
+		separation = angle_utilities.angular_separation(moonaz, moonalt, az, alt) # Warning, separation is in radian!!
+
+		angletomoon = angles.Angle(separation.value, unit="radian")
+		self.angletomoon = angletomoon
 
 
 	def getangletowind(self, meteo):
