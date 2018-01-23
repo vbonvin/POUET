@@ -128,7 +128,7 @@ def fwhm(data,xc,yc,stampsize,show=False, verbose=True):
 
 	guess=[stampsize/2.,stampsize/2.,2.,1e5, np.median(data)]
 
-	p, sucess=leastsq(gaussian,guess,args=(stamp,stampsize))
+	p, _ = leastsq(gaussian,guess,args=(stamp,stampsize))
 
 
 	if p[2]<0.2 or p[2]>1e3:

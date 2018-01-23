@@ -59,7 +59,6 @@ def Elev2Airmass(el,lat,alt):
 	return airmass
 
 if __name__ == '__main__':
-	import pylab as plt
 	
 	"""
 	This is an example of what it should look like in the GUI
@@ -80,6 +79,9 @@ if __name__ == '__main__':
 	wind = np.zeros_like(ra_g) * np.nan
 	
 	check_wind = True
+	#****
+	WD, WS = meteo.get_wind()
+	#****
 	try:
 		WD, WS = meteo.get_wind()
 	except :
