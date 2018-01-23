@@ -22,7 +22,8 @@ from astropy.coordinates import angles, angle_utilities
 
 
 # initialize meteo
-currentmeteo = meteo.Meteo(name='LaSilla', check_clouds=True)
+currentmeteo = meteo.Meteo(name='LaSilla', check_clouds=False)
+
 # util.writepickle(currentmeteo, 'meteotest.pkl')
 # currentmeteo = util.readpickle("meteotest.pkl")
 # load a catalogue of observables
@@ -38,7 +39,7 @@ observables = [o for o in observables if o.name in ["HE0047-1756", "WFI2033-4723
 
 for observable in observables:
 	observable.update(currentmeteo)
-	print observable
+	print observable.angletosun.degree
 
 
 '''

@@ -42,9 +42,6 @@ class Meteo:
 		self.update()
 
 
-	def __str__(self):
-		return "Define me, dumbass !!"
-
 	def updatedate(self):
 		pass
 
@@ -66,16 +63,45 @@ class Meteo:
 
 	def update(self, obs_time=Time.now(), minimal=False):
 		"""
-		minimal=True update only the moon position. Useful for predictions (as you can't predict the clouds or winds, no need to refresh them)
+		minimal=True update only the moon and sun position. Useful for predictions (as you can't predict the clouds or winds, no need to refresh them)
 		"""
 		self.updatedate()
 		self.updatemoonpos(obs_time=obs_time)
+		self.updatesunpos(obs_time=obs_time)
 		if not minimal:
 			self.updatewind()
 			if self.check_clouds: self.allsky.update()
 
 	def is_cloudy(self, az, elev):
 		return self.allsky.is_observable(az, elev)
+
+
+	def __str__(self, obs_time=Time.now()):
+		# not very elegant
+
+		msg = "="*30+"\nName:\t\t%s\nDate:\t%s\n" %(self.name, self.date)
+
+		try:
+			msg+= "Moon Altitude:\t%s\n"%self.moonalt.hour
+		except AttributeError:
+			msg+= "Moon Altitude:\tNone\n"
+
+		try:  # let's behave like real people and use a correct iso system
+			msg+= "Moon Azimuth:\t%s\n"%self.moonaz.degree
+		except AttributeError:
+			msg+= "Moon Azimuth:\tNone\n"
+
+		try:
+			msg+= "Sun Altitude:\t%s\n"%self.sunalt.hour
+		except AttributeError:
+			msg+= "Sun Altitude:\tNone\n"
+
+		try:  # let's behave like real people and use a correct iso system
+			msg+= "Sun Azimuth:\t%s\n"%self.sunaz.degree
+		except AttributeError:
+			msg+= "Sun Azimuth:\tNone\n"
+
+		return msg
 
 def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
 
@@ -140,7 +166,8 @@ def get_sun(obs_time=Time.now()):
 	observer.date = obs_time.iso
 	observer.lat, observer.lon, observer.elevation = lat.degree, lon.degree, elev
 
-	sun = ephem.Mun()
+	sun = ephem.Sun()
+
 	sun.compute(observer)
 
 	# Warning, ass-coding here: output of sun.ra is different from sun.ra.__str__()... clap clap clap - again

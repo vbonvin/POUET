@@ -104,12 +104,12 @@ class Observable:
 		:return:
 		"""
 
-		moonalt, moonaz = meteo.moonalt, meteo.moonaz
+		sunalt, sunaz = meteo.sunalt, meteo.sunaz
 		alt, az = self.altitude, self.azimuth
-		separation = angle_utilities.angular_separation(moonaz, moonalt, az, alt) # Warning, separation is in radian!!
+		separation = angle_utilities.angular_separation(sunaz, sunalt, az, alt) # Warning, separation is in radian!!
 
-		angletomoon = angles.Angle(separation.value, unit="radian")
-		self.angletomoon = angletomoon
+		angletosun = angles.Angle(separation.value, unit="radian")
+		self.angletosun = angletosun
 
 
 	def getangletowind(self, meteo):
@@ -173,6 +173,7 @@ class Observable:
 		self.getangletowind(meteo)
 		self.getairmass()
 		self.getangletomoon(meteo)
+		self.getangletosun(meteo)
 
 	def getobservability(self, meteo, obs_time=None, displayall=True, check_clouds=True, limit_cloud_validity=1800, verbose=True):
 		"""
