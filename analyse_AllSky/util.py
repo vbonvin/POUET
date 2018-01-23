@@ -213,6 +213,13 @@ def get_image_coordinates(az, elev, location="LaSilla", params=None):
 
 
 def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
+	"""
+	WARNING: bad pratice I'm not sure this is used and is copy/paste code!!!
+	"""
+
+	raise RuntimeError("Using get_wind from analyse_AllSky/util.py")
+
+	#todo: add a "no connection" message if page is not reachable instead of an error
 	WS=[]
 	WD=[]
 	data=urllib2.urlopen(url_weather).read()
@@ -223,9 +230,23 @@ def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
 		if re.match( r'WS', line, re.M|re.I):
 			WS.append(float(line[20:25])) # AVG
 
-	WD = WD[0] # WD is chosen between station 1 or 2 in EDP pour la Silla.
-	WS = WS[2] # next to 3.6m telescope --> conservative choice.
-
+	# Remove out-of-band readings
+	# WD is chosen between station 1 or 2 in EDP pour la Silla.
+	# We take average
+	WD = np.asarray(WD, dtype=np.float)
+	WD = WD[WD < 360]
+	WD = WD[WD > 0]
+	WD = np.mean(WD)
+	
+	# WS should be either WS next to 3.6m or max
+	# Remove WS > 99 m/s
+	WS = np.asarray(WS, dtype=np.float)
+	if WS[2] < 99:
+		WS = WS[2]
+	else:
+		WS = np.asarray(WS, dtype=np.float)
+		WS = WS[WS > 0]
+		WS = WS[WS < 99]
+		WS = np.mean(WS)
+		
 	return WD, WS
-
-

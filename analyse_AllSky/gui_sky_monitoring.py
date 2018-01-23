@@ -166,12 +166,10 @@ def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
 	"""
 	This is taken from pouet/meteo.py, but is there such that analyse_allsky is stand-alone
 	"""
+	#todo: add a "no connection" message if page is not reachable instead of an error
 	WS=[]
 	WD=[]
-	if url_weather is None:
-		return None, None
 	data=urllib2.urlopen(url_weather).read()
-	
 	data=data.split("\n") # then split it into lines
 	for line in data:
 		if re.match( r'WD', line, re.M|re.I):
@@ -179,9 +177,25 @@ def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
 		if re.match( r'WS', line, re.M|re.I):
 			WS.append(float(line[20:25])) # AVG
 
-	WD = WD[0] # WD is chosen between station 1 or 2 in EDP pour la Silla.
-	WS = WS[2] # next to 3.6m telescope --> conservative choice.
-
+	# Remove out-of-band readings
+	# WD is chosen between station 1 or 2 in EDP pour la Silla.
+	# We take average
+	WD = np.asarray(WD, dtype=np.float)
+	WD = WD[WD < 360]
+	WD = WD[WD > 0]
+	WD = np.mean(WD)
+	
+	# WS should be either WS next to 3.6m or max
+	# Remove WS > 99 m/s
+	WS = np.asarray(WS, dtype=np.float)
+	if WS[2] < 99:
+		WS = WS[2]
+	else:
+		WS = np.asarray(WS, dtype=np.float)
+		WS = WS[WS > 0]
+		WS = WS[WS < 99]
+		WS = np.mean(WS)
+		
 	return WD, WS
 
 if __name__ == "__main__":

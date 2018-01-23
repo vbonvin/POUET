@@ -98,6 +98,7 @@ def get_wind(url_weather="http://www.ls.eso.org/lasilla/dimm/meteo.last"):
 	if WS[2] < 99:
 		WS = WS[2]
 	else:
+		print "WARNING: Wind speed from 3.6m unavailable, using other readings in LaSilla"
 		WS = np.asarray(WS, dtype=np.float)
 		WS = WS[WS > 0]
 		WS = WS[WS < 99]
