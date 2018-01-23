@@ -135,14 +135,14 @@ class Observable:
 		except AttributeError:
 			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
 
-	def getaltaz(self, obs_time=Time.now()):
+	def getaltaz(self, meteo, obs_time=Time.now()):
 		"""
 		Actualize altitude and azimuth of the observable at the given observation time.
 
 		:param obs_time: time of observation. Default = current execution time
 		:return: actualise altitude and azimuth for obs_time, and return them
 		"""
-		azimuth, altitude = util.get_AzAlt( self.alpha, self.delta, location_config=location_config, obs_time=obs_time)
+		azimuth, altitude = meteo.get_AzAlt(self.alpha, self.delta, obs_time=obs_time)
 		self.altitude = altitude
 		self.azimuth = azimuth
 
@@ -170,7 +170,7 @@ class Observable:
 
 	def update(self, meteo, obs_time=Time.now()):
 
-		self.getaltaz(obs_time=obs_time)
+		self.getaltaz(meteo, obs_time=obs_time)
 		self.getangletowind(meteo)
 		self.getairmass()
 		self.getangletomoon(meteo)

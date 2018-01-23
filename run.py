@@ -9,13 +9,13 @@ from astropy import units as u
 import ephem
 from astropy.coordinates import angles, angle_utilities
 
-import obs, site, util
+import obs, meteo, util
 
 import logging 
 logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',level=logging.DEBUG)
 
 # initialize meteo
-currentmeteo = site.Site(name='LaSilla', check_clouds=True)
+currentmeteo = meteo.Meteo(name='LaSilla', check_clouds=True)
 
 # load a catalogue of observables
 observables = obs.rdbimport("2m2lenses.rdb", obsprogram='lens')

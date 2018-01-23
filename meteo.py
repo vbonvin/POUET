@@ -1,10 +1,12 @@
 """
-Define the Site class and related functions
+Define the METEO class and related functions
 
 Meteo is an object containing all the external weather condition (wind speed and direction, temperature, moon position, clouds pattern,...)
 It is the only object that interact outside POUET, i.e. communicate with website to get the meteo,...
 
 Observables interact only with Meteo to get their constaints (position to the moon, angle to wind, ...)
+
+!!! DO NOT CALL THIS site.py OTHERWISE IT CLASHES WITH SOME WEIRD SYSTEM PACKAGE!!!!
 """
 
 import astropy.coordinates.angles as angles
@@ -21,7 +23,7 @@ import clouds
 import logging
 logger = logging.getLogger(__name__)
 
-class Site:
+class Meteo:
     """
     Class to hold the meteorological conditions of the current night and the location of the site
 
@@ -58,21 +60,20 @@ class Site:
     def updatedate(self):
         pass
 
-    def    updatemoonpos(self, obs_time=Time.now()):
-        Az, Alt = self.get_moon(self.location_config, obs_time=obs_time)
+    def updatemoonpos(self, obs_time=Time.now()):
+        Az, Alt = self.get_moon(obs_time=obs_time)
         self.moonalt = Alt
         self.moonaz = Az
 
-    def    updatesunpos(self, obs_time=Time.now()):
-        Az, Alt = self.get_sun(self.location_config, obs_time=obs_time)
+    def updatesunpos(self, obs_time=Time.now()):
+        Az, Alt = self.get_sun(obs_time=obs_time)
         self.sunalt = Alt
         self.sunaz = Az
 
     def updatewind(self):
-        WD, WS = self.get_wind(self.location_config)
+        WD, WS = self.get_wind()
         self.winddirection = WD
         self.windspeed = WS
-
 
     def update(self, obs_time=Time.now(), minimal=False):
         """
