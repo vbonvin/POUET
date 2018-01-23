@@ -142,7 +142,7 @@ class Observable:
 		:param obs_time: time of observation. Default = current execution time
 		:return: actualise altitude and azimuth for obs_time, and return them
 		"""
-		azimuth, altitude = util.get_AzAlt(location_config=location_config, self.alpha, self.delta, obs_time=obs_time)
+		azimuth, altitude = util.get_AzAlt( self.alpha, self.delta, location_config=location_config, obs_time=obs_time)
 		self.altitude = altitude
 		self.azimuth = azimuth
 
