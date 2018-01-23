@@ -25,89 +25,6 @@ import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
-# La Silla Telescope Parameters
-def get_telescope_params():
-	# LaSilla
-	lat=angles.Angle("-29d15m33.7s")
-	lon=angles.Angle("-70.7313d")
-	elev = 2400
-
-	return lat, lon, elev
-
-def get_AzAlt(alpha, delta, obs_time=Time.now(), ref_dir=0):
-
-	"""
-	idea from http://aa.usno.navy.mil/faq/docs/Alt_Az.php
-
-	Compute the azimuth and altitude of a source at a given time (by default current time of 
-	execution), given its alpha and delta coordinates.
-
-	WARNING ! Azimuth and altitude are computed at La Silla Observatory
-
-	"""
-
-	lat, lon, elev = get_telescope_params()
-
-	# Untouched code from Azimuth.py
-	D = obs_time.jd - 2451545.0
-	GMST = 18.697374558 + 24.06570982441908*D
-	epsilon= np.deg2rad(23.4393 - 0.0000004*D)
-	eqeq= -0.000319*np.sin(np.deg2rad(125.04 - 0.052954*D)) - 0.000024*np.sin(2.*np.deg2rad(280.47 + 0.98565*D))*np.cos(epsilon)
-	GAST = GMST + eqeq
-	GAST -= np.floor(GAST/24.)*24.
-
-	LHA = angles.Angle((GAST-alpha.hour)*15+lon.degree, unit="degree")
-	if LHA > 0: LHA += angles.Angle(np.floor(LHA/360.)*360., unit="degree")
-	else: LHA -= angles.Angle(np.floor(LHA/360.)*360., unit="degree")
-
-	sina=np.cos(LHA.radian)*np.cos(delta.radian)*np.cos(lat.radian)+np.sin(delta.radian)*np.sin(lat.radian)
-	Alt = angles.Angle(np.arcsin(sina),unit="radian")
-
-	num = -np.sin(LHA.radian)
-	den = np.tan(delta.radian)*np.cos(lat.radian)-np.sin(lat.radian)*np.cos(LHA.radian)
-
-	Az = angles.Angle(np.arctan2(num,den), unit="radian")
-	Az-=angles.Angle(ref_dir, unit="degree")
-
-	# I changed this to get the same angle as the edp, using 0 (North) as reference
-	if Az.degree < 0:
-		Az+=angles.Angle(360, unit="degree")
-
-	return Az, Alt
-
-
-def get_nighthours(obs_night):
-	"""
-	return a list of astropy Time objects, corresponding to the different hours of the obs_night
-	"""
-
-	lat, lon, elev = get_telescope_params()
-
-	obs_time = Time('%s 05:00:00' % obs_night, format='iso', scale='utc') #5h UT is approx. the middle of the night
-
-	obs_time = Time(obs_time.mjd + 1, format='mjd', scale='utc') # That corresponds to the next middle of the observing night
-
-	observer = ephem.Observer()
-	observer.pressure=0
-	observer.date = obs_time.iso
-	observer.lat, observer.lon, observer.elevation = str(lat.degree), str(lon.degree), elev
-
-	observer.horizon = '-12'
-
-	sun = ephem.Sun()
-
-	# these fuckers are in YYYY/M(M)/D(D) HH:MM:SS format... 'murica !
-	sunset = observer.previous_setting(sun).tuple()
-	sunrise = observer.next_rising(sun).tuple()
-
-	sunset_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunset, format='iso', scale='utc').mjd
-	sunrise_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunrise, format='iso', scale='utc').mjd
-
-	mjds = np.linspace(sunset_time, sunrise_time, num=100)
-	times = [Time(mjd, format='mjd', scale='utc') for mjd in mjds]
-
-	return times
-
 
 def reformat(coordinate, format):
 	"""
@@ -467,11 +384,5 @@ def readconfig(configpath):
 		raise RuntimeError("Config file '{}' does not exist!".format(configpath))
 	logger.debug("Reading config from '{}'...".format(configpath))
 	config.read(configpath)
-	
-	name = config.get("setup", "name") 
-	if name is None or len(name.strip()) == 0: # if the ":" is missing as well, confirparser reads None
-		# Then we use the filename
-		config.set("setup", "name", os.path.splitext(os.path.basename(configpath))[0])
-	logger.info("Read config '{}' from file '{}'.".format(config.get("setup", "name"), configpath))	
 	
 	return config

@@ -347,10 +347,7 @@ def get_params(location="LaSilla"):
                 'prefered_theta': prefered_theta,
                 'deltatetha': deltatetha,
                 'north': north,
-                'url': "http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG",
-                'url_weather':"http://www.ls.eso.org/lasilla/dimm/meteo.last",
-                'wind_pointing_limit':15.,
-                'wind_stopping_limit':20.}
+                'url': "http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG",}
     else:
         raise ValueError("Unknown location")
     
