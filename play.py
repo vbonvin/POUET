@@ -3,9 +3,7 @@ playground
 """
 
 import numpy as np
-import obs, meteo
-import Azimuth
-import util
+import obs, meteo, util
 import sys, os
 from astropy.time import Time
 from astropy import units as u
@@ -33,8 +31,6 @@ observables = [o for o in observables if o.name in ["HE0047-1756", "WFI2033-4723
 
 # show current status
 #obs.showstatus(observables, currentmeteo, displayall=True)
-
-
 
 
 for observable in observables:

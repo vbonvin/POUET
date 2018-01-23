@@ -181,6 +181,7 @@ class Observable:
 
 		The closer to 1 the better
 		0 is impossible to observe
+
 		"""
 		# Otherwise we kept weird stuff because of the initialisation
 		if obs_time is None: obs_time = Time.now()
@@ -210,7 +211,6 @@ class Observable:
 		if self.airmass > self.maxairmass:
 			observability = 0
 			msg += '\nAirmass:%0.2f' % self.airmass
-
 
 		# check the wind:
 		if self.angletowind.degree < 90 and meteo.windspeed > 15:

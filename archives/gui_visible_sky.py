@@ -6,19 +6,13 @@ import pylab as plt
 import meteo
 
 from matplotlib import gridspec
-"""
-<<<<<<< HEAD
-from datetime import datetime
 
-from matplotlib import gridspec
-=======
-"""
 import time
 from datetime import datetime
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore
 import CoordinatesAwayFromMoon as vm
 
 class MatplotlibWidget(QtGui.QWidget):

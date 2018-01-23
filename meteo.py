@@ -26,6 +26,11 @@ class Meteo:
 	def __init__(self, name='emptymeteo', date=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None,
 			winddirection=None, windspeed=None, check_clouds=True):
 
+		if check_clouds:
+			print "check clouds currently deactivated"
+			check_clouds=False
+		#todo: make check_clouds working
+
 		self.name = name
 		self.date = date
 		self.moonalt = moonaltitude
