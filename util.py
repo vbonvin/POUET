@@ -17,9 +17,13 @@ import obs
 from bisect import bisect_left
 import cPickle as pickle
 import ephem
+from ConfigParser import SafeConfigParser
 
 #import csv
 import numpy as np
+
+import logging
+logger = logging.getLogger(__name__)
 
 # La Silla Telescope Parameters
 def get_telescope_params():
@@ -452,3 +456,22 @@ def readpickle(filepath, verbose=True):
 	pkl_file.close()
 	if verbose: print "Read %s" % filepath
 	return obj
+
+def readconfig(configpath):
+	"""
+	Reads in a config file
+	"""
+	config = SafeConfigParser(allow_no_value=True)
+	
+	if not os.path.exists(configpath):
+		raise RuntimeError("Config file '{}' does not exist!".format(configpath))
+	logger.debug("Reading config from '{}'...".format(configpath))
+	config.read(configpath)
+	
+	name = config.get("setup", "name") 
+	if name is None or len(name.strip()) == 0: # if the ":" is missing as well, confirparser reads None
+		# Then we use the filename
+		config.set("setup", "name", os.path.splitext(os.path.basename(configpath))[0])
+	logger.info("Read config '{}' from file '{}'.".format(config.get("setup", "name"), configpath))	
+	
+	return config
