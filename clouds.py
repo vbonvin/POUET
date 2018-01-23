@@ -393,6 +393,8 @@ if __name__ == "__main__":
     import glob
     import matplotlib.pyplot as plt
     
+    logging.basicConfig(level=logging.INFO)
+    
     list_of_images = glob.glob("to_test/AllSkyImage*.JPG")
     print "I found %s images" % len(list_of_images)
     

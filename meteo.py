@@ -13,7 +13,7 @@ import urllib2
 import re
 import ephem
 import util
-import analyse_AllSky.analyse_allsky as cam
+import clouds
 import numpy as np
 
 class Meteo:
@@ -42,7 +42,7 @@ class Meteo:
 		
 		self.check_clouds = check_clouds
 		if check_clouds:
-			self.allsky = cam.Analyse_AllSky(location="LaSilla")
+			self.allsky = clouds.Clouds(location="LaSilla")
 
 		self.update()
 
