@@ -187,6 +187,11 @@ class Observable:
 			observability -= 0.2
 			msg += '\nMoonDist:%0.1f' % self.angletomoon.degree
 
+		# high airmass
+		if self.airmass > 1.5:
+			observability -= 0.3
+			msg += '\nAirmass:%0.2f' % self.airmass
+
 		# check the airmass:
 		if self.airmass > self.maxairmass:
 			observability = 0
@@ -275,12 +280,14 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 
 	obss = []
 	moonseps = []
+	airmasses = []
 	for time in times:
 		mymeteo.update(obs_time=time, minimal=True) # This is the ONLY function in obs that updates the meteo !!
 		observable.getobservability(meteo=mymeteo, obs_time=time, displayall=True, check_clouds=False, verbose=verbose)
 		observable.getairmass()
 		obss.append(observable.observability)
 		moonseps.append(observable.angletomoon.degree)
+		airmasses.append(observable.airmass)
 
 
 	# create the x ticks labels every hour
@@ -317,7 +324,15 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 		starttimes.append(times[obss.index(0.8)])
 		stoptimes.append(times[::-1][obss[::-1].index(0.8)])
 
-	if not 1 in obss and not 0.8 in obss:
+	if 0.7 in obss:
+		starttimes.append(times[obss.index(0.7)])
+		stoptimes.append(times[::-1][obss[::-1].index(0.7)])
+
+	if 0.5 in obss:
+		starttimes.append(times[obss.index(0.5)])
+		stoptimes.append(times[::-1][obss[::-1].index(0.5)])
+
+	if not 1 in obss and not 0.8 in obss and not 0.7 in obss and not 0.5 in obss:
 			print "%s is not observable tonight !" % observable.name
 			return
 
@@ -335,7 +350,7 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 	stoptime = stoptime.iso
 
 
-	msg = ''
+
 	plt.figure(figsize=(8,1.3))
 	plt.subplots_adjust(left=0.02, right=0.98, bottom=0.45, top=0.7)
 	ax = plt.subplot(1, 1, 1)
@@ -344,15 +359,28 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 	# green, everything is fine
 	if 1 in obss:
 		plt.axvspan(obss.index(1), len(obss)-obss[::-1].index(1), color='chartreuse')
-	# blue, problem with moon sep
+	# blue, problem with moon sep, airmass or both. #todo: code that better
 	if 0.8 in obss:
-		plt.axvspan(obss.index(0.8), len(obss)-obss[::-1].index(0.8), color='royalblue')
-		msg += "Moonsep = %i" % int(min(moonseps))
+		color = "royalblue"
+		plt.axvspan(obss.index(0.8), len(obss)-obss[::-1].index(0.8), color=color)
+		msg = "Moonsep = %i" % int(min(moonseps))
+		plt.annotate(msg, xy=(0, -1.5),  xycoords='axes fraction', fontsize=14, color=color)
+	if 0.7 in obss:
+		color = "royalblue"
+		plt.axvspan(obss.index(0.7), len(obss)-obss[::-1].index(0.7), color=color)
+		msg = "Airmass > 1.5"
+		plt.annotate(msg, xy=(0, -1.5),  xycoords='axes fraction', fontsize=14, color=color)
+
+	if 0.5 in obss:
+		color = "indianred"
+		plt.axvspan(obss.index(0.5), len(obss)-obss[::-1].index(0.5), color='indianred')
+		msg = "Moonsep = %i, Airmass > 1.5" % int(min(moonseps))
+		plt.annotate(msg, xy=(1.0, -1.5), ha="right",  xycoords='axes fraction', fontsize=14, color=color)
+
 	plt.axis([min(xticks), max(xticks), 0.0, 1.0])
 	ax.get_yaxis().set_visible(False)
 	plt.xlabel('UT', fontsize=18)
-	if msg != '':
-		plt.annotate(msg, xy=(0, -1.5),  xycoords='axes fraction', fontsize=14, color="royalblue")
+
 	plt.suptitle(observable.name+" ("+starttime.split(" ")[1][:5]+" --> "+stoptime.split(" ")[1][:5]+")", fontsize=25, y=0.93)
 
 	if savefig:
