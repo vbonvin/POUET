@@ -15,13 +15,13 @@ import logging
 logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',level=logging.DEBUG)
 
 # initialize meteo
-currentmeteo = meteo.Meteo(name='LaSilla', check_clouds=True)
+currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=True, debugmode=False)
 
 # load a catalogue of observables
 observables = obs.rdbimport("2m2lenses.rdb", obsprogram='lens')
 
 # show current status of all observables
-obs.showstatus(observables, currentmeteo, displayall=False, check_clouds=False)
+obs.showstatus(observables, currentmeteo, displayall=False)
 
 # update meteo at now
 currentmeteo.update(obs_time=Time.now())

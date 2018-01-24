@@ -7,6 +7,7 @@ from scipy.spatial import cKDTree
 import copy
 import urllib
 import astropy.time
+from astropy import units as u
 
 import logging
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ class Clouds():
     :note: This module can also be used to explore older images, see the example code in `__main__()`.
     """
     
-    def __init__(self, location, fimage=None):
+    def __init__(self, location, fimage=None, debugmode=False):
         """
         Initialises the class
         
@@ -34,14 +35,18 @@ class Clouds():
         
         self.location = location
         self.params = get_params(location)
+        self.last_im_refresh = None
+        self.debugmode = debugmode
+        self.failed_connection = False
         
         if fimage is None:
             fimage = "current.JPG"
+            if debugmode: 
+                fimage = "config/AllSkyDebugMode.JPG" # To be used for debug purposes
+                logger.warning("Cloud analysis is working in debug mode (not using the real current image)")
             self.fimage = fimage
-            self.retrieve_image()
-            
-        self.im_masked, self.im_original = loadallsky(fimage, return_complete=True)
-        self.mask = get_mask(self.im_original)
+            #self.retrieve_image()
+
         self.observability_map = None
     
     def retrieve_image(self):
@@ -49,7 +54,17 @@ class Clouds():
         Downloads the current all sky from the server and saves it to disk.
         The url of the image is retrived from the configuration file at that location
         """
-        urllib.urlretrieve(self.params['url'], "current.JPG")
+
+        if not self.debugmode:
+            try:
+                logger.debug("Loading all sky from {}...".format(self.params['url']))
+                urllib.urlretrieve(self.params['url'], "current.JPG")
+                self.failed_connection = False
+            except :
+                self.failed_connection = True
+                logger.warning("Cannot download All Sky image. Either you or the server is offline!")
+                return 1
+
         self.im_masked, self.im_original = loadallsky(self.fimage, return_complete=True)
         self.last_im_refresh = astropy.time.Time.now()
         
@@ -57,7 +72,18 @@ class Clouds():
         """
         Downloads the image, detects the stars and returns the observability map
         """
+
+        if not self.last_im_refresh is None and (astropy.time.Time.now() - self.last_im_refresh).to(u.s).value / 60. < 2:
+            logger.info("Last image was downloaded more recently than 2 minutes ago, I don't download it again")
+            #Seems to be okay#logger.critical("TODO: make sure that this map is correct and there's no .T missing (see get_observability_map)")
+            return self.observability_map
+        
         self.retrieve_image()
+        
+        if self.failed_connection:
+            logger.warning("Connection down and not running in debugmode so cannot analyse All Sky")
+            return None
+        
         x, y = self.detect_stars()
         return self.get_observability_map(x, y)
         
@@ -76,6 +102,7 @@ class Clouds():
 
         """
         
+        logger.debug("Detecting stars in All Sky...")
         original = self.im_original
         image = filters.gaussian_filter(self.im_masked, sigma_blur)
         data_max = filters.maximum_filter(image, neighborhood_size)
@@ -111,6 +138,8 @@ class Clouds():
                 resx.append(xx)
                 resy.append(yy)
                 #resfwhm.append(f)
+        
+        logger.debug("Done. {} stars found".format(len(resx)))
         
         if return_all:
             return resx, resy, x, y
@@ -162,28 +191,10 @@ class Clouds():
 
             observability = np.logical_and(observability, obsmap)
         """
+        
         self.observability_map = observability.T
         
         return observability
-    
-    def is_observable(self, az, elev):
-        """
-        Angles must be in radians!
-        """
-        xpix, ypix = get_image_coordinates(az, elev, location=self.location)
-        
-        if self.observability_map is None:
-            raise RuntimeError("You should run the update() method first, no image has been analysed yet.")
-        
-        try:
-            xpix = int(np.round(xpix))
-            ypix = int(np.round(ypix))
-        except ValueError:
-            return np.nan
-        try:
-            return self.observability_map[xpix, ypix]
-        except IndexError:
-            return np.nan 
 
 ###################################################################################################
 # Utilitaries for clouds (only specific functions for that particular module
@@ -227,6 +238,8 @@ def loadallsky(fnimg, return_complete=False):
     Loads the image
     :param return_complete: returns the masked image and the unmasked image
     """
+    
+    logger.debug("Loading image {}...".format(fnimg))
     im = scipy.ndimage.imread(fnimg)
     ar = np.array(im)
     ar = rgb2gray(ar)
@@ -347,7 +360,8 @@ def get_params(location="LaSilla"):
                 'prefered_theta': prefered_theta,
                 'deltatetha': deltatetha,
                 'north': north,
-                'url': "http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG",}
+                'url': "http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG",
+                }
     else:
         raise ValueError("Unknown location")
     
@@ -356,9 +370,8 @@ def get_params(location="LaSilla"):
 def get_radius(elev, ff, k1, k2, r0):
     return ff*k1*np.tan(k2 * elev / 2.) * r0
 
-def get_image_coordinates(az, elev, location="LaSilla", params=None):
-    if params is None:
-        params = get_params(location)
+def get_image_coordinates(az, elev, location):
+    params = get_params(location)
     
     k1 = params['k1']
     k2 = params['k2']
@@ -390,7 +403,7 @@ if __name__ == "__main__":
     import glob
     import matplotlib.pyplot as plt
     
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     
     list_of_images = glob.glob("to_test/AllSkyImage*.JPG")
     print "I found %s images" % len(list_of_images)
@@ -416,12 +429,15 @@ if __name__ == "__main__":
     
         imo = copy.deepcopy(im)
         analysis = Clouds(fimage = list_of_images[i], location="LaSilla")
+        analysis.im_masked, analysis.im_original = loadallsky(list_of_images[i], return_complete=True)
+        analysis.mask = get_mask(analysis.im_original)
+        
         x, y, ax, ay = analysis.detect_stars(return_all=True)
         observability = analysis.get_observability_map(x, y)
         
-        print '0, 30,', analysis.is_observable(np.deg2rad(0), np.deg2rad(30))
-        print '0, -30,', analysis.is_observable(np.deg2rad(0), np.deg2rad(-30))
-        print '180, 0,', analysis.is_observable(np.deg2rad(180), np.deg2rad(0))
+        #print '0, 30,', analysis.is_observable(np.deg2rad(0), np.deg2rad(30))
+        #print '0, -30,', analysis.is_observable(np.deg2rad(0), np.deg2rad(-30))
+        #print '180, 0,', analysis.is_observable(np.deg2rad(180), np.deg2rad(0))
         
         plt.figure(figsize=(18,6))
         plt.subplot(1, 3, 1)

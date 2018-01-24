@@ -3,14 +3,18 @@ Define the Observable class, the standard object of pouet, and related functions
 """
 
 from numpy import cos, rad2deg, isnan, arange
+import numpy as np
 import os, sys
 import copy as pythoncopy
-import util
 from astropy.time import Time
 from astropy.coordinates import angles, angle_utilities
-
 import matplotlib.pyplot as plt
 
+import util
+import clouds
+
+import logging
+logger = logging.getLogger(__name__)
 
 class Observable:
 	"""
@@ -44,11 +48,10 @@ class Observable:
 		if not minangletomoon is None: self.minangletomoon = minangletomoon
 		if not maxairmass is None: self.maxairmass = maxairmass
 		if not exptime is None: self.exptime = exptime
+		self.cloudfree = None
 	
 		self.attributes = attributes
 		#self.observability = observability
-
-		#TODO: WE MUSTE INCLUDE THE LOCATION_CONFIG FILE SOMEWHERE HERE!
 
 	def __str__(self):
 
@@ -81,7 +84,7 @@ class Observable:
 	def copy(self):
 		return pythoncopy.deepcopy(self)
 
-	def getangletomoon(self, meteo):
+	def get_angletomoon(self, meteo):
 		"""
 		Compute the distance to the moon
 
@@ -97,7 +100,7 @@ class Observable:
 		self.angletomoon = angletomoon
 
 
-	def getangletosun(self, meteo):
+	def get_angletosun(self, meteo):
 		"""
 		compute distance to the Sun
 
@@ -113,7 +116,7 @@ class Observable:
 		self.angletosun = angletosun
 
 
-	def getangletowind(self, meteo):
+	def get_angletowind(self, meteo):
 		"""
 		Actualize the angle to wind, from the most recent meteo update and altitude and azimuth computed
 
@@ -135,7 +138,7 @@ class Observable:
 		except AttributeError:
 			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
 
-	def getaltaz(self, meteo, obs_time=Time.now()):
+	def get_altaz(self, meteo, obs_time=Time.now()):
 		"""
 		Actualize altitude and azimuth of the observable at the given observation time.
 
@@ -147,7 +150,7 @@ class Observable:
 		self.azimuth = azimuth
 
 
-	def getairmass(self):
+	def get_airmass(self):
 
 		"""
 		Compute the airmass using the altitude. We cap the maximum value at 10.
@@ -167,16 +170,52 @@ class Observable:
 
 		except AttributeError:
 			raise AttributeError("%s has no altitude! \n Compute its altutide first !")
+		
+	def is_cloudfree(self, meteo):
+		"""
+		Computes whether the pointing direction is cloudy according to the altaz coordinates in memeory
+		
+		:return: actualize is_cloudfree (1: no cloud, 0: cloudy)
+		
+		:note: if unavailable, returns 2: connection error, if error during computation of observability from map: 3
+		"""
+
+		ERROR_CONN = 2.
+		ERROR_COMPUTE = 3.
+
+		xpix, ypix = clouds.get_image_coordinates(self.azimuth.value, self.altitude.value, location=meteo.name)
+		
+		if meteo.cloudmap is None:
+			self.cloudfree = ERROR_CONN
+			logger.debug("No cloud map in meteo object")
+			return
+		
+		try:
+			xpix = int(np.round(xpix))
+			ypix = int(np.round(ypix))
+		except ValueError:
+			self.cloudfree = ERROR_COMPUTE
+		
+		if self.cloudfree != ERROR_COMPUTE:
+			try:
+				self.cloudfree = np.round(meteo.cloudmap[xpix, ypix], 3) # Otherwise some 1.0000002 errors arise...
+			except IndexError:
+				self.cloudfree = ERROR_COMPUTE
+
+		if self.cloudfree == ERROR_COMPUTE: 
+			logger.warning("Computation error in clouds")
+			
+		self.cloudfree = float(self.cloudfree)
 
 	def update(self, meteo, obs_time=Time.now()):
 
-		self.getaltaz(meteo, obs_time=obs_time)
-		self.getangletowind(meteo)
-		self.getairmass()
-		self.getangletomoon(meteo)
-		self.getangletosun(meteo)
+		self.get_altaz(meteo, obs_time=obs_time)
+		self.get_angletowind(meteo)
+		self.get_airmass()
+		self.get_angletomoon(meteo)
+		self.get_angletosun(meteo)
 
-	def getobservability(self, meteo, obs_time=None, displayall=True, check_clouds=True, limit_cloud_validity=1800, verbose=True):
+	def get_observability(self, meteo, obs_time=None, displayall=True, cloudscheck=True, limit_cloud_validity=1800, verbose=True):
 		"""
 		Return the observability, a value between 0 and 1 that tells if the target can be observed at a given time
 
@@ -222,16 +261,14 @@ class Observable:
 			observability = 0
 			msg += '\nWS:%s' % meteo.windspeed
 
-		if check_clouds:
-			time_since_last_refresh = (obs_time - meteo.allsky.last_im_refresh)
-			time_since_last_refresh = time_since_last_refresh.value * 86400. # By default it's in days
-			
-			if time_since_last_refresh < limit_cloud_validity:
-				clouds = meteo.is_cloudy(self.azimuth.value, self.altitude.value)
-				if clouds < 0.5 :
-					warnings += '\nWarning ! It might be cloudy'
-				elif isnan(clouds):
-					warnings += '\nWarning ! No cloud info'
+		if cloudscheck and observability > 0:
+			self.is_cloudfree(meteo)
+			if self.cloudfree < 0.5 :
+				warnings += '\nWarning ! It might be cloudy'
+			elif self.cloudfree <= 1.:
+				msg += '\nSeems to be cloud-free'
+			else: 
+				warnings += '\nNo cloud info'
 
 		# check the internal observability flag
 		if hasattr(self, 'internalobs'):
@@ -267,7 +304,7 @@ class Observable:
 		self.observability = observability
 
 
-def showstatus(observables, meteo, obs_time=None, displayall=True, check_clouds=True):
+def showstatus(observables, meteo, obs_time=None, displayall=True, cloudscheck=True):
 	"""
 	Using a list of observables, print their observability at the given obs_time. The moon position 
 	and all observables are updated according to the given obs_time. The wind is always taken at 
@@ -279,8 +316,8 @@ def showstatus(observables, meteo, obs_time=None, displayall=True, check_clouds=
 	# NO, we keep meteo update outside obs functions !
 	#meteo.update(obs_time=obs_time)
 	for observable in observables:
-		observable.getobservability(meteo=meteo, obs_time=obs_time, displayall=displayall, 
-								check_clouds=check_clouds, verbose=True)
+		observable.get_observability(meteo=meteo, obs_time=obs_time, displayall=displayall, 
+								cloudscheck=cloudscheck, verbose=True)
 
 
 def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=None, verbose=False):

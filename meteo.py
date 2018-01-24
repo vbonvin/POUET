@@ -31,13 +31,7 @@ class Meteo:
     """
 
     def __init__(self, name='uknsite', date=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None,
-            winddirection=None, windspeed=None, check_clouds=True):
-
-        #todo: @Vivien: What's that? It turns a True into a False?! -T 
-        if check_clouds:
-            logger.info("check clouds currently deactivated")
-            check_clouds=False
-        #todo: make check_clouds working
+            winddirection=None, windspeed=None, cloudscheck=True, fimage=None, debugmode=False):
 
         self.name = name
         self.location = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
@@ -50,9 +44,10 @@ class Meteo:
         self.winddirection = winddirection
         self.windspeed = windspeed        
         
-        self.check_clouds = check_clouds
-        if check_clouds:
-            self.allsky = clouds.Clouds(location=name)
+        self.cloudscheck = cloudscheck
+        self.cloudmap = None
+        if cloudscheck:
+            self.allsky = clouds.Clouds(location=name, fimage=fimage, debugmode=debugmode)
 
         self.update()
         
@@ -74,6 +69,19 @@ class Meteo:
         WD, WS = self.get_wind()
         self.winddirection = WD
         self.windspeed = WS
+        
+    def updateclouds(self):
+        """
+        Excecutes the clouds code, if map not available, saves None to cloudmap
+        """
+    
+        try:
+            self.allsky.update()
+            self.cloudmap = self.allsky.observability_map
+        except:
+            logger.warning("Could not retrive cloud map")
+            self.cloudmap = None
+        
 
     def update(self, obs_time=Time.now(), minimal=False):
         """
@@ -84,11 +92,9 @@ class Meteo:
         self.updatesunpos(obs_time=obs_time)
         if not minimal:
             self.updatewind()
-            if self.check_clouds: self.allsky.update()
-
-    def is_cloudy(self, az, elev):
-        return self.allsky.is_observable(az, elev)
-
+            if self.cloudscheck:
+                self.updateclouds()
+            
 
     def __str__(self, obs_time=Time.now()):
         # not very elegant
