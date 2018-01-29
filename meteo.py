@@ -11,7 +11,7 @@ Observables interact only with Meteo to get their constaints (position to the mo
 
 import astropy.coordinates.angles as angles
 from astropy.time import Time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import re
 import ephem
 import numpy as np
@@ -129,10 +129,11 @@ class Meteo:
         WS=[]
         WD=[]
         try:
-            data=urllib2.urlopen(self.location.get("weather", "url")).read()
-        except urllib2.URLError:
+            data=urllib.request.urlopen(self.location.get("weather", "url")).read()
+        except urllib.error.URLError:
             logger.warning("Cannot download weather data. Either you or the weather server is offline!")
             return np.nan, np.nan
+        data = data.decode("utf-8")
         data=data.split("\n") # then split it into lines
         for line in data:
             if re.match( r'WD', line, re.M|re.I):

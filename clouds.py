@@ -5,7 +5,7 @@ import scipy.ndimage.filters as filters
 import scipy.ndimage as ndimage
 from scipy.spatial import cKDTree
 import copy
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import astropy.time
 from astropy import units as u
 
@@ -58,7 +58,7 @@ class Clouds():
         if not self.debugmode:
             try:
                 logger.info("Loading all sky from {}...".format(self.params['url']))
-                urllib.urlretrieve(self.params['url'], "current.JPG")
+                urllib.request.urlretrieve(self.params['url'], "current.JPG")
                 self.failed_connection = False
             except :
                 self.failed_connection = True
@@ -159,8 +159,8 @@ class Clouds():
         
         if len(x) > 0:
             notnans = np.where(np.isnan(self.im_masked) == False)
-            notnans = zip(notnans[0], notnans[1])
-            tree = cKDTree(zip(x,y))    
+            notnans = list(zip(notnans[0], notnans[1]))
+            tree = cKDTree(list(zip(x,y)))    
             for nx, ny in notnans:
                 obs = len(tree.query_ball_point((ny,nx), threshold))
                 if obs > 2 : observability[nx,ny] = 1. 
@@ -406,7 +406,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     
     list_of_images = glob.glob("to_test/AllSkyImage*.JPG")
-    print "I found %s images" % len(list_of_images)
+    print("I found %s images" % len(list_of_images))
     
     imgs = []
     for fim in list_of_images:
@@ -425,7 +425,7 @@ if __name__ == "__main__":
         
     for i, im in enumerate(imgs):
 
-        print 'Treating', list_of_images[i]
+        print('Treating', list_of_images[i])
     
         imo = copy.deepcopy(im)
         analysis = Clouds(fimage = list_of_images[i], location="LaSilla")

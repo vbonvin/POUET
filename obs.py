@@ -9,6 +9,7 @@ import copy as pythoncopy
 from astropy.time import Time
 from astropy.coordinates import angles, angle_utilities
 import matplotlib.pyplot as plt
+import importlib
 
 import util
 import clouds
@@ -33,7 +34,8 @@ class Observable:
 		self.obsprogram = obsprogram
 		
 		try:
-			exec("import obsprogram.prog%s as program" % (self.obsprogram))
+			module_name = "obsprogram.prog{}".format(self.obsprogram)
+			program = importlib.import_module(module_name, package=None)
 			self.minangletomoon = program.minangletomoon
 			self.maxairmass = program.maxairmass
 			self.exptime = program.exptime
@@ -290,14 +292,14 @@ class Observable:
 		if verbose:
 			to_print = "%s | %s\nalpha=%s, delta=%s\naz=%0.2f, alt=%0.2f%s" % (self.name, obs_time.iso, self.alpha, self.delta, rad2deg(self.azimuth.value), rad2deg(self.altitude.value), msg)
 			if observability == 1:
-				print(util.hilite(to_print, True, True))
-				if not warnings == '': print(util.hilite(warnings, False, False))
-				print("="*20)
+				print((util.hilite(to_print, True, True)))
+				if not warnings == '': print((util.hilite(warnings, False, False)))
+				print(("="*20))
 			else:
 				if displayall:
-					print(util.hilite(to_print, False, False))
-					if not warnings == '': print(util.hilite(warnings, False, False))
-					print("="*20)
+					print((util.hilite(to_print, False, False)))
+					if not warnings == '': print((util.hilite(warnings, False, False)))
+					print(("="*20))
 				else:
 					pass
 
@@ -385,7 +387,7 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 		stoptimes.append(times[::-1][obss[::-1].index(0.5)])
 
 	if not 1 in obss and not 0.8 in obss and not 0.7 in obss and not 0.5 in obss:
-			print("%s is not observable tonight !" % observable.name)
+			print(("%s is not observable tonight !" % observable.name))
 			return
 
 	starttime = min(starttimes)
@@ -441,7 +443,7 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 			os.mkdir(os.path.join(dirpath, obs_night))
 		path = os.path.join(dirpath, obs_night, observable.name+'.png')
 		plt.savefig(path)
-		print("Plot saved on %s" % path)
+		print(("Plot saved on %s" % path))
 	else:
 		plt.show()
 

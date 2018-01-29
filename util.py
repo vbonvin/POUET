@@ -5,7 +5,7 @@ import astropy.coordinates.angles as angles
 #from astropy.table import Table
 from astropy.time import Time
 from astropy import units as u
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import re
 import getopt, sys, os
 try:
@@ -15,9 +15,9 @@ except:
 	noexcelimport = True
 import obs
 from bisect import bisect_left
-import cPickle as pickle
+import pickle as pickle
 import ephem
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 #import csv
 import numpy as np

@@ -2,23 +2,19 @@
 Initialize a new session
 """
 
-import sys 
-print (sys.version)
-
-import numpy as np
-import sys, os
+import sys
 from astropy.time import Time
-from astropy import units as u
-import ephem
-from astropy.coordinates import angles, angle_utilities
 
-import obs, meteo, util
+import obs, meteo
 
 import logging 
 logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+logger.critical("This should say Python >= 3.0: {}".format(sys.version))
 
 # initialize meteo
-currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=True, debugmode=False)
+currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=True, debugmode=True)
 
 # load a catalogue of observables
 observables = obs.rdbimport("2m2lenses.rdb", obsprogram='lens')
