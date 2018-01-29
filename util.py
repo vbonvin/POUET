@@ -102,8 +102,7 @@ def hilite(string, status, bold):
 
 def excelimport(filename, obsprogram=None):
 	if noexcelimport:
-		print "Excel files cannot be imported at the moment"
-		pass
+		raise NotImplemented("Excel files cannot be imported at the moment")
 	else:
 
 		"""
@@ -229,14 +228,14 @@ def excelimport(filename, obsprogram=None):
 			internalobs : a boolean (0 or 1), allowing or not observability
 			"""
 
-			print 'reading %s...' % filename
+			logger.info('reading %s...' % filename)
 			try:
 				wb = openpyxl.load_workbook(filename, data_only=True)  # Read the excel spreadsheet, loading the values directly
 				ws = wb['Observations']  # choose active sheet
 			except:
 				raise RuntimeError("Either %s does not exists, or it is not in .xlsx format !!" % filename)
 
-			print 'get tabler limits...'
+			logger.info('get tabler limits...')
 			# Get tabler limits
 			rows = ws.rows
 			columns = ws.columns
@@ -257,7 +256,7 @@ def excelimport(filename, obsprogram=None):
 					break
 				else:
 					pass
-			print breakrowind, breakcolind
+			logger.info(breakrowind, breakcolind)
 			sys.exit()
 
 
@@ -289,7 +288,7 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 	THIS SHOULD BE IN UTIL !!
 	"""
 
-	if verbose : print "Reading \"%s\"..." % (os.path.basename(filepath))
+	logger.info("Reading \"%s\"..." % (os.path.basename(filepath)))
 	rdbfile = open(filepath, "r")
 	rdbfilelines = rdbfile.readlines()[startline:] # we directly "skip" the first lines of eventual headers
 	rdbfile.close()
@@ -302,7 +301,7 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 			continue
 
 		if len(line.strip()) < 5:
-			print "Skipping empty line %i : %s" % (ind+startline, repr(line))
+			logger.debug("Skipping empty line %i : %s" % (ind+startline, repr(line)))
 			continue
 
 		elements = line.split()
@@ -357,7 +356,7 @@ def writepickle(obj, filepath, verbose=True, protocol = -1):
 
 	pickle.dump(obj, pkl_file, protocol)
 	pkl_file.close()
-	if verbose: print "Wrote %s" % filepath
+	logger.debug("Wrote %s" % filepath)
 
 
 def readpickle(filepath, verbose=True):
@@ -371,7 +370,7 @@ def readpickle(filepath, verbose=True):
 		pkl_file = open(filepath, 'rb')
 	obj = pickle.load(pkl_file)
 	pkl_file.close()
-	if verbose: print "Read %s" % filepath
+	logger.debug("Read %s" % filepath)
 	return obj
 
 def readconfig(configpath):
@@ -382,7 +381,7 @@ def readconfig(configpath):
 	
 	if not os.path.exists(configpath):
 		raise RuntimeError("Config file '{}' does not exist!".format(configpath))
-	logger.debug("Reading config from '{}'...".format(configpath))
+	logger.info("Reading config from '{}'...".format(configpath))
 	config.read(configpath)
 	
 	return config

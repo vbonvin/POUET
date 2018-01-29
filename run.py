@@ -2,6 +2,9 @@
 Initialize a new session
 """
 
+import sys 
+print (sys.version)
+
 import numpy as np
 import sys, os
 from astropy.time import Time

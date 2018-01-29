@@ -57,7 +57,7 @@ class Clouds():
 
         if not self.debugmode:
             try:
-                logger.debug("Loading all sky from {}...".format(self.params['url']))
+                logger.info("Loading all sky from {}...".format(self.params['url']))
                 urllib.urlretrieve(self.params['url'], "current.JPG")
                 self.failed_connection = False
             except :

@@ -290,14 +290,14 @@ class Observable:
 		if verbose:
 			to_print = "%s | %s\nalpha=%s, delta=%s\naz=%0.2f, alt=%0.2f%s" % (self.name, obs_time.iso, self.alpha, self.delta, rad2deg(self.azimuth.value), rad2deg(self.altitude.value), msg)
 			if observability == 1:
-				print util.hilite(to_print, True, True)
-				if not warnings == '': print util.hilite(warnings, False, False)
-				print "="*20
+				print(util.hilite(to_print, True, True))
+				if not warnings == '': print(util.hilite(warnings, False, False))
+				print("="*20)
 			else:
 				if displayall:
-					print util.hilite(to_print, False, False)
-					if not warnings == '': print util.hilite(warnings, False, False)
-					print "="*20
+					print(util.hilite(to_print, False, False))
+					if not warnings == '': print(util.hilite(warnings, False, False))
+					print("="*20)
 				else:
 					pass
 
@@ -385,7 +385,7 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 		stoptimes.append(times[::-1][obss[::-1].index(0.5)])
 
 	if not 1 in obss and not 0.8 in obss and not 0.7 in obss and not 0.5 in obss:
-			print "%s is not observable tonight !" % observable.name
+			print("%s is not observable tonight !" % observable.name)
 			return
 
 	starttime = min(starttimes)
@@ -441,7 +441,7 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 			os.mkdir(os.path.join(dirpath, obs_night))
 		path = os.path.join(dirpath, obs_night, observable.name+'.png')
 		plt.savefig(path)
-		print "Plot saved on %s" % path
+		print("Plot saved on %s" % path)
 	else:
 		plt.show()
 
@@ -453,7 +453,7 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 	THIS SHOULD BE IN UTIL !!
 	"""
 
-	if verbose : print "Reading \"%s\"..." % (os.path.basename(filepath))
+	logger.info("Reading \"%s\"..." % (os.path.basename(filepath)))
 	rdbfile = open(filepath, "r")
 	rdbfilelines = rdbfile.readlines()[startline:] # we directly "skip" the first lines of eventual headers
 	rdbfile.close()
@@ -466,7 +466,7 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 			continue
 
 		if len(line.strip()) < 5:
-			print "Skipping empty line %i : %s" % (ind+startline, repr(line))
+			logger.debug("Skipping empty line %i : %s" % (ind+startline, repr(line)))
 			continue
 
 		elements = line.split()
@@ -514,3 +514,4 @@ def rdbexport():
 	THIS SHOULD BE IN UTIL !
 	"""
 	pass
+
