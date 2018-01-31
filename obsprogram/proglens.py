@@ -8,7 +8,7 @@ minangletomoon = 30
 maxairmass = 1.5
 
 # If there is a common exptime, otherwise define a get_exptime function below
-exptime = 5*360
+exptime = 35*360
 
 #===================================================================================================
 # Now define the exptime function, arguments must be : attributes and obs_time

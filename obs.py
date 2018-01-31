@@ -32,17 +32,18 @@ class Observable:
 
 		self.name = name
 		self.obsprogram = obsprogram
-		
-		try:
-			module_name = "obsprogram.prog{}".format(self.obsprogram)
-			program = importlib.import_module(module_name, package=None)
-			self.minangletomoon = program.minangletomoon
-			self.maxairmass = program.maxairmass
-			self.exptime = program.exptime
-			self.program = program
-		except SyntaxError:
-			self.program = None
-			raise SyntaxError("I could not find the prog%s.py definition file in obsprogram/" % self.obsprogram)
+
+		if not self.obsprogram == None:
+			try:
+				module_name = "obsprogram.prog{}".format(self.obsprogram)
+				program = importlib.import_module(module_name, package=None)
+				self.minangletomoon = program.minangletomoon
+				self.maxairmass = program.maxairmass
+				self.exptime = program.exptime
+				self.program = program
+			except SyntaxError:
+				self.program = None
+				raise SyntaxError("I could not find the prog%s.py definition file in obsprogram/" % self.obsprogram)
 
 		self.alpha = angles.Angle(alpha, unit="hour")
 		self.delta = angles.Angle(delta, unit="degree")
@@ -449,10 +450,10 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 
 
 
-def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram="None", verbose=False):
+def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram=None, verbose=False):
+
 	"""
 	Import an rdb catalog into a list of observables
-	THIS SHOULD BE IN UTIL !!
 	"""
 
 	logger.info("Reading \"%s\"..." % (os.path.basename(filepath)))
@@ -477,34 +478,7 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 		alpha = str(elements[alphacol-1])
 		delta = str(elements[deltacol-1])
 
-		# This is the minimal stuff necessary to define an observable. Now, let's go into the per-obsprogram details
-
-		if obsprogram not in ["lens", "transit", "bebop", "superwasp", "followup", "703", "714"]:
-			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
-
-		if obsprogram == "lens":
-			minangletomoon = 30
-			maxairmass = 1.5
-			exptime = 35*60 #approx 35 minutes per lens
-			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime))
-
-		if obsprogram == "transit":
-			pass
-
-		if obsprogram == "bebop":
-			pass
-
-		if obsprogram == "superwasp":
-			pass
-
-		if obsprogram == "followup":
-			pass
-
-		if obsprogram == "703":
-			pass
-
-		if obsprogram == "714":
-			pass
+		observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
 
 	return observables
 

@@ -5,6 +5,7 @@ import scipy.ndimage.filters as filters
 import scipy.ndimage as ndimage
 from scipy.spatial import cKDTree
 import copy
+#todo: there seem to be a problem with urllib.request which does not exists anymore...?
 import urllib.request, urllib.parse, urllib.error
 import astropy.time
 from astropy import units as u

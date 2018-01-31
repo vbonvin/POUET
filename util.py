@@ -5,7 +5,6 @@ import astropy.coordinates.angles as angles
 #from astropy.table import Table
 from astropy.time import Time
 from astropy import units as u
-import urllib.request, urllib.error, urllib.parse
 import re
 import getopt, sys, os
 try:

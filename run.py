@@ -1,29 +1,13 @@
 """
-Initialize a new session
+High-level functions around meteo and obs
+Running the script should provide a minimal text output
 """
 
 import sys
 from astropy.time import Time
-
 import obs, meteo
 
-import logging 
-logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
-logger.critical("This should say Python >= 3.0: {}".format(sys.version))
-
-# initialize meteo
-currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=True, debugmode=True)
-
-# load a catalogue of observables
-observables = obs.rdbimport("2m2lenses.rdb", obsprogram='lens')
-
-# show current status of all observables
-obs.showstatus(observables, currentmeteo, displayall=False)
-
-# update meteo at now
-currentmeteo.update(obs_time=Time.now())
 
 def refresh_status(observables, meteo, obs_time=Time.now()):
     """
@@ -40,5 +24,27 @@ def refresh_status(observables, meteo, obs_time=Time.now()):
 
 
 
-# newtime
-#todo create a new time object, play with it
+if __name__ == "__main__":
+
+    import logging
+
+    logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',
+                        level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
+
+    logger.critical("This should say Python >= 3.0: {}".format(sys.version))
+
+    # initialize meteo
+    currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=True, debugmode=True)
+
+    # load a catalogue of observables
+    observables = obs.rdbimport("2m2lenses.rdb", obsprogram='lens')
+
+    # show current status of all observables
+    obs.showstatus(observables, currentmeteo, displayall=False)
+
+    # update meteo at now
+    currentmeteo.update(obs_time=Time.now())
+
+    # newtime
+    # todo create a new time object, play with it
