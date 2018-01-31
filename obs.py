@@ -56,8 +56,9 @@ class Observable:
 		self.attributes = attributes
 		#self.observability = observability
 
-	def __str__(self):
 
+
+	def __str__(self):
 
 		# not very elegant
 
@@ -210,6 +211,7 @@ class Observable:
 			
 		self.cloudfree = float(self.cloudfree)
 
+
 	def update(self, meteo, obs_time=Time.now()):
 
 		self.get_altaz(meteo, obs_time=obs_time)
@@ -218,7 +220,8 @@ class Observable:
 		self.get_angletomoon(meteo)
 		self.get_angletosun(meteo)
 
-	def get_observability(self, meteo, obs_time=None, displayall=True, cloudscheck=True, limit_cloud_validity=1800, verbose=True):
+
+	def get_observability(self, meteo, obs_time=None, displayall=True, cloudscheck=True, verbose=True):
 		"""
 		Return the observability, a value between 0 and 1 that tells if the target can be observed at a given time
 

@@ -277,7 +277,7 @@
       <string>Load observables list</string>
      </property>
     </widget>
-    <widget class="QListWidget" name="listObs">
+    <widget class="QTableView" name="listObs">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -285,6 +285,21 @@
        <width>841</width>
        <height>861</height>
       </rect>
+     </property>
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="showGrid">
+      <bool>true</bool>
+     </property>
+     <property name="gridStyle">
+      <enum>Qt::DashLine</enum>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>
