@@ -8,7 +8,7 @@ import sys
 import obs, meteo, run
 import design
 from astropy import units as u
-
+from astropy.time import Time
 
 class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
@@ -19,11 +19,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         # add here all the connections to the functions below
         self.retrieveObs.clicked.connect(self.retrieve_obs)
+        self.weatherRefresh.clicked.connect(self.weather_refresh)
+        self.allSkyRefresh.clicked.connect(self.allsky_refresh)
 
-        # startup tings todo: once happy, put that in a function in run.py
-        self.currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=True, debugmode=True)
+
+        self.currentmeteo = run.startup(name='LaSilla', cloudscheck=True, debugmode=False)
 
         # testing stuff at startup...
+
         """
         filepath = '2m2lenses.rdb'
         self.observables = obs.rdbimport(filepath, obsprogram="lens")
@@ -33,6 +36,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         """
 
     def retrieve_obs(self):
+
+        #todo: there's propably a simpler way to do it. Update when knowledge has increased.
         model = QtGui.QStandardItemModel(self.listObs)
 
         self.listObs.clearSpans()
@@ -41,7 +46,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         #todo: implement an obsprogram retrieve function
         self.observables = obs.rdbimport(filepath, obsprogram="lens")
-        run.refresh_status(self.observables, self.currentmeteo)
+        run.refresh_status(self.currentmeteo, self.observables)
+
 
         for o in self.observables:
             o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
@@ -56,6 +62,36 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
         self.listObs.setModel(model)
+
+
+    def weather_refresh(self, refresh_time="now"):
+        #todo: link refresh_time to a button or widget on the interface ? Could be useful for update on future time.
+
+        if refresh_time == "now":
+            obs_time = Time.now()
+        else:
+            obs_time = Time.now()
+            pass
+
+        run.refresh_status(meteo=self.currentmeteo, minimal=False if refresh_time == "now" else True, obs_time=obs_time)
+        self.weatherWindSpeedValue.setText(str('%f.2' % self.currentmeteo.windspeed))
+        self.weatherWindDirectionValue.setText(str('%f.2' % self.currentmeteo.winddirection))
+        self.weatherLastUpdateValue.setText(str(obs_time.value).split('.')[0])
+
+
+    def allsky_refresh(self):
+
+        #todo: I manage to display the image, but cannot resize it for some reason. Only the first refresh works, after that more refresh do not update nor the image neither the new date...
+
+        run.refresh_status(meteo=self.currentmeteo, minimal=False)
+        pixmap = QtGui.QPixmap(self.currentmeteo.allsky.fimage)
+        #todo: for some reasons, this does not work... ?
+        pixmap.scaled(461, 346)
+        scene = QtWidgets.QGraphicsScene()
+        scene.addPixmap(pixmap)
+        self.allSkyView.setScene(scene)
+        self.allSkyUpdateValue.setText(str(self.currentmeteo.time.value).split('.')[0])
+
 
 
 

@@ -8,10 +8,20 @@ from astropy.time import Time
 import obs, meteo
 
 
-
-def refresh_status(observables, meteo, obs_time=Time.now()):
+def startup(name='LaSilla', cloudscheck=True, debugmode=True):
     """
-    TBW
+
+    :return:
+    """
+
+    currentmeteo = meteo.Meteo(name=name, cloudscheck=cloudscheck, debugmode=debugmode)
+
+    return currentmeteo
+
+
+def refresh_status(meteo, observables=None, minimal=False, obs_time=Time.now()):
+    """
+    Refresh the status
 
     :param observables:
     :param obs_time:
@@ -19,8 +29,10 @@ def refresh_status(observables, meteo, obs_time=Time.now()):
     """
 
     # update meteo
-    meteo.update(obs_time, minimal=True if obs_time !=Time.now() else False)
-    return [obs.update(meteo, obs_time) for obs in observables]
+    meteo.update(obs_time, minimal=minimal)
+    if observables:
+        [obs.update(meteo, obs_time) for obs in observables]
+
 
 
 
