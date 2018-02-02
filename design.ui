@@ -268,7 +268,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>4</number>
    </property>
    <widget class="QWidget" name="obs">
     <attribute name="title">
@@ -899,7 +899,7 @@
       <rect>
        <x>10</x>
        <y>890</y>
-       <width>391</width>
+       <width>401</width>
        <height>21</height>
       </rect>
      </property>
@@ -910,7 +910,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Written by Thibault Kuntzer and Vivien Bonvin, 2018</string>
+      <string>Written by Thibault Kuntzer and Vivien Bonvin, 2015-2018</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
