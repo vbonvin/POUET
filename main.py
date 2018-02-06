@@ -10,26 +10,48 @@ import design
 from astropy import units as u
 from astropy.time import Time
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+class MyLogger(logging.Handler):
+    def __init__(self, parent):
+        super().__init__()
+        self.widget = QtWidgets.QPlainTextEdit(parent)
+        self.widget.setGeometry(parent.geometry())
+        self.widget.setReadOnly(True)
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
+
+
+
+
+
 class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
-
-
     def __init__(self, parent=None):
         super(POUET, self).__init__(parent)
         self.setupUi(self)
 
-        # add here all the connections to the functions below
+
+        # logger startup...
+        logTextBox = MyLogger(self.verticalLayoutWidget)
+        logTextBox.setFormatter(logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s', datefmt='%m-%d-%Y %H:%M:%S'))
+        logger.addHandler(logTextBox)
+        logger.info('Startup...')
+
+        # signal and slots init...
         self.retrieveObs.clicked.connect(self.retrieve_obs)
         self.weatherRefresh.clicked.connect(self.weather_refresh)
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
 
-
+        #todo: find how to share the same logger for all modules, or how to send all loggers output to my widget
         self.currentmeteo = run.startup(name='LaSilla', cloudscheck=True, debugmode=False)
 
         # testing stuff at startup...
 
         """
-        filepath = '2m2lenses.rdb'
-        self.observables = obs.rdbimport(filepath, obsprogram="lens")
         run.refresh_status(self.observables, self.currentmeteo)
         for o in self.observables:
             o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
@@ -37,7 +59,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
     def retrieve_obs(self):
 
-        #todo: there's propably a simpler way to do it. Update when knowledge has increased.
         model = QtGui.QStandardItemModel(self.listObs)
 
         self.listObs.clearSpans()
@@ -45,23 +66,34 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                                                 "Select a file")[0]
 
         #todo: implement an obsprogram retrieve function
-        self.observables = obs.rdbimport(filepath, obsprogram="lens")
-        run.refresh_status(self.currentmeteo, self.observables)
+        try:
+            self.observables = obs.rdbimport(filepath, obsprogram="lens")
+            run.refresh_status(self.currentmeteo, self.observables)
 
 
-        for o in self.observables:
-            o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
+            for o in self.observables:
+                o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
 
-            name = QtGui.QStandardItem(o.name)
-            alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
-            delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
-            observability = QtGui.QStandardItem(str(o.observability))
+                name = QtGui.QStandardItem(o.name)
+                alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
+                delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
+                observability = QtGui.QStandardItem(str(o.observability))
 
-            name.setCheckable(True)
-            model.appendRow([name, alpha, delta, observability])
+                name.setCheckable(True)
+                model.appendRow([name, alpha, delta, observability])
+                model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability'])
 
 
-        self.listObs.setModel(model)
+            self.listObs.setModel(model)
+            logger.info("%s Sucessfully loaded" % filepath)
+            #todo: replace by redirecting the message to a logger
+            self.statusLabel.setStyleSheet('color: green')
+            self.statusLabel.setText("%s \n Sucessfully loaded" % filepath)
+
+        except:
+            logger.error("%s not loaded - format unknown" % filepath)
+            self.statusLabel.setStyleSheet('color: red')
+            self.statusLabel.setText("%s \n Format unknown" % filepath)
 
 
     def weather_refresh(self, refresh_time="now"):
@@ -91,7 +123,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         scene.addPixmap(pixmap)
         self.allSkyView.setScene(scene)
         self.allSkyUpdateValue.setText(str(self.currentmeteo.time.value).split('.')[0])
-
+        logger.info("updated allsky")
 
 
 

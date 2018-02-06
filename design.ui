@@ -58,13 +58,13 @@
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
-  <widget class="QFrame" name="frame">
+  <widget class="QFrame" name="allSkyframe">
    <property name="geometry">
     <rect>
      <x>900</x>
      <y>40</y>
      <width>461</width>
-     <height>351</height>
+     <height>461</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -79,7 +79,7 @@
       <x>0</x>
       <y>0</y>
       <width>461</width>
-      <height>351</height>
+      <height>461</height>
      </rect>
     </property>
    </widget>
@@ -268,7 +268,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>4</number>
+    <number>5</number>
    </property>
    <widget class="QWidget" name="obs">
     <attribute name="title">
@@ -943,27 +943,16 @@
     <attribute name="title">
      <string>View logs</string>
     </attribute>
-    <widget class="QLabel" name="label_28">
+    <widget class="QWidget" name="verticalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>130</x>
-       <y>150</y>
-       <width>541</width>
-       <height>21</height>
+       <x>10</x>
+       <y>10</y>
+       <width>841</width>
+       <height>481</height>
       </rect>
      </property>
-     <property name="font">
-      <font>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Shows the log files</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout"/>
     </widget>
    </widget>
   </widget>
@@ -1015,6 +1004,35 @@
    <property name="alignment">
     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
    </property>
+  </widget>
+  <widget class="QFrame" name="statusFrame">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>10</y>
+     <width>341</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="statusLabel">
+    <property name="geometry">
+     <rect>
+      <x>6</x>
+      <y>5</y>
+      <width>331</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Current Status</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>
