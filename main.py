@@ -66,7 +66,12 @@ class MultiPopup(QtWidgets.QDialog):
         self.exec()
 
     def saveandclose(self):
-        self.alpha_col = self.alphaColValues.currentIndex()
+        self.namecol_value = self.nameColValues.currentIndex()
+        self.alphacol_index = self.alphaColValues.currentIndex()
+        self.deltacol_index = self.deltaColValues.currentIndex()
+
+
+
         self.accept()
 
 
