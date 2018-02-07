@@ -321,7 +321,7 @@ def showstatus(observables, meteo, obs_time=None, displayall=True, cloudscheck=T
 	"""
 
 	# NO, we keep meteo update outside obs functions !
-	#meteo.update(obs_time=obs_time)
+	# meteo.update(obs_time=obs_time)
 	for observable in observables:
 		observable.get_observability(meteo=meteo, obs_time=obs_time, displayall=displayall, 
 								cloudscheck=cloudscheck, verbose=True)
@@ -454,7 +454,7 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 
 
 
-def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram=None, verbose=False):
+def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=None, startline=1, obsprogram=None, verbose=False):
 
 	"""
 	Import an rdb catalog into a list of observables
@@ -481,17 +481,22 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 		name = str(elements[namecol-1])
 		alpha = str(elements[alphacol-1])
 		delta = str(elements[deltacol-1])
-
+		if obsprogramcol:
+			try:
+				obsprogram = str(elements[obsprogramcol-1])
+			except:
+				logger.warning('nothing in obsprogramcol - using provided default instead')
 		observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
 
 	return observables
 
 
 
-def rdbexport():
+def rdbexport(observables, filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, verbose=False):
 	"""
-	Export a (sorted) list of observables as an rdb catalogue, to be read by edp
-	THIS SHOULD BE IN UTIL !
+	Export a list of observables as an rdb catalogue, to be read again later
 	"""
+
 	pass
+
 
