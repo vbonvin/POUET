@@ -1496,6 +1496,9 @@
        <height>27</height>
       </rect>
      </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
      <property name="maximum">
       <number>30</number>
      </property>
@@ -1688,6 +1691,25 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="configCloudsDebugModeValue">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>120</y>
+       <width>291</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Use static AllSky image[Debug mode]</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>
