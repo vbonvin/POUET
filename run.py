@@ -10,6 +10,7 @@ import obs, meteo
 
 def startup(name='LaSilla', cloudscheck=True, debugmode=True):
     """
+	Initialize meteo
 
     :return:
     """
