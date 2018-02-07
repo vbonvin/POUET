@@ -3,10 +3,10 @@ High-level functions around meteo and obs
 Running the script should provide a minimal text output
 """
 
-import sys
+import os, sys
 from astropy.time import Time
 import obs, meteo
-
+import importlib
 
 def startup(name='LaSilla', cloudscheck=True, debugmode=True):
     """
@@ -35,9 +35,23 @@ def refresh_status(meteo, observables=None, minimal=False, obs_time=Time.now()):
         [obs.update(meteo, obs_time) for obs in observables]
 
 
+def retrieve_obsprogramlist():
+    obsprogramlist = []
+    files = [f for f in os.listdir('obsprogram') if 'prog' in f and not 'pyc' in f]
+    for f in files:
+        name = f.split('prog')[1].split('.py')[0]
+        program = importlib.import_module("obsprogram.prog{}".format(name), package=None)
+        obsprogramlist.append({"name": name, "program": program})
+
+    return obsprogramlist
+
+
 
 
 if __name__ == "__main__":
+
+
+
 
     import logging
 
