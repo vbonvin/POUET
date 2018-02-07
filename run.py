@@ -14,7 +14,6 @@ def startup(name='LaSilla', cloudscheck=True, debugmode=True):
 
     :return:
     """
->>>>>>> 3046a960c28da72a046bb7a050c3a7304ce80924
 
     currentmeteo = meteo.Meteo(name=name, cloudscheck=cloudscheck, debugmode=debugmode)
 
