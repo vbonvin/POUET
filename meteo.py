@@ -42,7 +42,10 @@ class Meteo:
         self.sunalt = sunaltitude
         self.sunaz = sunazimuth
         self.winddirection = winddirection
-        self.windspeed = windspeed        
+        self.windspeed = windspeed    
+        self.temperature = None 
+        self.humidity = None
+        self.lastest_weatherupdate_time = None
         
         self.cloudscheck = cloudscheck
         self.cloudmap = None
@@ -173,6 +176,9 @@ class Meteo:
             
         self.winddirection = WD
         self.windspeed = WS
+        self.temperature = Temps 
+        self.humidity = RH
+        self.lastest_weatherupdate_time = Time.now()
     
     
     def get_moon(self, obs_time=Time.now()):
@@ -183,12 +189,12 @@ class Meteo:
         observer.date = obs_time.iso
         observer.lat, observer.lon, observer.elevation = lat.degree, lon.degree, elev
     
-        moon = ephem.Moon()
-        moon.compute(observer)
+        self.moon = ephem.Moon()
+        self.moon.compute(observer)
     
         # Warning, ass-coding here: output of moon.ra is different from moon.ra.__str__()... clap clap clap
-        alpha = angles.Angle(moon.ra.__str__(), unit="hour")
-        delta = angles.Angle(moon.dec.__str__(), unit="degree")
+        alpha = angles.Angle(self.moon.ra.__str__(), unit="hour")
+        delta = angles.Angle(self.moon.dec.__str__(), unit="degree")
     
         # return Az, Alt as Angle object
         return self.get_AzAlt(alpha, delta, obs_time)
@@ -202,13 +208,13 @@ class Meteo:
         observer.date = obs_time.iso
         observer.lat, observer.lon, observer.elevation = lat.degree, lon.degree, elev
     
-        sun = ephem.Sun()
+        self.sun = ephem.Sun()
     
-        sun.compute(observer)
+        self.sun.compute(observer)
     
         # Warning, ass-coding here: output of sun.ra is different from sun.ra.__str__()... clap clap clap - again
-        alpha = angles.Angle(sun.ra.__str__(), unit="hour")
-        delta = angles.Angle(sun.dec.__str__(), unit="degree")
+        alpha = angles.Angle(self.sun.ra.__str__(), unit="hour")
+        delta = angles.Angle(self.sun.dec.__str__(), unit="degree")
     
         # return Az, Alt as Angle object
         return self.get_AzAlt(alpha, delta, obs_time)
@@ -260,9 +266,28 @@ class Meteo:
         return lat, lon, elev
     
 
-    def get_nighthours(self, obs_night):
+    def get_nighthours(self, obs_night, twilight="nautical"):
         """
         return a list of astropy Time objects, corresponding to the different hours of the obs_night
+        """
+    
+        sunrise, sunset = self.get_twilights(obs_night, twilight)
+        
+        # these fuckers are in YYYY/M(M)/D(D) HH:MM:SS format... 'murica !
+        sunrise = sunrise.tuple()
+        sunset = sunset.tuple()
+    
+        sunset_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunset, format='iso', scale='utc').mjd
+        sunrise_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunrise, format='iso', scale='utc').mjd
+    
+        mjds = np.linspace(sunset_time, sunrise_time, num=100)
+        times = [Time(mjd, format='mjd', scale='utc') for mjd in mjds]
+    
+        return times
+    
+    def get_twilights(self, obs_night, twilight="nautical"):
+        """
+        return a list of astropy Time objects: twilight in, twilight out
         """
     
         lat, lon, elev = self.get_telescope_params()
@@ -276,21 +301,22 @@ class Meteo:
         observer.date = obs_time.iso
         observer.lat, observer.lon, observer.elevation = str(lat.degree), str(lon.degree), elev
     
-        observer.horizon = '-12'
+        if twilight == "civil":
+            observer.horizon = '-6.'
+        elif twilight == "nautical":
+            observer.horizon = '-12.'
+        elif twilight == "astronomical":
+            observer.horizon = '-18.'
+        else:
+            raise RuntimeError("Unknown twilight definition")
     
         sun = ephem.Sun()
     
         # these fuckers are in YYYY/M(M)/D(D) HH:MM:SS format... 'murica !
-        sunset = observer.previous_setting(sun).tuple()
-        sunrise = observer.next_rising(sun).tuple()
+        sunset = observer.previous_setting(sun)
+        sunrise = observer.next_rising(sun)
     
-        sunset_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunset, format='iso', scale='utc').mjd
-        sunrise_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunrise, format='iso', scale='utc').mjd
-    
-        mjds = np.linspace(sunset_time, sunrise_time, num=100)
-        times = [Time(mjd, format='mjd', scale='utc') for mjd in mjds]
-    
-        return times
+        return sunrise, sunset
 
 
 #todo: generalize get_sun and get_moon into a single get_distance_to_obj function.
