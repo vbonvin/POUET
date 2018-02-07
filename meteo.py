@@ -65,10 +65,6 @@ class Meteo:
         self.sunalt = Alt
         self.sunaz = Az
 
-    def updatewind(self):
-        WD, WS = self.get_wind()
-        self.winddirection = WD
-        self.windspeed = WS
         
     def updateclouds(self):
         """
@@ -91,7 +87,7 @@ class Meteo:
         self.updatemoonpos(obs_time=obs_time)
         self.updatesunpos(obs_time=obs_time)
         if not minimal:
-            self.updatewind()
+            self.updateweather()
             if self.cloudscheck:
                 self.updateclouds()
             
@@ -123,11 +119,14 @@ class Meteo:
 
         return msg
 
-    def get_wind(self):
+    def updateweather(self):
     
         #todo: add a "no connection" message if page is not reachable instead of an error
         WS=[]
         WD=[]
+        RH = None
+        Temps = []
+        
         try:
             data=urllib.request.urlopen(self.location.get("weather", "url")).read()
         except urllib.error.URLError:
@@ -140,6 +139,17 @@ class Meteo:
                 WD.append(int(line[20:25])) # AVG
             if re.match( r'WS', line, re.M|re.I):
                 WS.append(float(line[20:25])) # AVG
+            if re.match( r'RH', line, re.M|re.I):
+                RH = float(line[20:25]) # AVG
+            if re.match( r'T ', line, re.M|re.I):
+                Temps.append(float(line[20:25])) # AVG
+    
+        # Remove out-of-band readings
+        # WD is chosen between station 1 or 2 in EDP pour la Silla.
+        # We take average
+        Temps = np.asarray(Temps, dtype=np.float)
+        Temps = Temps[Temps < 100]
+        Temps = np.mean(Temps)
     
         # Remove out-of-band readings
         # WD is chosen between station 1 or 2 in EDP pour la Silla.
@@ -161,7 +171,8 @@ class Meteo:
             WS = WS[WS < 99]
             WS = np.mean(WS)
             
-        return WD, WS
+        self.winddirection = WD
+        self.windspeed = WS
     
     
     def get_moon(self, obs_time=Time.now()):

@@ -121,8 +121,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             pass
 
         run.refresh_status(meteo=self.currentmeteo, minimal=False if refresh_time == "now" else True, obs_time=obs_time)
-        self.weatherWindSpeedValue.setText(str('%f.2' % self.currentmeteo.windspeed))
-        self.weatherWindDirectionValue.setText(str('%f.2' % self.currentmeteo.winddirection))
+        self.weatherWindSpeedValue.setText(str('{:2.1f}'.format(self.currentmeteo.windspeed)))
+        self.weatherWindDirectionValue.setText(str('{:3d}'.format(int(self.currentmeteo.winddirection))))
+        self.weatherTemperatureValue.setText(str('hi!'))
         self.weatherLastUpdateValue.setText(str(obs_time.value).split('.')[0])
 
 
