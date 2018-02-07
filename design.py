@@ -108,6 +108,9 @@ class Ui_POUET(object):
         self.listObs.setGridStyle(QtCore.Qt.DashLine)
         self.listObs.setSortingEnabled(True)
         self.listObs.setObjectName("listObs")
+        self.checkObsStatus = QtWidgets.QPushButton(self.obs)
+        self.checkObsStatus.setGeometry(QtCore.QRect(170, 13, 141, 23))
+        self.checkObsStatus.setObjectName("checkObsStatus")
         self.tabWidget.addTab(self.obs, "")
         self.program = QtWidgets.QWidget()
         self.program.setObjectName("program")
@@ -362,7 +365,7 @@ class Ui_POUET(object):
         self.statusLabel.setObjectName("statusLabel")
 
         self.retranslateUi(POUET)
-        self.tabWidget.setCurrentIndex(5)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(POUET)
 
     def retranslateUi(self, POUET):
@@ -377,6 +380,7 @@ class Ui_POUET(object):
         self.label_16.setText(_translate("POUET", "Angle to Moon [°]:"))
         self.visibility_plot.setText(_translate("POUET", "Draw"))
         self.retrieveObs.setText(_translate("POUET", "Load observables list"))
+        self.checkObsStatus.setText(_translate("POUET", "Load observables list"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.obs), _translate("POUET", "Observations"))
         self.label_27.setText(_translate("POUET", "Here we can select the programs we want to include"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.program), _translate("POUET", "Programs"))

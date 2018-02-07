@@ -268,7 +268,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>5</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="obs">
     <attribute name="title">
@@ -310,6 +310,19 @@
      </property>
      <property name="sortingEnabled">
       <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="checkObsStatus">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>13</y>
+       <width>141</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Load observables list</string>
      </property>
     </widget>
    </widget>

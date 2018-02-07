@@ -45,9 +45,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.retrieveObs.clicked.connect(self.retrieve_obs)
         self.weatherRefresh.clicked.connect(self.weather_refresh)
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
+        self.checkObsStatus.clicked.connect(self.check_obs_status)
 
         #todo: find how to share the same logger for all modules, or how to send all loggers output to my widget
-        self.currentmeteo = run.startup(name='LaSilla', cloudscheck=True, debugmode=False)
+        self.currentmeteo = run.startup(name='LaSilla', cloudscheck=False, debugmode=True)
 
         # testing stuff at startup...
 
@@ -72,7 +73,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
             for o in self.observables:
-                o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
+                o.get_observability(self.currentmeteo, cloudscheck=False, verbose=False)
 
                 name = QtGui.QStandardItem(o.name)
                 alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
@@ -94,6 +95,20 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             logger.error("%s not loaded - format unknown" % filepath)
             self.statusLabel.setStyleSheet('color: red')
             self.statusLabel.setText("%s \n Format unknown" % filepath)
+
+
+    def check_obs_status(self):
+        """
+
+        :return:
+        """
+
+        #0 is not checked, 1 is partially checked, 2 is checked --> 0 or 2 for us
+        model = self.listObs.model()
+
+        statuses = [model.item(i, 0).checkState() for i in range(model.rowCount())]
+        print(statuses)
+
 
 
     def weather_refresh(self, refresh_time="now"):
