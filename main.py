@@ -217,6 +217,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.setupUi(self)
         
         print("Starting up... This can take a minute...")
+        self.set_configTimeNow()
+        self.save_Time2obstime()
         
         # logger startup...
         logTextBox = MyLogger(self.verticalLayoutWidget)
@@ -233,6 +235,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
         self.checkObsStatus.clicked.connect(self.check_obs_status)
         self.configAutoupdateFreqValue.valueChanged.connect(self.set_timer_interval)
+        self.configTimenow.clicked.connect(self.set_configTimeNow)
+        self.configUpdate.clicked.connect(self.do_update)
 
         #todo: find how to share the same logger for all modules, or how to send all loggers output to my widget
         self.currentmeteo = run.startup(name='LaSilla', cloudscheck=True, debugmode=True)
@@ -266,6 +270,25 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         interval = self.configAutoupdateFreqValue.value() * 1000 * 60
         self.timer.setInterval(interval)
         logging.debug("Set auto-refresh to {} min".format(self.configAutoupdateFreqValue.value()))
+        
+    def set_configTimeNow(self):
+        
+        #get current date and time
+        now = QtCore.QDateTime.currentDateTimeUtc()
+
+        #set current date and time to the object
+        self.configTime.setDateTime(now)
+        
+    def save_Time2obstime(self):
+        
+        self.obs_time = Time(self.configTime.dateTime().toPyDateTime(), scale="utc")
+        logging.debug("obs_time is now set to {:s}".format(str(self.obs_time)))
+        
+    def do_update(self):
+        
+        self.save_Time2obstime()
+        self.site_display()
+        logging.critical("CHECK do_update is complete (OBVISOULY NOT SINCE NO UPDATE TO OBS)!")
 
     def retrieve_obs(self):
 
@@ -390,9 +413,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         self.siteLocationValue.setText(str('Lat={:s}\tLon={:s}\tElev={:s} m'.format(self.currentmeteo.location.get("location", "longitude"), self.currentmeteo.location.get("location", "latitude"), self.currentmeteo.location.get("location", "elevation"))))
         
-        #TODO: Get the time from configTime !!!
-        obs_time = Time.now()
-        logging.warning("Update time here too!!")
+        obs_time = self.obs_time
         
         #-------------------------------------------------------- Bright objects now
         
