@@ -20,8 +20,8 @@ from matplotlib.patches import Wedge
 import numpy as np
 
 import logging
-logging.basicConfig(format='%(asctime)s | %(name)s(%(funcName)s): %(message)s', level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+#logging.basicConfig(format='%(asctime)s | %(name)s(%(funcName)s): %(message)s', level=logging.DEBUG)
+#logger = logging.getLogger(__name__)
 
 COLORWARN = "orange"
 COLORLIMIT = "red"
@@ -211,11 +211,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         super(POUET, self).__init__(parent)
         self.setupUi(self)
         
+        print("Starting up... This can take a minute...")
+        
         # logger startup...
         logTextBox = MyLogger(self.verticalLayoutWidget)
-        logTextBox.setFormatter(logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s', datefmt='%m-%d-%Y %H:%M:%S'))
-        logger.addHandler(logTextBox)
-        logger.info('Startup...')
+        logTextBox.setFormatter(logging.Formatter(fmt='%(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s', datefmt='%m-%d-%Y %H:%M:%S'))
+        #logger.addHandler(logTextBox)
+        #logger.info('Startup...')
+        logging.getLogger().addHandler(logTextBox)
+        # You can control the logging level
+        logging.getLogger().setLevel(logging.DEBUG)
         
         # signal and slots init...
         self.retrieveObs.clicked.connect(self.retrieve_obs)
@@ -255,7 +260,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         interval = self.configAutoupdateFreqValue.value() * 1000 * 60
         self.timer.setInterval(interval)
-        logger.debug("Set auto-refresh to {} min".format(self.configAutoupdateFreqValue.value()))
+        logging.debug("Set auto-refresh to {} min".format(self.configAutoupdateFreqValue.value()))
 
     def retrieve_obs(self):
 
@@ -320,14 +325,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
             self.listObs.setModel(model)
             logmsg += 'successfully loaded'
-            logger.info(logmsg)
+            logging.info(logmsg)
             #todo: replace by redirecting the message to a logger
             self.statusLabel.setStyleSheet('color: green')
             self.statusLabel.setText("%s \n Sucessfully loaded" % filepath)
 
         except:
             logmsg += ' not loaded - format unknown'
-            logger.error(logmsg)
+            logging.error(logmsg)
             self.statusLabel.setStyleSheet('color: red')
             self.statusLabel.setText("%s \n Format unknown" % filepath)
 
@@ -348,7 +353,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def weather_display(self):
         
         if not self.currentmeteo.lastest_weatherupdate_time is None and (Time.now() - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value < 30:
-            logger.info("Last weather report was downloaded more recently than 30 seconds ago, I don't download it again")
+            logging.info("Last weather report was downloaded more recently than 30 seconds ago, I don't download it again")
             draw_wind = False
         else:
             self.currentmeteo.updateweather()
@@ -382,7 +387,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         #TODO: Get the time from configTime !!!
         obs_time = Time.now()
-        logger.warning("Update time here too!!")
+        logging.warning("Update time here too!!")
         
         #-------------------------------------------------------- Bright objects now
         
@@ -439,7 +444,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         self.currentmeteo.allsky.update()
         
-        logger.info("updated allsky")
+        logging.info("updated allsky")
         
         self.allsky_redisplay()
         
@@ -451,11 +456,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.allsky.display_wind_limits(self.currentmeteo)
         self.allSkyUpdateWindValue.setText("Wind update: {}".format(str(self.currentmeteo.lastest_weatherupdate_time).split('.')[0]))
         
-        logger.debug("Re-drawn All Sky")
+        logging.debug("Re-drawn All Sky")
         
     def auto_refresh(self):
         
-        logger.info("Auto-refresh")
+        logging.info("Auto-refresh")
         
         if self.configCloudsAutoRefreshValue.checkState() == 2:
             self.allsky_refresh()
