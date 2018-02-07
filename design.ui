@@ -357,11 +357,11 @@
     <attribute name="title">
      <string>Site</string>
     </attribute>
-    <widget class="QPushButton" name="weatherRefresh">
+    <widget class="QPushButton" name="weatherDisplayRefresh">
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>500</y>
+       <y>540</y>
        <width>111</width>
        <height>27</height>
       </rect>
@@ -374,7 +374,7 @@
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>470</y>
+       <y>510</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -396,7 +396,7 @@
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>380</y>
+       <y>420</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -418,7 +418,7 @@
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>440</y>
+       <y>480</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -440,7 +440,7 @@
      <property name="geometry">
       <rect>
        <x>230</x>
-       <y>350</y>
+       <y>390</y>
        <width>81</width>
        <height>21</height>
       </rect>
@@ -463,7 +463,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>350</y>
+       <y>390</y>
        <width>201</width>
        <height>21</height>
       </rect>
@@ -485,7 +485,7 @@
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>410</y>
+       <y>450</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -507,7 +507,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>380</y>
+       <y>420</y>
        <width>131</width>
        <height>21</height>
       </rect>
@@ -529,7 +529,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>410</y>
+       <y>450</y>
        <width>131</width>
        <height>21</height>
       </rect>
@@ -551,7 +551,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>440</y>
+       <y>480</y>
        <width>131</width>
        <height>21</height>
       </rect>
@@ -573,7 +573,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>470</y>
+       <y>510</y>
        <width>131</width>
        <height>21</height>
       </rect>
@@ -595,7 +595,7 @@
      <property name="geometry">
       <rect>
        <x>310</x>
-       <y>350</y>
+       <y>390</y>
        <width>121</width>
        <height>21</height>
       </rect>
@@ -636,12 +636,12 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="sitePositionValue">
+    <widget class="QLabel" name="siteLocationValue">
      <property name="geometry">
       <rect>
        <x>150</x>
        <y>40</y>
-       <width>181</width>
+       <width>521</width>
        <height>21</height>
       </rect>
      </property>
@@ -658,7 +658,7 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="sitePosition">
+    <widget class="QLabel" name="siteLocation">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -749,7 +749,7 @@
     <widget class="QLabel" name="nightEndCivilValue">
      <property name="geometry">
       <rect>
-       <x>520</x>
+       <x>550</x>
        <y>120</y>
        <width>181</width>
        <height>21</height>
@@ -771,7 +771,7 @@
     <widget class="QLabel" name="nightEndCivil">
      <property name="geometry">
       <rect>
-       <x>390</x>
+       <x>420</x>
        <y>120</y>
        <width>131</width>
        <height>21</height>
@@ -815,7 +815,7 @@
     <widget class="QLabel" name="nightEndNauticalValue">
      <property name="geometry">
       <rect>
-       <x>520</x>
+       <x>550</x>
        <y>150</y>
        <width>181</width>
        <height>21</height>
@@ -859,7 +859,7 @@
     <widget class="QLabel" name="nightEndNautical">
      <property name="geometry">
       <rect>
-       <x>390</x>
+       <x>420</x>
        <y>150</y>
        <width>131</width>
        <height>21</height>
@@ -925,7 +925,7 @@
     <widget class="QLabel" name="nightEndAstro">
      <property name="geometry">
       <rect>
-       <x>390</x>
+       <x>420</x>
        <y>180</y>
        <width>131</width>
        <height>21</height>
@@ -947,7 +947,7 @@
     <widget class="QLabel" name="nightEndAstroValue">
      <property name="geometry">
       <rect>
-       <x>520</x>
+       <x>550</x>
        <y>180</y>
        <width>181</width>
        <height>21</height>
@@ -966,7 +966,7 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="sunLabel">
+    <widget class="QLabel" name="brightLabel">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -982,7 +982,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Sun</string>
+      <string>Bright objects</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -992,8 +992,8 @@
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>260</y>
-       <width>181</width>
+       <y>290</y>
+       <width>261</width>
        <height>21</height>
       </rect>
      </property>
@@ -1014,7 +1014,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>260</y>
+       <y>290</y>
        <width>131</width>
        <height>21</height>
       </rect>
@@ -1036,7 +1036,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>290</y>
+       <y>320</y>
        <width>131</width>
        <height>21</height>
       </rect>
@@ -1058,7 +1058,7 @@
      <property name="geometry">
       <rect>
        <x>150</x>
-       <y>290</y>
+       <y>320</y>
        <width>181</width>
        <height>21</height>
       </rect>
@@ -1106,13 +1106,283 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>320</y>
+       <y>360</y>
        <width>821</width>
        <height>16</height>
       </rect>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="sunLabel">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>260</y>
+       <width>201</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Sun</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="sunMoon">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>260</y>
+       <width>201</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Moon</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="moonAltazValue">
+     <property name="geometry">
+      <rect>
+       <x>550</x>
+       <y>320</y>
+       <width>181</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>XX.X</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="moonCoordinates">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>290</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Coordinates:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="moonAltaz">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>320</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Alt [°]/Az [°]:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="moonCoordinatesValues">
+     <property name="geometry">
+      <rect>
+       <x>550</x>
+       <y>290</y>
+       <width>261</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>XX.X</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="brightLastUpdate">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>230</y>
+       <width>71</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>computed for</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="brightLastUpdateValue">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>230</y>
+       <width>131</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>XX.XX.XXXX XX:XX:XX</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="nightLastUpdateValueBefore">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>90</y>
+       <width>80</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>XX.XX.XXXX</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="nightLastUpdate">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>90</y>
+       <width>101</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>computed for night</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="nightLastUpdateValueAfter">
+     <property name="geometry">
+      <rect>
+       <x>240</x>
+       <y>90</y>
+       <width>81</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>XX.XX.XXXX</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="brightLastUpdate_2">
+     <property name="geometry">
+      <rect>
+       <x>240</x>
+       <y>90</y>
+       <width>10</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>to</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </widget>
@@ -1274,7 +1544,7 @@
       <rect>
        <x>10</x>
        <y>70</y>
-       <width>911</width>
+       <width>831</width>
        <height>16</height>
       </rect>
      </property>
@@ -1319,7 +1589,7 @@
       <rect>
        <x>10</x>
        <y>210</y>
-       <width>911</width>
+       <width>831</width>
        <height>16</height>
       </rect>
      </property>

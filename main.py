@@ -8,11 +8,15 @@ import sys
 import obs, meteo, run
 import design
 from astropy import units as u
-from astropy.time import Time
+from astropy.time import Time, TimeDelta
+import copy
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+COLORWARN = "orange"
+COLORLIMIT = "red"
 
 class MyLogger(logging.Handler):
     def __init__(self, parent):
@@ -43,13 +47,15 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         # signal and slots init...
         self.retrieveObs.clicked.connect(self.retrieve_obs)
-        self.weatherRefresh.clicked.connect(self.weather_refresh)
+        self.weatherDisplayRefresh.clicked.connect(self.weather_display)
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
         self.checkObsStatus.clicked.connect(self.check_obs_status)
 
         #todo: find how to share the same logger for all modules, or how to send all loggers output to my widget
         self.currentmeteo = run.startup(name='LaSilla', cloudscheck=False, debugmode=True)
-
+        
+        self.site_display()
+        self.weather_display()
         # testing stuff at startup...
 
         """
@@ -110,22 +116,93 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         print(statuses)
 
 
-
-    def weather_refresh(self, refresh_time="now"):
-        #todo: link refresh_time to a button or widget on the interface ? Could be useful for update on future time.
-
-        if refresh_time == "now":
-            obs_time = Time.now()
+    def weather_display(self):
+        
+        if not self.currentmeteo.lastest_weatherupdate_time is None and (Time.now() - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value < 2:
+            logger.info("Last weather report was downloaded more recently than 2 seconds ago, I don't download it again")
         else:
-            obs_time = Time.now()
-            pass
-
-        run.refresh_status(meteo=self.currentmeteo, minimal=False if refresh_time == "now" else True, obs_time=obs_time)
+            self.currentmeteo.updateweather()
+        
         self.weatherWindSpeedValue.setText(str('{:2.1f}'.format(self.currentmeteo.windspeed)))
+        if float(self.currentmeteo.location.get("weather", "windLimitLevel")) < self.currentmeteo.windspeed:
+            self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
+        elif float(self.currentmeteo.location.get("weather", "windWarnLevel")) < self.currentmeteo.windspeed:
+            self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+         
         self.weatherWindDirectionValue.setText(str('{:3d}'.format(int(self.currentmeteo.winddirection))))
-        self.weatherTemperatureValue.setText(str('hi!'))
-        self.weatherLastUpdateValue.setText(str(obs_time.value).split('.')[0])
+        
+        self.weatherTemperatureValue.setText(str('{:2.1f}'.format(int(self.currentmeteo.temperature))))
+        
+        self.weatherHumidityValue.setText(str('{:3d}'.format(int(self.currentmeteo.humidity))))
+        if float(self.currentmeteo.location.get("weather", "humidityLimitLevel")) < self.currentmeteo.humidity:
+            self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
+        elif float(self.currentmeteo.location.get("weather", "humidityWarnLevel")) < self.currentmeteo.humidity:
+            self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+        
+        self.weatherLastUpdateValue.setText(str(self.currentmeteo.lastest_weatherupdate_time).split('.')[0])
 
+
+    def site_display(self):
+        
+        self.siteLocationValue.setText(str('Lat={:s}\tLon={:s}'.format(self.currentmeteo.location.get("location", "longitude"), self.currentmeteo.location.get("location", "latitude"))))
+        
+        #TODO: Get the time from configTime !!!
+        obs_time = Time.now()
+        logger.warning("Update time here too!!")
+        
+        #-------------------------------------------------------- Night here only
+        
+        obs_time.format = 'iso'
+        obs_time.out_subfmt = 'date'
+        
+        ref_time = Time('%s 12:00:00' % obs_time, format='iso', scale='utc') #5h UT is approx. the middle of the night
+        
+        is_after_midday = (obs_time-ref_time).value > 0
+        
+        if is_after_midday:
+            day_before = copy.copy(obs_time)
+            obs_time += TimeDelta(1, format="jd")
+            day_after = obs_time
+        else:
+            day_after = obs_time
+            day_before = obs_time - TimeDelta(1, format="jd")
+            
+            
+        print (obs_time)
+
+        sunrise, sunset = self.currentmeteo.get_twilights(obs_time, twilight='civil')
+        self.nightStartCivilValue.setText(str('{:s}'.format(str(sunset))))
+        self.nightEndCivilValue.setText(str('{:s}'.format(str(sunrise))))
+        
+        sunrise, sunset = self.currentmeteo.get_twilights(obs_time, twilight='nautical')
+        self.nightStartNauticalValue.setText(str('{:s}'.format(str(sunset))))
+        self.nightEndNauticalValue.setText(str('{:s}'.format(str(sunrise))))
+        
+        sunrise, sunset = self.currentmeteo.get_twilights(obs_time, twilight='astronomical')
+        self.nightStartAstroValue.setText(str('{:s}'.format(str(sunset))))
+        self.nightEndAstroValue.setText(str('{:s}'.format(str(sunrise))))
+        
+        self.nightLastUpdateValueBefore.setText(str(day_before).split('.')[0])
+        self.nightLastUpdateValueAfter.setText(str(day_after).split('.')[0])
+        
+        #-------------------------------------------------------- Bright objects now
+        
+        sunAz, sunAlt = self.currentmeteo.get_sun(obs_time)
+        sunAlt = sunAlt.to(u.degree).value
+        sunAz = sunAz.to(u.degree).value
+        
+        self.sunCoordinatesValues.setText(str('RA={:s}  DEC={:s}'.format(self.currentmeteo.sun.ra.__str__(), self.currentmeteo.sun.dec.__str__())))
+        self.sunAltazValue.setText(str('{:2.1f}°\t{:2.1f}°'.format(sunAlt, sunAz)))
+        
+        moonAz, moonAlt = self.currentmeteo.get_moon(obs_time)
+        moonAlt = moonAlt.to(u.degree).value
+        moonAz = moonAz.to(u.degree).value
+        
+        self.moonCoordinatesValues.setText(str('RA={:s}  DEC={:s}'.format(self.currentmeteo.moon.ra.__str__(), self.currentmeteo.moon.dec.__str__())))
+        self.moonAltazValue.setText(str('{:2.1f}°\t{:2.1f}°'.format(moonAlt, moonAz)))
+        
+        day_after.out_subfmt = 'date_hms'
+        self.brightLastUpdateValue.setText(str(obs_time).split('.')[0])
 
     def allsky_refresh(self):
 
