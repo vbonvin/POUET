@@ -17,6 +17,7 @@ import clouds
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Observable:
 	"""
 	Class to hold a specific target from any observational progamm
@@ -32,17 +33,18 @@ class Observable:
 
 		self.name = name
 		self.obsprogram = obsprogram
-		
-		try:
-			module_name = "obsprogram.prog{}".format(self.obsprogram)
-			program = importlib.import_module(module_name, package=None)
-			self.minangletomoon = program.minangletomoon
-			self.maxairmass = program.maxairmass
-			self.exptime = program.exptime
-			self.program = program
-		except SyntaxError:
-			self.program = None
-			raise SyntaxError("I could not find the prog%s.py definition file in obsprogram/" % self.obsprogram)
+
+		if not self.obsprogram == None:
+			try:
+				module_name = "obsprogram.prog{}".format(self.obsprogram)
+				program = importlib.import_module(module_name, package=None)
+				self.minangletomoon = program.minangletomoon
+				self.maxairmass = program.maxairmass
+				self.exptime = program.exptime
+				self.program = program
+			except SyntaxError:
+				self.program = None
+				raise SyntaxError("I could not find the prog%s.py definition file in obsprogram/" % self.obsprogram)
 
 		self.alpha = angles.Angle(alpha, unit="hour")
 		self.delta = angles.Angle(delta, unit="degree")
@@ -55,8 +57,9 @@ class Observable:
 		self.attributes = attributes
 		#self.observability = observability
 
-	def __str__(self):
 
+
+	def __str__(self):
 
 		# not very elegant
 
@@ -209,6 +212,7 @@ class Observable:
 			
 		self.cloudfree = float(self.cloudfree)
 
+
 	def update(self, meteo, obs_time=Time.now()):
 
 		self.get_altaz(meteo, obs_time=obs_time)
@@ -217,7 +221,8 @@ class Observable:
 		self.get_angletomoon(meteo)
 		self.get_angletosun(meteo)
 
-	def get_observability(self, meteo, obs_time=None, displayall=True, cloudscheck=True, limit_cloud_validity=1800, verbose=True):
+
+	def get_observability(self, meteo, obs_time=None, displayall=True, cloudscheck=True, verbose=True):
 		"""
 		Return the observability, a value between 0 and 1 that tells if the target can be observed at a given time
 
@@ -449,10 +454,10 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 
 
 
-def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram="None", verbose=False):
+def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram=None, verbose=False):
+
 	"""
 	Import an rdb catalog into a list of observables
-	THIS SHOULD BE IN UTIL !!
 	"""
 
 	logger.info("Reading \"%s\"..." % (os.path.basename(filepath)))
@@ -477,34 +482,7 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogr
 		alpha = str(elements[alphacol-1])
 		delta = str(elements[deltacol-1])
 
-		# This is the minimal stuff necessary to define an observable. Now, let's go into the per-obsprogram details
-
-		if obsprogram not in ["lens", "transit", "bebop", "superwasp", "followup", "703", "714"]:
-			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
-
-		if obsprogram == "lens":
-			minangletomoon = 30
-			maxairmass = 1.5
-			exptime = 35*60 #approx 35 minutes per lens
-			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime))
-
-		if obsprogram == "transit":
-			pass
-
-		if obsprogram == "bebop":
-			pass
-
-		if obsprogram == "superwasp":
-			pass
-
-		if obsprogram == "followup":
-			pass
-
-		if obsprogram == "703":
-			pass
-
-		if obsprogram == "714":
-			pass
+		observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
 
 	return observables
 

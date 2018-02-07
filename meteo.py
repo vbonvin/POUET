@@ -30,13 +30,13 @@ class Meteo:
     Typically, a Site object is created when POUET starts, and then update itself every XX minutes
     """
 
-    def __init__(self, name='uknsite', date=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None,
+    def __init__(self, name='uknsite', time=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None,
             winddirection=None, windspeed=None, cloudscheck=True, fimage=None, debugmode=False):
 
         self.name = name
         self.location = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
         
-        self.date = date
+        self.time = time
         self.moonalt = moonaltitude
         self.moonaz = moonazimuth
         self.sunalt = sunaltitude
@@ -87,7 +87,7 @@ class Meteo:
         """
         minimal=True update only the moon and sun position. Useful for predictions (as you can't predict the clouds or winds, no need to refresh them)
         """
-        self.updatedate()
+        self.time=obs_time
         self.updatemoonpos(obs_time=obs_time)
         self.updatesunpos(obs_time=obs_time)
         if not minimal:

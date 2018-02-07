@@ -13,12 +13,12 @@
   <property name="windowTitle">
    <string>Pouet</string>
   </property>
-  <widget class="QLabel" name="label_12">
+  <widget class="QLabel" name="allSkyUpdateValue">
    <property name="geometry">
     <rect>
-     <x>1150</x>
+     <x>1230</x>
      <y>10</y>
-     <width>201</width>
+     <width>121</width>
      <height>21</height>
     </rect>
    </property>
@@ -30,7 +30,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Last update: XX.XX.XXZXX:XX:XX</string>
+    <string>XX.XX.XXZXX:XX:XX</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -58,7 +58,7 @@
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
-  <widget class="QFrame" name="frame">
+  <widget class="QFrame" name="allSkyframe">
    <property name="geometry">
     <rect>
      <x>900</x>
@@ -73,7 +73,16 @@
    <property name="frameShadow">
     <enum>QFrame::Raised</enum>
    </property>
-   <zorder>line_2</zorder>
+   <widget class="QGraphicsView" name="allSkyView">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>461</width>
+      <height>461</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
@@ -265,14 +274,42 @@
     <attribute name="title">
      <string>Observations</string>
     </attribute>
-    <widget class="QTableWidget" name="tableWidget">
+    <widget class="QPushButton" name="retrieveObs">
      <property name="geometry">
       <rect>
-       <x>250</x>
-       <y>110</y>
-       <width>256</width>
-       <height>192</height>
+       <x>10</x>
+       <y>13</y>
+       <width>141</width>
+       <height>23</height>
       </rect>
+     </property>
+     <property name="text">
+      <string>Load observables list</string>
+     </property>
+    </widget>
+    <widget class="QTableView" name="listObs">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>841</width>
+       <height>861</height>
+      </rect>
+     </property>
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="showGrid">
+      <bool>true</bool>
+     </property>
+     <property name="gridStyle">
+      <enum>Qt::DashLine</enum>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>
@@ -334,7 +371,7 @@
     <attribute name="title">
      <string>Weather</string>
     </attribute>
-    <widget class="QPushButton" name="weather_refresh_now">
+    <widget class="QPushButton" name="weatherRefresh">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -347,7 +384,7 @@
       <string>Refresh now</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_9">
+    <widget class="QLabel" name="weatherHumidityValue">
      <property name="geometry">
       <rect>
        <x>150</x>
@@ -369,7 +406,7 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_5">
+    <widget class="QLabel" name="weatherWindSpeedValue">
      <property name="geometry">
       <rect>
        <x>150</x>
@@ -391,7 +428,7 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_8">
+    <widget class="QLabel" name="weatherTemperatureValue">
      <property name="geometry">
       <rect>
        <x>150</x>
@@ -413,12 +450,12 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_4">
+    <widget class="QLabel" name="weatherLastUpdate">
      <property name="geometry">
       <rect>
-       <x>190</x>
+       <x>230</x>
        <y>20</y>
-       <width>201</width>
+       <width>81</width>
        <height>21</height>
       </rect>
      </property>
@@ -430,13 +467,13 @@
       </font>
      </property>
      <property name="text">
-      <string>Last update: XX.XX.XXZXX:XX:XX</string>
+      <string>Last update: </string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="weatherConditions">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -458,7 +495,7 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_6">
+    <widget class="QLabel" name="weatherWindDirectionValue">
      <property name="geometry">
       <rect>
        <x>150</x>
@@ -480,7 +517,7 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="weatherWindSpeed">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -502,7 +539,7 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_7">
+    <widget class="QLabel" name="weatherWindDirection">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -524,7 +561,7 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_10">
+    <widget class="QLabel" name="weatherTemperature">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -546,7 +583,7 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="label_11">
+    <widget class="QLabel" name="weatherHumidity">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -566,6 +603,29 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="weatherLastUpdateValue">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>20</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string> XX.XX.XXZXX:XX:XX</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </widget>
@@ -839,7 +899,7 @@
       <rect>
        <x>10</x>
        <y>890</y>
-       <width>391</width>
+       <width>401</width>
        <height>21</height>
       </rect>
      </property>
@@ -850,7 +910,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Written by Thibault Kuntzer and Vivien Bonvin, 2018</string>
+      <string>Written by Thibault Kuntzer and Vivien Bonvin, 2015-2018</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -883,27 +943,16 @@
     <attribute name="title">
      <string>View logs</string>
     </attribute>
-    <widget class="QLabel" name="label_28">
+    <widget class="QWidget" name="verticalLayoutWidget">
      <property name="geometry">
       <rect>
-       <x>130</x>
-       <y>150</y>
-       <width>541</width>
-       <height>21</height>
+       <x>10</x>
+       <y>10</y>
+       <width>841</width>
+       <height>481</height>
       </rect>
      </property>
-     <property name="font">
-      <font>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Shows the log files</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout"/>
     </widget>
    </widget>
   </widget>
@@ -920,11 +969,11 @@
     <string>Update</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="clouds_refresh_now">
+  <widget class="QPushButton" name="allSkyRefresh">
    <property name="geometry">
     <rect>
-     <x>1080</x>
-     <y>10</y>
+     <x>1057</x>
+     <y>7</y>
      <width>101</width>
      <height>27</height>
     </rect>
@@ -932,6 +981,58 @@
    <property name="text">
     <string>Refresh now</string>
    </property>
+  </widget>
+  <widget class="QLabel" name="allSkyUpdate">
+   <property name="geometry">
+    <rect>
+     <x>1158</x>
+     <y>10</y>
+     <width>81</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Last update: </string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QFrame" name="statusFrame">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>10</y>
+     <width>341</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="statusLabel">
+    <property name="geometry">
+     <rect>
+      <x>6</x>
+      <y>5</y>
+      <width>331</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Current Status</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

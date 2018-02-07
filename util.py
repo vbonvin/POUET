@@ -5,7 +5,6 @@ import astropy.coordinates.angles as angles
 #from astropy.table import Table
 from astropy.time import Time
 from astropy import units as u
-import urllib.request, urllib.error, urllib.parse
 import re
 import getopt, sys, os
 try:
@@ -25,42 +24,6 @@ import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
-
-def reformat(coordinate, format):
-	"""
-	Transform a coordinate (hour, degree) in the format of your choice
-
-	HHhDDdSSs <---> HH:DD:SS
-
-	update : apparently useless, can use angle objects instead
-	"""
-
-	if 'm' in coordinate:
-		if 'd' in coordinate:
-			hd = coordinate.split('d')[0]
-			m = coordinate.split('d')[1].split('m')[0]
-		if 'h' in coordinate:
-			hd = coordinate.split('h')[0]
-			m = coordinate.split('h')[1].split('m')[0]
-		s  = coordinate.split('m')[1].split('s')[0]
-
-	elif ':' in coordinate:
-		[hd, m, s] = coordinate.split(':')
-
-	else:
-		raise ValueError("%s, Unknown coordinate input format!" %coordinate)
-
-	if format == 'numeric':
-		return "%s:%s:%s" % (hd, m, s)
-
-	elif format == 'alphabetic_degree':
-		return "%sd%sm%ss" % (hd, m, s)
-
-	elif format == 'alphabetic_hour':
-		return "%sh%sm%ss" % (hd, m, s)
-
-	else:
-		raise ValueError("%s, Unknown coordinate output format!" %format)
 
 
 def takeclosest(dico, key, value):
