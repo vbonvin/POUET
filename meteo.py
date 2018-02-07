@@ -31,7 +31,7 @@ class Meteo:
     """
 
     def __init__(self, name='uknsite', time=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None,
-            winddirection=None, windspeed=None, cloudscheck=True, fimage=None, debugmode=False):
+            winddirection=-1, windspeed=-1, cloudscheck=True, fimage=None, debugmode=False):
 
         self.name = name
         self.location = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
@@ -43,8 +43,8 @@ class Meteo:
         self.sunaz = sunazimuth
         self.winddirection = winddirection
         self.windspeed = windspeed    
-        self.temperature = None 
-        self.humidity = None
+        self.temperature = 9999 
+        self.humidity = -1
         self.lastest_weatherupdate_time = None
         
         self.cloudscheck = cloudscheck
