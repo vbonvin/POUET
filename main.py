@@ -78,7 +78,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.configTimenow.clicked.connect(self.set_configTimeNow)
         self.configUpdate.clicked.connect(self.do_update)
         self.visibilityDraw.clicked.connect(self.visibilitytool_draw)
-        self.configCloudsDebugModeValue.clicked.connect(self.set_debug_mode)
+        self.configDebugModeValue.clicked.connect(self.set_debug_mode)
 
         # Stating timer
         self.timer = QtCore.QTimer()
@@ -115,7 +115,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
     def set_debug_mode(self):
         
-        if self.configCloudsDebugModeValue.checkState() == 0:
+        if self.configDebugModeValue.checkState() == 0:
             goto_mode = False
         else:
             goto_mode = True
@@ -430,6 +430,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.allSkyUpdateWindValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
             self.weatherLastUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
             
+        
         if self.currentmeteo.allsky.last_im_refresh is None or (Time.now() - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 10:
             self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
         else:
@@ -452,16 +453,16 @@ class MyLogger(logging.Handler):
 
 class AllSkyView(FigureCanvas):
 
-    def __init__(self, parent=None, width=6, height=4.5):
-        # fig = Figure(figsize=(width, height), dpi=100)
-
-        # self.figure.subplots_adjust(bottom=0.01)
-        # self.figure.subplots_adjust(top=0.499)
-        # self.figure.subplots_adjust(right=0.98)
-        # self.figure.subplots_adjust(left=0.)
+    def __init__(self, parent=None, width=4.66, height=3.5):
 
         self.figure = Figure(figsize=(width, height))
         self.figure.patch.set_facecolor((0.95, 0.94, 0.94, 1.))
+        
+        self.figure.subplots_adjust(wspace=0.)
+        self.figure.subplots_adjust(bottom=0.)
+        self.figure.subplots_adjust(top=1.)
+        self.figure.subplots_adjust(right=1.)
+        self.figure.subplots_adjust(left=0.0)
 
         self.axis = self.figure.add_subplot(111)
 
@@ -482,16 +483,19 @@ class AllSkyView(FigureCanvas):
         location = meteo.name
         allsky = meteo.allsky
 
-        # TODO: We have an issue with the layout. It seems that there is a remaining padding due to the canevas...
-        # It's a secondary issue, to be solved later
-        # self.figure.tight_layout()
-
-        try:
-            rest = allsky.im_masked
-        except AttributeError:
+        if meteo.allsky.last_im_refresh is None or (Time.now() - meteo.allsky.last_im_refresh).to(u.s).value / 60. > 10:
+            self.axis.plot([-1,1],[-1,1], lw=4, c=COLORNOMINAL)
+            self.axis.plot([-1,1],[1,-1], lw=4, c=COLORNOMINAL)
+            
+            self.axis.annotate('No connection to All Sky Server', xy=(0, -0.8), rotation=0,
+                                   horizontalalignment='center', verticalalignment='center', color=COLORNOMINAL, fontsize=10)
+            
+            self.axis.set_axis_off()
+            self.draw()
             logging.warning("No All Sky image, by-passing")
             return
 
+        rest = allsky.im_masked
         if not plot_analysis:
             self.axis.imshow(allsky.im_original, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
             self.axis.set_ylim([np.shape(rest)[0], 0])
@@ -679,12 +683,12 @@ class VisibilityView(FigureCanvas):
                     if check_wind and WS >= wsl:
                         wind[j, i] = 1.
                         cw = COLORLIMIT
-                        ct = 'WIND LIMIT REACHED'
-                        cts = 35
+                        #ct = 'WIND LIMIT REACHED'
+                        #cts = 35
                     elif check_wind and WS >= wpl:
                         cw = COLORWARN
-                        ct = 'Pointing limit!'
-                        cts = 20
+                        #ct = 'Pointing limit!'
+                        #cts = 20
                         ws = ephem.separation((star.alt, np.deg2rad(WD)), (star.alt, star.az))
                         if ws < np.pi / 2.:
                             wind[j, i] = 1.
@@ -718,8 +722,8 @@ class VisibilityView(FigureCanvas):
 
             cs = self.axis.contourf(ra_g, dec_g, wind, hatches=['//'],
                                     cmap=cmap, alpha=0.5)
-            self.axis.annotate(ct, xy=(12, 75), rotation=0,
-                               horizontalalignment='center', verticalalignment='center', color=cw, fontsize=cts)
+            #self.axis.annotate(ct, xy=(12, 75), rotation=0,
+            #                   horizontalalignment='center', verticalalignment='center', color=cw, fontsize=cts)
 
         for tick in self.axis.get_xticklabels():
             tick.set_rotation(70)
@@ -733,7 +737,7 @@ class VisibilityView(FigureCanvas):
         lat = float(tel_lat.to_string(unit=u.degree, decimal=True))
         self.axis.set_ylim([np.max([lat - 90, -90]), np.min([lat + 90, 90])])
 
-        self.axis.set_title("%s - Moon sep %d deg - max airmass %1.2f" % (observer.date, \
+        self.axis.set_title("%s - Moon sep %d deg - max airmass %1.1f" % (str(obs_time).split('.')[0], \
                                                                           anglemoon, airmass), fontsize=9)
 
         self.axis.grid()

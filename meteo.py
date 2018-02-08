@@ -48,6 +48,7 @@ class Meteo:
         self.temperature = 9999 
         self.humidity = -1
         self.lastest_weatherupdate_time = None
+        self.debugmode = debugmode
         
         self.cloudscheck = cloudscheck
         self.cloudmap = None
@@ -132,12 +133,20 @@ class Meteo:
         RH = None
         Temps = []
         
-        try:
-            data=urllib.request.urlopen(self.location.get("weather", "url")).read()
-        except urllib.error.URLError:
-            logger.warning("Cannot download weather data. Either you or the weather server is offline!")
-            return np.nan, np.nan
-        data = data.decode("utf-8")
+        if self.debugmode:
+            fname = "config/meteoDebugMode.last"
+            fi = open(fname, mode='r')
+            data = ""
+            with fi:
+                line = fi.read()
+                data += line
+        else:
+            try:
+                data=urllib.request.urlopen(self.location.get("weather", "url")).read()
+            except urllib.error.URLError:
+                logger.warning("Cannot download weather data. Either you or the weather server is offline!")
+                return np.nan, np.nan
+            data = data.decode("utf-8")
         data=data.split("\n") # then split it into lines
         for line in data:
             if re.match( r'WD', line, re.M|re.I):
