@@ -16,7 +16,7 @@ import obs
 from bisect import bisect_left
 import pickle as pickle
 import ephem
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 
 #import csv
 import numpy as np
@@ -340,7 +340,7 @@ def readconfig(configpath):
 	"""
 	Reads in a config file
 	"""
-	config = SafeConfigParser(allow_no_value=True)
+	config = ConfigParser(allow_no_value=True)
 	
 	if not os.path.exists(configpath):
 		raise RuntimeError("Config file '{}' does not exist!".format(configpath))
