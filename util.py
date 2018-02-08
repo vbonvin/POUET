@@ -16,7 +16,7 @@ import obs
 from bisect import bisect_left
 import pickle as pickle
 import ephem
-from configparser import ConfigParser
+from configparser import SafeConfigParser
 
 #import csv
 import numpy as np
@@ -62,6 +62,7 @@ def hilite(string, status, bold):
 	if bold:
 		attr.append('1')
 	return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), string)
+
 
 def excelimport(filename, obsprogram=None):
 	if noexcelimport:
@@ -245,65 +246,6 @@ def excelimport(filename, obsprogram=None):
 
 		return observables
 
-def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, startline=1, obsprogram="None", verbose=False):
-	"""
-	Import an rdb catalog into a list of observables
-	THIS SHOULD BE IN UTIL !!
-	"""
-
-	logger.info("Reading \"%s\"..." % (os.path.basename(filepath)))
-	rdbfile = open(filepath, "r")
-	rdbfilelines = rdbfile.readlines()[startline:] # we directly "skip" the first lines of eventual headers
-	rdbfile.close()
-
-	observables = []
-
-	for ind, line in enumerate(rdbfilelines) :
-
-		if line[0] == "-" or line[0] == "#":
-			continue
-
-		if len(line.strip()) < 5:
-			logger.debug("Skipping empty line %i : %s" % (ind+startline, repr(line)))
-			continue
-
-		elements = line.split()
-
-		name = str(elements[namecol-1])
-		alpha = str(elements[alphacol-1])
-		delta = str(elements[deltacol-1])
-
-		# This is the minimal stuff necessary to define an observable. Now, let's go into the per-obsprogram details
-
-		if obsprogram not in ["lens", "transit", "bebop", "superwasp", "followup", "703", "714"]:
-			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
-
-		if obsprogram == "lens":
-			minangletomoon = 30
-			maxairmass = 1.5
-			exptime = 35*60 #approx 35 minutes per lens
-			observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta, minangletomoon=minangletomoon, maxairmass=maxairmass, exptime=exptime))
-
-		if obsprogram == "transit":
-			pass
-
-		if obsprogram == "bebop":
-			pass
-
-		if obsprogram == "superwasp":
-			pass
-
-		if obsprogram == "followup":
-			pass
-
-		if obsprogram == "703":
-			pass
-
-		if obsprogram == "714":
-			pass
-
-	return observables
-
 
 
 def writepickle(obj, filepath, verbose=True, protocol = -1):
@@ -340,7 +282,7 @@ def readconfig(configpath):
 	"""
 	Reads in a config file
 	"""
-	config = ConfigParser(allow_no_value=True)
+	config = SafeConfigParser(allow_no_value=True)
 	
 	if not os.path.exists(configpath):
 		raise RuntimeError("Config file '{}' does not exist!".format(configpath))

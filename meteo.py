@@ -297,7 +297,7 @@ class Meteo:
         obs_time = Time(obs_time.mjd + 1, format='mjd', scale='utc') # That corresponds to the next middle of the observing night
     
         observer = ephem.Observer()
-        observer.pressure=0
+        observer.pressure = 0
         observer.date = obs_time.iso
         observer.lat, observer.lon, observer.elevation = str(lat.degree), str(lon.degree), elev
     

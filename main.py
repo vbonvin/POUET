@@ -207,7 +207,9 @@ class VisibilityView(FigureCanvas):
                 QtWidgets.QSizePolicy.Expanding,
                 QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-               
+
+
+
     def visbility_draw(self, obs_time, meteo, airmass, anglemoon, check_wind=True):
         
         self.axis.clear()
