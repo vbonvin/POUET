@@ -5,7 +5,7 @@ Launch the application, link POUET functions to the design
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os, sys
-import obs, run, util, clouds, skyutils 
+import obs, run, util, clouds 
 import design
 from astropy import units as u
 from astropy.time import Time, TimeDelta
@@ -29,6 +29,7 @@ import logging
 COLORWARN = "orange"
 COLORLIMIT = "red"
 COLORNOMINAL = 'black'
+COLORSUCCESS = "green"
 
 class MyLogger(logging.Handler):
     def __init__(self, parent):
@@ -68,7 +69,7 @@ class AllSkyView(FigureCanvas):
                 QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
  
-    def display(self, meteo):
+    def display(self, meteo, plot_analysis=True):
         
         self.axis.clear()
         
@@ -79,8 +80,21 @@ class AllSkyView(FigureCanvas):
         # It's a secondary issue, to be solved later
         #self.figure.tight_layout()
         
+        try:
+            rest = allsyk.im_masked
+        except AttributeError:
+            logging.warning("No All Sky image, by-passing")
+            return
         
-        rest = allsyk.im_masked
+        if not plot_analysis:
+            self.axis.imshow(allsyk.im_original, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
+            self.axis.set_ylim([np.shape(rest)[0], 0])
+            self.axis.set_xlim([0, np.shape(rest)[1]])
+        
+            self.axis.set_axis_off()
+            self.draw()
+            return
+        
         self.axis.imshow(rest, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
         self.axis.imshow(allsyk.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
         #self.draw()
@@ -213,7 +227,7 @@ class VisibilityView(FigureCanvas):
         self.axis.clear()
         self.cax.clear()
       
-        ras, decs = skyutils.grid_points()
+        ras, decs = util.grid_points()
         ra_g, dec_g = np.meshgrid(ras,decs)
         sep=np.zeros_like(ra_g)
         vis=np.zeros_like(ra_g)
@@ -244,7 +258,7 @@ class VisibilityView(FigureCanvas):
                 star._dec = dec
                 star.compute(observer)
 
-                if skyutils.elev2airmass(el=star.alt+0, alt=observer.elevation) < airmass:
+                if util.elev2airmass(el=star.alt+0, alt=observer.elevation) < airmass:
                     vis[j,i]=1
                     s = ephem.separation((moon.ra, moon.dec), (ra, dec))+0.
 
@@ -406,6 +420,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.retrieveObs.clicked.connect(self.retrieve_obs)
         self.weatherDisplayRefresh.clicked.connect(self.weather_display)
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
+        self.configCloudsShowLayersValue.clicked.connect(self.allsky_redisplay)
         self.checkObsStatus.clicked.connect(self.check_obs_status)
         self.configAutoupdateFreqValue.valueChanged.connect(self.set_timer_interval)
         self.configTimenow.clicked.connect(self.set_configTimeNow)
@@ -439,6 +454,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         #self.headerPopup = uic.loadUi("headerdialog.ui")
         #self.headerPopup.show()
 
+    def print_status(self, msg, colour=COLORNOMINAL):
+        self.statusLabel.setText(msg)
+        self.statusLabel.setStyleSheet('color: {}'.format(colour))
+        QtWidgets.QApplication.processEvents()
         
     def set_timer_interval(self):
 
@@ -467,15 +486,21 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             goto_mode = True
         
         if goto_mode != self.allsky_debugmode:
-            self.allsky_debugmode = goto_mode  
-            self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
-            self.auto_refresh()
-            self.do_update()
+            
             if goto_mode:
                 mode="debug"
             else:
                 mode="production"
+            
+            self.print_status("Changing to {} mode...".format(mode), colour=COLORWARN)
+            
+            self.allsky_debugmode = goto_mode  
+            self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
+            self.auto_refresh()
+            self.do_update()
+
             logging.warning("Now in {} mode for the All Sky!".format(mode))
+            self.print_status("Change of mode complete.")
 
         
     def do_update(self):
@@ -576,14 +601,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             logmsg += 'successfully loaded'
             logging.info(logmsg)
             #todo: replace by redirecting the message to a logger
-            self.statusLabel.setStyleSheet('color: green')
-            self.statusLabel.setText("%s \n Sucessfully loaded" % filepath)
+            self.print_status("%s \n Sucessfully loaded" % filepath, COLORSUCCESS)
 
         except:
             logmsg += ' not loaded - format unknown'
             logging.error(logmsg)
-            self.statusLabel.setStyleSheet('color: {}'.format(COLORWARN))
-            self.statusLabel.setText("%s \n Format unknown" % filepath)
+
+            self.print_status("%s \n Format unknown" % filepath, COLORWARN)
 
 
     def check_obs_status(self):
@@ -615,7 +639,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
         else:
             self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
-         
+        
         self.weatherWindDirectionValue.setText(str('{:3d}'.format(int(self.currentmeteo.winddirection))))
         
         self.weatherTemperatureValue.setText(str('{:2.1f}'.format(int(self.currentmeteo.temperature))))
@@ -661,6 +685,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         #-------------------------------------------------------- Night here only (we change the obs_time so this must the last things to run!)
         
         cobs_time = copy.copy(obs_time)
+        #cobs_time = Time('2018-02-08 01:00:00', format='iso', scale='utc')
         cobs_time.format = 'iso'
         cobs_time.out_subfmt = 'date'
         
@@ -670,11 +695,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         if is_after_midday:
             day_before = copy.copy(cobs_time)
-            night_date = cobs_time + TimeDelta(1, format="jd")
-            day_after = night_date
+            night_date = cobs_time
+            day_after = night_date + TimeDelta(1, format="jd")
         else:
             day_after = cobs_time
-            night_date = cobs_time
+            night_date = cobs_time - TimeDelta(1, format="jd")
             day_before = cobs_time - TimeDelta(1, format="jd")
             
         sunrise, sunset = self.currentmeteo.get_twilights(night_date, twilight='civil')
@@ -693,29 +718,39 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.nightLastUpdateValueAfter.setText(str(day_after).split('.')[0])
 
     def allsky_refresh(self):
+        
+        self.print_status("Refreshing All Sky...", COLORWARN)
 
         self.currentmeteo.allsky.update()
         
-        logging.info("updated allsky")
+        logging.info("Updated All Sky")
         
         self.allsky_redisplay()
         
+        self.print_status("All Sky refresh done.", COLORNOMINAL)
+        
     def allsky_redisplay(self):
         
-        self.allsky.display(self.currentmeteo)
+        if self.configCloudsShowLayersValue.checkState() == 0:
+            plot_analysis = False
+        else:
+            plot_analysis = True
+        
+        self.allsky.display(self.currentmeteo, plot_analysis=plot_analysis)
         self.allSkyUpdateValue.setText(str(self.currentmeteo.allsky.last_im_refresh).split('.')[0])
         
         self.allsky.display_wind_limits(self.currentmeteo)
         self.allSkyUpdateWindValue.setText("Wind update: {}".format(str(self.currentmeteo.lastest_weatherupdate_time).split('.')[0]))
         
-        logging.debug("Re-drawn All Sky")
+        msg = "Drawn All Sky."
+        logging.debug(msg)
         
     def visibilitytool_draw(self):
         
         airmass = self.visibilityAirmassValue.value()
         anglemoon = self.visibilityMoonAngleValue.value()
         
-        if np.abs((self.obs_time - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value / 60.) > 10:
+        if self.currentmeteo.lastest_weatherupdate_time is None or np.abs((self.obs_time - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value / 60.) > 10:
             check_wind = False
             logging.info("Visibility is not considering the wind, too much difference between date weather report and obs time")
         else:
@@ -728,6 +763,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def auto_refresh(self):
         
         logging.info("Auto-refresh")
+        self.print_status("Auto-refresh started...", COLORWARN)
         
         if self.configCloudsAutoRefreshValue.checkState() == 2:
             self.allsky_refresh()
@@ -743,11 +779,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.allSkyUpdateWindValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
             self.weatherLastUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
             
-        if self.currentmeteo.allsky.last_im_refresh is None and (Time.now() - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 10:
+        if self.currentmeteo.allsky.last_im_refresh is None or (Time.now() - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 10:
             self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
         else:
             self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
 
+        self.print_status("Auto-refresh done.", COLORNOMINAL)
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication

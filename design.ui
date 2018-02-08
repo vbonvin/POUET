@@ -1531,7 +1531,7 @@
     <widget class="QCheckBox" name="configCloudsAutoRefreshValue">
      <property name="geometry">
       <rect>
-       <x>180</x>
+       <x>150</x>
        <y>120</y>
        <width>211</width>
        <height>22</height>
@@ -1547,7 +1547,7 @@
     <widget class="QCheckBox" name="configWindAutoRefreshValue">
      <property name="geometry">
       <rect>
-       <x>180</x>
+       <x>150</x>
        <y>150</y>
        <width>211</width>
        <height>22</height>
@@ -1683,17 +1683,33 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>400</x>
+       <x>560</x>
        <y>120</y>
        <width>291</width>
        <height>22</height>
       </rect>
      </property>
      <property name="text">
-      <string>Use local AllSky image[Debug mode]</string>
+      <string>Use local AllSky image [Debug mode]</string>
      </property>
      <property name="checked">
       <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="configCloudsShowLayersValue">
+     <property name="geometry">
+      <rect>
+       <x>330</x>
+       <y>120</y>
+       <width>221</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show clouds analysis layers</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>

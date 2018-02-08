@@ -74,8 +74,8 @@ class Clouds():
         Downloads the image, detects the stars and returns the observability map
         """
 
-        if not self.last_im_refresh is None and (astropy.time.Time.now() - self.last_im_refresh).to(u.s).value / 60. < 2:
-            logger.info("Last image was downloaded more recently than 2 minutes ago, I don't download it again")
+        if not self.last_im_refresh is None and (astropy.time.Time.now() - self.last_im_refresh).to(u.s).value / 60. < 1.5:
+            logger.info("Last image was downloaded more recently than 1.5 minutes ago, I don't download it again")
             #Seems to be okay#logger.critical("TODO: make sure that this map is correct and there's no .T missing (see get_observability_map)")
             return self.observability_map
         
