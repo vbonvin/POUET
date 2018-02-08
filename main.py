@@ -31,313 +31,6 @@ COLORLIMIT = "red"
 COLORNOMINAL = 'black'
 COLORSUCCESS = "green"
 
-class MyLogger(logging.Handler):
-    def __init__(self, parent):
-        super().__init__()
-        self.allskyWidget = QtWidgets.QPlainTextEdit(parent)
-        self.allskyWidget.setGeometry(parent.geometry())
-        self.allskyWidget.setReadOnly(True)
-
-    def emit(self, record):
-        msg = self.format(record)
-        self.allskyWidget.appendPlainText(msg)
-
-        
-class AllSkyView(FigureCanvas):
- 
-    def __init__(self, parent=None, width=6, height=4.5):
-        #fig = Figure(figsize=(width, height), dpi=100)
-        
-        #self.figure.subplots_adjust(bottom=0.01)
-        #self.figure.subplots_adjust(top=0.499)
-        #self.figure.subplots_adjust(right=0.98)
-        #self.figure.subplots_adjust(left=0.)
-        
-        
-        self.figure = Figure(figsize=(width, height))
-        self.figure.patch.set_facecolor((0.95,0.94,0.94,1.))
-        
-        self.axis = self.figure.add_subplot(111)
-        
-        FigureCanvas.__init__(self, self.figure)
-        self.setParent(parent)
-        
-        self.axis.axis('off')
- 
-        FigureCanvas.setSizePolicy(self,
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
- 
-    def display(self, meteo, plot_analysis=True):
-        
-        self.axis.clear()
-        
-        location = meteo.name 
-        allsky = meteo.allsky
-        
-        #TODO: We have an issue with the layout. It seems that there is a remaining padding due to the canevas...
-        # It's a secondary issue, to be solved later
-        #self.figure.tight_layout()
-        
-        try:
-            rest = allsky.im_masked
-        except AttributeError:
-            logging.warning("No All Sky image, by-passing")
-            return
-        
-        if not plot_analysis:
-            self.axis.imshow(allsky.im_original, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
-            self.axis.set_ylim([np.shape(rest)[0], 0])
-            self.axis.set_xlim([0, np.shape(rest)[1]])
-        
-            self.axis.set_axis_off()
-            self.draw()
-            return
-        
-        self.axis.imshow(rest, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
-        self.axis.imshow(allsky.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
-        #self.draw()
-
-        theta_coordinates = np.deg2rad(np.arange(0,360,15))
-    
-        params = clouds.get_params(location)
-
-        ff = params['ff']
-        k1 = params['k1']
-        k2 = params['k2']
-        r0 = params['r0']
-        cx = params['cx']
-        cy = params['cy']
-        north = params['north']
-        deltatetha = params['deltatetha']
-        
-        coordinatesx = np.cos(north + theta_coordinates) * r0 + cx
-        coordinatesy = np.sin(north + theta_coordinates) * r0 + cy
-        
-        northx, northy = clouds.get_image_coordinates(np.deg2rad(0), np.deg2rad(24), location)
-        eastx, easty = clouds.get_image_coordinates(np.deg2rad(90), np.deg2rad(20), location)
-
-        self.axis.annotate('N', xy=(northx, northy), rotation=deltatetha,
-          horizontalalignment='center', verticalalignment='center')
-        
-        self.axis.annotate('E', xy=(eastx, easty), rotation=deltatetha,
-          horizontalalignment='center', verticalalignment='center')
-        
-        altshow = [15, 30, 45, 60, 75, 90]
-        for angle in np.deg2rad(altshow):
-            rr = clouds.get_radius(angle, ff, k1, k2, r0)
-        
-            #if angle >= np.pi/2: print rr/330.
-            self.figure.gca().add_artist(plt.Circle((cx,cy),rr,color='k', fill=False, alpha=0.5))
-        
-            textx = np.cos(north + np.deg2rad(180)) * (rr - 2) + cx
-            texty = np.sin(north + np.deg2rad(180)) * (rr - 2) + cy
-            self.axis.annotate('%d' % (90-np.ceil(np.rad2deg(angle))), xy=(textx, texty), rotation=deltatetha,#prefered_direction['dir'],
-              horizontalalignment='left', verticalalignment='center', size=10)
-
-        #plt.plot([cx, northx], [cy, northy], lw=2, color='k')
-        for ccx, ccy in zip(coordinatesx, coordinatesy):
-            self.axis.plot([cx, ccx], [cy, ccy], lw=1, color='k', alpha=0.5)
-        self.axis.set_ylim([np.shape(rest)[0], 0])
-        self.axis.set_xlim([0, np.shape(rest)[1]])
-        
-        self.axis.set_axis_off()
-        self.draw()
-
-    def display_wind_limits(self, meteo):
-        """
-        Should this call some other function elsewhere? Maybe
-        """
-        
-        params = clouds.get_params(meteo.name)
-        
-        r0 = params['r0']
-        cx = params['cx']
-        cy = params['cy']
-        north = params['north']
-        
-        wpl = float(meteo.location.get("weather", "windWarnLevel"))
-        wsl = float(meteo.location.get("weather", "windLimitLevel"))   
-        WD = meteo.winddirection
-        WS = meteo.windspeed
-        WDd = WD
-        WD = np.deg2rad(WD)
-
-        if WS is not None and WS > wpl:
-            wdcoordinatesx = np.cos(north - WD) * r0 + cx
-            wdcoordinatesy = np.sin(north - WD) * r0 + cy
-            Nd = np.rad2deg(north)# + 90.
-
-            if WS > wsl :
-                cw = COLORLIMIT
-                self.axis.add_patch(Wedge([cx, cy], r0, Nd - WDd, Nd - WDd+360, fill=False, hatch='//', edgecolor=cw))
-                self.axis.annotate('WIND LIMIT\nREACHED', xy=(cx, cy), rotation=0,
-                      horizontalalignment='center', verticalalignment='center', color=cw, fontsize=35)
-            elif WS > wpl :
-                cw = COLORWARN
-                wtcoordinatesx = np.cos(north - WD) * r0 / 2. + cx
-                wtcoordinatesy = np.sin(north - WD) * r0 / 2. + cy
-
-                self.axis.add_patch(Wedge([cx, cy], r0, -90+Nd-WDd, 90+Nd-WDd, fill=False, hatch='//', edgecolor=cw))
-                self.axis.annotate('Pointing limit!', xy=(wtcoordinatesx, wtcoordinatesy), rotation=0,
-                      horizontalalignment='center', verticalalignment='center', color=cw, fontsize=25)
-                
-            self.axis.plot([cx, wdcoordinatesx], [cy, wdcoordinatesy], lw=3, color=cw)
-
-        self.draw()
-
-
-class VisibilityView(FigureCanvas):
- 
-    def __init__(self, parent=None, width=4.5, height=4):
-        #fig = Figure(figsize=(width, height), dpi=100)
-        
-        #self.figure.subplots_adjust(bottom=0.01)
-        #self.figure.subplots_adjust(top=0.499)
-        #self.figure.subplots_adjust(right=0.98)
-        #self.figure.subplots_adjust(left=0.)
-        
-        
-        self.figure = Figure(figsize=(width, height))
-        self.figure.patch.set_facecolor((0.95,0.94,0.94,1.))
-        
-        self.figure.subplots_adjust(wspace=0.)
-        self.figure.subplots_adjust(bottom=0.23)
-        self.figure.subplots_adjust(top=0.95)
-        self.figure.subplots_adjust(right=0.9)
-        self.figure.subplots_adjust(left=0.13)
-            
-        gs = gridspec.GridSpec(1, 2, width_ratios=[20, 1]) 
-        self.axis = self.figure.add_subplot(gs[0])
-        self.cax = self.figure.add_subplot(gs[1])
-
-        FigureCanvas.__init__(self, self.figure)
-        self.parent = parent
-
-        self.setParent(parent)
-
-        FigureCanvas.setSizePolicy(self,
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
-
-
-
-    def visbility_draw(self, obs_time, meteo, airmass, anglemoon, check_wind=True):
-        
-        self.axis.clear()
-        self.cax.clear()
-      
-        ras, decs = util.grid_points()
-        ra_g, dec_g = np.meshgrid(ras,decs)
-        sep=np.zeros_like(ra_g)
-        vis=np.zeros_like(ra_g)
-        wind = np.zeros_like(ra_g) * np.nan
-
-        tel_lat, tel_lon, tel_elev = meteo.get_telescope_params()
-
-        observer = ephem.Observer()
-        observer.date = obs_time.iso
-        observer.lat = tel_lat.to_string(unit=u.degree, decimal=True)
-        observer.lon = tel_lon.to_string(unit=u.degree, decimal=True)
-
-        observer.elevation = tel_elev
-              
-        moon = ephem.Moon()
-        moon.compute(observer)
-        
-        wpl = float(meteo.location.get("weather", "windWarnLevel"))
-        wsl = float(meteo.location.get("weather", "windLimitLevel"))   
-        WD = meteo.winddirection
-        WS = meteo.windspeed
-
-        do_plot_contour = False
-        for i,ra in enumerate(ras):
-            for j,dec in enumerate(decs):
-                star = ephem.FixedBody()
-                star._ra = ra
-                star._dec = dec
-                star.compute(observer)
-
-                if util.elev2airmass(el=star.alt+0, alt=observer.elevation) < airmass:
-                    vis[j,i]=1
-                    s = ephem.separation((moon.ra, moon.dec), (ra, dec))+0.
-
-                    if np.rad2deg(s)-0.5 > anglemoon: # Don't forget that the angular diam of the Moon is ~0.5 deg
-                        sep[j,i]=np.rad2deg(s)
-                        do_plot_contour = True
-                        
-                    else: sep[j,i]=np.nan
-                    
-                    if check_wind and WS >= wsl :
-                        wind[j,i]=1.
-                        cw = COLORLIMIT
-                        ct = 'WIND LIMIT REACHED'
-                        cts = 35
-                    elif check_wind and WS >= wpl :
-                        cw = COLORWARN
-                        ct = 'Pointing limit!'
-                        cts = 20
-                        ws = ephem.separation((star.alt, np.deg2rad(WD)), (star.alt, star.az))
-                        if ws < np.pi/2.:
-                            wind[j,i]=1.
-                else: 
-                    sep[j,i]=np.nan
-                    vis[j,i]=np.nan
-        
-            del star
-            
-        #########################################################
-        
-
-        ra_g=ra_g/2/np.pi*24
-        dec_g=dec_g/np.pi*180
-        v = np.linspace(anglemoon, 180, 100, endpoint=True)
-        self.axis.contourf(ra_g,dec_g,vis,cmap=plt.get_cmap("Greys"))
-        
-        if do_plot_contour:
-            CS=self.axis.contour(ra_g,dec_g, sep, levels=[50,70,90],colors=['yellow','red','k'],inline=1)
-            self.axis.clabel(CS,fontsize=9,fmt='%d°')
-            CS=self.axis.contourf(ra_g,dec_g,sep,v,)
-            
-            t = np.arange(anglemoon, 190, 10)
-            tl = ["{:d}°".format(int(tt)) for tt in t]
-            cbar = self.figure.colorbar(CS,ax=self.axis,cax=self.cax, ticks=t)
-            cbar.ax.set_yticklabels(tl, fontsize=9)
-        
-        if check_wind and WS > wpl:
-            
-            cmap = LinearSegmentedColormap.from_list('mycmap', [(0., 'red'),
-                                                    (1, cw)]
-                                        )
-
-            cs = self.axis.contourf(ra_g,dec_g, wind, hatches=['//'],
-                          cmap=cmap, alpha=0.5)
-            self.axis.annotate(ct, xy=(12, 75), rotation=0,
-                              horizontalalignment='center', verticalalignment='center', color=cw, fontsize=cts)
-
-
-        for tick in self.axis.get_xticklabels():
-            tick.set_rotation(70)
-        self.axis.set_xlabel('Right ascension',fontsize=9,)
-        self.axis.set_ylabel('Declination',fontsize=9,)
-
-        
-        self.axis.set_xticks(np.linspace(0,24,25))
-        self.axis.set_yticks(np.linspace(-90,90,19))
-        
-        
-        self.axis.set_xlim([0,24])
-        lat = float(tel_lat.to_string(unit=u.degree, decimal=True))
-        self.axis.set_ylim([np.max([lat-90, -90]),np.min([lat+90, 90])])
-
-        self.axis.set_title("%s - Moon sep %d deg - max airmass %1.2f" % (observer.date,\
-             anglemoon, airmass), fontsize=9)
-        
-        self.axis.grid()
-
-        self.draw()
 
 
 class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
@@ -479,7 +172,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 for h in headers_input:
                     cb.addItem(h)
             self.headerPopup.headerObsprogramValue.addItem("None")
-
             # ok is 0 if rejected, 1 if accepted
             ok = self.headerPopup.exec()
             if ok:
@@ -744,6 +436,309 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
 
         self.print_status("Auto-refresh done.", COLORNOMINAL)
+
+
+class MyLogger(logging.Handler):
+    def __init__(self, parent):
+        super().__init__()
+        self.allskyWidget = QtWidgets.QPlainTextEdit(parent)
+        self.allskyWidget.setGeometry(parent.geometry())
+        self.allskyWidget.setReadOnly(True)
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.allskyWidget.appendPlainText(msg)
+
+
+class AllSkyView(FigureCanvas):
+
+    def __init__(self, parent=None, width=6, height=4.5):
+        # fig = Figure(figsize=(width, height), dpi=100)
+
+        # self.figure.subplots_adjust(bottom=0.01)
+        # self.figure.subplots_adjust(top=0.499)
+        # self.figure.subplots_adjust(right=0.98)
+        # self.figure.subplots_adjust(left=0.)
+
+        self.figure = Figure(figsize=(width, height))
+        self.figure.patch.set_facecolor((0.95, 0.94, 0.94, 1.))
+
+        self.axis = self.figure.add_subplot(111)
+
+        FigureCanvas.__init__(self, self.figure)
+        self.setParent(parent)
+
+        self.axis.axis('off')
+
+        FigureCanvas.setSizePolicy(self,
+                                   QtWidgets.QSizePolicy.Expanding,
+                                   QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+    def display(self, meteo, plot_analysis=True):
+
+        self.axis.clear()
+
+        location = meteo.name
+        allsky = meteo.allsky
+
+        # TODO: We have an issue with the layout. It seems that there is a remaining padding due to the canevas...
+        # It's a secondary issue, to be solved later
+        # self.figure.tight_layout()
+
+        try:
+            rest = allsky.im_masked
+        except AttributeError:
+            logging.warning("No All Sky image, by-passing")
+            return
+
+        if not plot_analysis:
+            self.axis.imshow(allsky.im_original, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
+            self.axis.set_ylim([np.shape(rest)[0], 0])
+            self.axis.set_xlim([0, np.shape(rest)[1]])
+
+            self.axis.set_axis_off()
+            self.draw()
+            return
+
+        self.axis.imshow(rest, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
+        self.axis.imshow(allsky.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
+        # self.draw()
+
+        theta_coordinates = np.deg2rad(np.arange(0, 360, 15))
+
+        params = clouds.get_params(location)
+
+        ff = params['ff']
+        k1 = params['k1']
+        k2 = params['k2']
+        r0 = params['r0']
+        cx = params['cx']
+        cy = params['cy']
+        north = params['north']
+        deltatetha = params['deltatetha']
+
+        coordinatesx = np.cos(north + theta_coordinates) * r0 + cx
+        coordinatesy = np.sin(north + theta_coordinates) * r0 + cy
+
+        northx, northy = clouds.get_image_coordinates(np.deg2rad(0), np.deg2rad(24), location)
+        eastx, easty = clouds.get_image_coordinates(np.deg2rad(90), np.deg2rad(20), location)
+
+        self.axis.annotate('N', xy=(northx, northy), rotation=deltatetha,
+                           horizontalalignment='center', verticalalignment='center')
+
+        self.axis.annotate('E', xy=(eastx, easty), rotation=deltatetha,
+                           horizontalalignment='center', verticalalignment='center')
+
+        altshow = [15, 30, 45, 60, 75, 90]
+        for angle in np.deg2rad(altshow):
+            rr = clouds.get_radius(angle, ff, k1, k2, r0)
+
+            # if angle >= np.pi/2: print rr/330.
+            self.figure.gca().add_artist(plt.Circle((cx, cy), rr, color='k', fill=False, alpha=0.5))
+
+            textx = np.cos(north + np.deg2rad(180)) * (rr - 2) + cx
+            texty = np.sin(north + np.deg2rad(180)) * (rr - 2) + cy
+            self.axis.annotate('%d' % (90 - np.ceil(np.rad2deg(angle))), xy=(textx, texty), rotation=deltatetha,
+                               # prefered_direction['dir'],
+                               horizontalalignment='left', verticalalignment='center', size=10)
+
+        # plt.plot([cx, northx], [cy, northy], lw=2, color='k')
+        for ccx, ccy in zip(coordinatesx, coordinatesy):
+            self.axis.plot([cx, ccx], [cy, ccy], lw=1, color='k', alpha=0.5)
+        self.axis.set_ylim([np.shape(rest)[0], 0])
+        self.axis.set_xlim([0, np.shape(rest)[1]])
+
+        self.axis.set_axis_off()
+        self.draw()
+
+    def display_wind_limits(self, meteo):
+        """
+        Should this call some other function elsewhere? Maybe
+        """
+
+        params = clouds.get_params(meteo.name)
+
+        r0 = params['r0']
+        cx = params['cx']
+        cy = params['cy']
+        north = params['north']
+
+        wpl = float(meteo.location.get("weather", "windWarnLevel"))
+        wsl = float(meteo.location.get("weather", "windLimitLevel"))
+        WD = meteo.winddirection
+        WS = meteo.windspeed
+        WDd = WD
+        WD = np.deg2rad(WD)
+
+        if WS is not None and WS > wpl:
+            wdcoordinatesx = np.cos(north - WD) * r0 + cx
+            wdcoordinatesy = np.sin(north - WD) * r0 + cy
+            Nd = np.rad2deg(north)  # + 90.
+
+            if WS > wsl:
+                cw = COLORLIMIT
+                self.axis.add_patch(Wedge([cx, cy], r0, Nd - WDd, Nd - WDd + 360, fill=False, hatch='//', edgecolor=cw))
+                self.axis.annotate('WIND LIMIT\nREACHED', xy=(cx, cy), rotation=0,
+                                   horizontalalignment='center', verticalalignment='center', color=cw, fontsize=35)
+            elif WS > wpl:
+                cw = COLORWARN
+                wtcoordinatesx = np.cos(north - WD) * r0 / 2. + cx
+                wtcoordinatesy = np.sin(north - WD) * r0 / 2. + cy
+
+                self.axis.add_patch(
+                    Wedge([cx, cy], r0, -90 + Nd - WDd, 90 + Nd - WDd, fill=False, hatch='//', edgecolor=cw))
+                self.axis.annotate('Pointing limit!', xy=(wtcoordinatesx, wtcoordinatesy), rotation=0,
+                                   horizontalalignment='center', verticalalignment='center', color=cw, fontsize=25)
+
+            self.axis.plot([cx, wdcoordinatesx], [cy, wdcoordinatesy], lw=3, color=cw)
+
+        self.draw()
+
+
+class VisibilityView(FigureCanvas):
+
+    def __init__(self, parent=None, width=4.5, height=4):
+        # fig = Figure(figsize=(width, height), dpi=100)
+
+        # self.figure.subplots_adjust(bottom=0.01)
+        # self.figure.subplots_adjust(top=0.499)
+        # self.figure.subplots_adjust(right=0.98)
+        # self.figure.subplots_adjust(left=0.)
+
+        self.figure = Figure(figsize=(width, height))
+        self.figure.patch.set_facecolor((0.95, 0.94, 0.94, 1.))
+
+        self.figure.subplots_adjust(wspace=0.)
+        self.figure.subplots_adjust(bottom=0.23)
+        self.figure.subplots_adjust(top=0.95)
+        self.figure.subplots_adjust(right=0.9)
+        self.figure.subplots_adjust(left=0.13)
+
+        gs = gridspec.GridSpec(1, 2, width_ratios=[20, 1])
+        self.axis = self.figure.add_subplot(gs[0])
+        self.cax = self.figure.add_subplot(gs[1])
+
+        FigureCanvas.__init__(self, self.figure)
+        self.parent = parent
+
+        self.setParent(parent)
+
+        FigureCanvas.setSizePolicy(self,
+                                   QtWidgets.QSizePolicy.Expanding,
+                                   QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+    def visbility_draw(self, obs_time, meteo, airmass, anglemoon, check_wind=True):
+
+        self.axis.clear()
+        self.cax.clear()
+
+        ras, decs = util.grid_points()
+        ra_g, dec_g = np.meshgrid(ras, decs)
+        sep = np.zeros_like(ra_g)
+        vis = np.zeros_like(ra_g)
+        wind = np.zeros_like(ra_g) * np.nan
+
+        tel_lat, tel_lon, tel_elev = meteo.get_telescope_params()
+
+        observer = ephem.Observer()
+        observer.date = obs_time.iso
+        observer.lat = tel_lat.to_string(unit=u.degree, decimal=True)
+        observer.lon = tel_lon.to_string(unit=u.degree, decimal=True)
+
+        observer.elevation = tel_elev
+
+        moon = ephem.Moon()
+        moon.compute(observer)
+
+        wpl = float(meteo.location.get("weather", "windWarnLevel"))
+        wsl = float(meteo.location.get("weather", "windLimitLevel"))
+        WD = meteo.winddirection
+        WS = meteo.windspeed
+
+        do_plot_contour = False
+        for i, ra in enumerate(ras):
+            for j, dec in enumerate(decs):
+                star = ephem.FixedBody()
+                star._ra = ra
+                star._dec = dec
+                star.compute(observer)
+
+                if util.elev2airmass(el=star.alt + 0, alt=observer.elevation) < airmass:
+                    vis[j, i] = 1
+                    s = ephem.separation((moon.ra, moon.dec), (ra, dec)) + 0.
+
+                    if np.rad2deg(s) - 0.5 > anglemoon:  # Don't forget that the angular diam of the Moon is ~0.5 deg
+                        sep[j, i] = np.rad2deg(s)
+                        do_plot_contour = True
+
+                    else:
+                        sep[j, i] = np.nan
+
+                    if check_wind and WS >= wsl:
+                        wind[j, i] = 1.
+                        cw = COLORLIMIT
+                        ct = 'WIND LIMIT REACHED'
+                        cts = 35
+                    elif check_wind and WS >= wpl:
+                        cw = COLORWARN
+                        ct = 'Pointing limit!'
+                        cts = 20
+                        ws = ephem.separation((star.alt, np.deg2rad(WD)), (star.alt, star.az))
+                        if ws < np.pi / 2.:
+                            wind[j, i] = 1.
+                else:
+                    sep[j, i] = np.nan
+                    vis[j, i] = np.nan
+
+            del star
+
+        #########################################################
+
+        ra_g = ra_g / 2 / np.pi * 24
+        dec_g = dec_g / np.pi * 180
+        v = np.linspace(anglemoon, 180, 100, endpoint=True)
+        self.axis.contourf(ra_g, dec_g, vis, cmap=plt.get_cmap("Greys"))
+
+        if do_plot_contour:
+            CS = self.axis.contour(ra_g, dec_g, sep, levels=[50, 70, 90], colors=['yellow', 'red', 'k'], inline=1)
+            self.axis.clabel(CS, fontsize=9, fmt='%d°')
+            CS = self.axis.contourf(ra_g, dec_g, sep, v, )
+
+            t = np.arange(anglemoon, 190, 10)
+            tl = ["{:d}°".format(int(tt)) for tt in t]
+            cbar = self.figure.colorbar(CS, ax=self.axis, cax=self.cax, ticks=t)
+            cbar.ax.set_yticklabels(tl, fontsize=9)
+
+        if check_wind and WS > wpl:
+            cmap = LinearSegmentedColormap.from_list('mycmap', [(0., 'red'),
+                                                                (1, cw)]
+                                                     )
+
+            cs = self.axis.contourf(ra_g, dec_g, wind, hatches=['//'],
+                                    cmap=cmap, alpha=0.5)
+            self.axis.annotate(ct, xy=(12, 75), rotation=0,
+                               horizontalalignment='center', verticalalignment='center', color=cw, fontsize=cts)
+
+        for tick in self.axis.get_xticklabels():
+            tick.set_rotation(70)
+        self.axis.set_xlabel('Right ascension', fontsize=9, )
+        self.axis.set_ylabel('Declination', fontsize=9, )
+
+        self.axis.set_xticks(np.linspace(0, 24, 25))
+        self.axis.set_yticks(np.linspace(-90, 90, 19))
+
+        self.axis.set_xlim([0, 24])
+        lat = float(tel_lat.to_string(unit=u.degree, decimal=True))
+        self.axis.set_ylim([np.max([lat - 90, -90]), np.min([lat + 90, 90])])
+
+        self.axis.set_title("%s - Moon sep %d deg - max airmass %1.2f" % (observer.date, \
+                                                                          anglemoon, airmass), fontsize=9)
+
+        self.axis.grid()
+
+        self.draw()
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication

@@ -33,9 +33,11 @@ class Meteo:
     def __init__(self, name='uknsite', time=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None,
             winddirection=-1, windspeed=-1, cloudscheck=True, fimage=None, debugmode=False):
 
+
         self.name = name
         self.location = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
-        
+        self.get_telescope_params()
+
         self.time = time
         self.moonalt = moonaltitude
         self.moonaz = moonazimuth
@@ -183,11 +185,11 @@ class Meteo:
     
     def get_moon(self, obs_time=Time.now()):
     
-        lat, lon, elev = self.get_telescope_params()
+        #lat, lon, elev = self.get_telescope_params()
     
         observer = ephem.Observer()
         observer.date = obs_time.iso
-        observer.lat, observer.lon, observer.elevation = lat.degree, lon.degree, elev
+        observer.lat, observer.lon, observer.elevation = self.lat.degree, self.lon.degree, self.elev
     
         self.moon = ephem.Moon()
         self.moon.compute(observer)
@@ -202,11 +204,11 @@ class Meteo:
     
     def get_sun(self, obs_time=Time.now()):
     
-        lat, lon, elev = self.get_telescope_params()
+        #lat, lon, elev = self.get_telescope_params()
     
         observer = ephem.Observer()
         observer.date = obs_time.iso
-        observer.lat, observer.lon, observer.elevation = lat.degree, lon.degree, elev
+        observer.lat, observer.lon, observer.elevation = self.lat.degree, self.lon.degree, self.elev
     
         self.sun = ephem.Sun()
     
@@ -229,7 +231,7 @@ class Meteo:
     
         """
     
-        lat, lon, elev = self.get_telescope_params()
+        lat, lon, elev = self.lat, self.lon, self.elev
     
         # Untouched code from Azimuth.py
         D = obs_time.jd - 2451545.0
@@ -259,11 +261,11 @@ class Meteo:
         return Az, Alt
     
     def get_telescope_params(self):
-        lat=angles.Angle(self.location.get("location", "latitude"))
-        lon=angles.Angle(self.location.get("location", "longitude"))
-        elev = float(self.location.get("location", "elevation"))
+        self.lat=angles.Angle(self.location.get("location", "latitude"))
+        self.lon=angles.Angle(self.location.get("location", "longitude"))
+        self.elev = float(self.location.get("location", "elevation"))
         
-        return lat, lon, elev
+        return self.lat, self.lon, self.elev
     
 
     def get_nighthours(self, obs_night, twilight="nautical"):
@@ -290,7 +292,7 @@ class Meteo:
         return a list of astropy Time objects: twilight in, twilight out
         """
     
-        lat, lon, elev = self.get_telescope_params()
+        lat, lon, elev = self.lat, self.lon, self.elev
     
         obs_time = Time('%s 05:00:00' % obs_night, format='iso', scale='utc') #5h UT is approx. the middle of the night
     

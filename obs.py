@@ -155,7 +155,7 @@ class Observable:
 		self.azimuth = azimuth
 
 
-	def get_airmass(self):
+	def get_airmass(self, meteo):
 
 		"""
 		Compute the airmass using the altitude. We cap the maximum value at 10.
@@ -166,12 +166,16 @@ class Observable:
 		#TODO : see how the computation belows varies regarding Euler computation (in CoordinatesAwayFromMoon)
 
 		try:
+			self.airmass = util.elev2airmass(np.pi/2 -self.altitude.radian, meteo.elev)
+
+
+			"""	
 			zenith = angles.Angle(90-self.altitude.degree, unit="degree")
 			airmass = 1.0/cos(zenith.radian)
 			if airmass < 0 or airmass > 10:
 				airmass = 10
 			self.airmass = airmass
-
+			"""
 
 		except AttributeError:
 			raise AttributeError("%s has no altitude! \n Compute its altutide first !")
