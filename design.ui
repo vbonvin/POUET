@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1368</width>
-    <height>1008</height>
+    <height>818</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -219,7 +219,7 @@
      <x>10</x>
      <y>50</y>
      <width>871</width>
-     <height>951</height>
+     <height>761</height>
     </rect>
    </property>
    <property name="tabShape">
@@ -1637,7 +1637,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>890</y>
+       <y>700</y>
        <width>441</width>
        <height>21</height>
       </rect>
@@ -1659,7 +1659,7 @@
      <property name="geometry">
       <rect>
        <x>470</x>
-       <y>890</y>
+       <y>700</y>
        <width>391</width>
        <height>21</height>
       </rect>
