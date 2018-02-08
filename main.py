@@ -74,20 +74,20 @@ class AllSkyView(FigureCanvas):
         self.axis.clear()
         
         location = meteo.name 
-        allsyk = meteo.allsky
+        allsky = meteo.allsky
         
         #TODO: We have an issue with the layout. It seems that there is a remaining padding due to the canevas...
         # It's a secondary issue, to be solved later
         #self.figure.tight_layout()
         
         try:
-            rest = allsyk.im_masked
+            rest = allsky.im_masked
         except AttributeError:
             logging.warning("No All Sky image, by-passing")
             return
         
         if not plot_analysis:
-            self.axis.imshow(allsyk.im_original, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
+            self.axis.imshow(allsky.im_original, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
             self.axis.set_ylim([np.shape(rest)[0], 0])
             self.axis.set_xlim([0, np.shape(rest)[1]])
         
@@ -96,7 +96,7 @@ class AllSkyView(FigureCanvas):
             return
         
         self.axis.imshow(rest, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
-        self.axis.imshow(allsyk.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
+        self.axis.imshow(allsky.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
         #self.draw()
 
         theta_coordinates = np.deg2rad(np.arange(0,360,15))
@@ -221,7 +221,9 @@ class VisibilityView(FigureCanvas):
                 QtWidgets.QSizePolicy.Expanding,
                 QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
-               
+
+
+
     def visbility_draw(self, obs_time, meteo, airmass, anglemoon, check_wind=True):
         
         self.axis.clear()
@@ -337,49 +339,6 @@ class VisibilityView(FigureCanvas):
 
         self.draw()
 
-class MultiPopup(QtWidgets.QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.resize(460, 320)
-
-
-        layout = QtWidgets.QGridLayout()
-
-        self.nameColLabel = QtWidgets.QLabel("Name:")
-        self.nameColValues = QtWidgets.QComboBox()
-        self.nameColValues.addItems(["name1", "name2"])
-
-        layout.addWidget(self.nameColLabel, 0, 0)
-        layout.addWidget(self.nameColValues, 0, 1)
-
-        self.alphaColLabel = QtWidgets.QLabel("Alpha:")
-        self.alphaColValues = QtWidgets.QComboBox()
-        self.alphaColValues.addItems(["alpha1", "alpha2"])
-
-        layout.addWidget(self.alphaColLabel, 1, 0)
-        layout.addWidget(self.alphaColValues, 1, 1)
-
-        self.okButton = QtWidgets.QPushButton('OK', self)
-        self.okButton.clicked.connect(self.saveandclose)
-        layout.addWidget(self.okButton, 2, 0)
-
-
-        self.cancelButton = QtWidgets.QPushButton()
-        self.cancelButton.setText('Cancel')
-        layout.addWidget(self.cancelButton, 2, 1)
-
-        self.setLayout(layout)
-        self.exec()
-
-    def saveandclose(self):
-        self.namecol_value = self.nameColValues.currentIndex()
-        self.alphacol_index = self.alphaColValues.currentIndex()
-        self.deltacol_index = self.deltaColValues.currentIndex()
-
-
-
-        self.accept()
 
 class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def __init__(self, parent=None):
@@ -530,7 +489,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             # header popup
             self.headerPopup = uic.loadUi("headerdialog.ui")
 
-            # split by tabs
+            # split by tabs/spaces
             headers_input = open(filepath, 'r').readlines()[0].split('\n')[0].split()
 
             for cb in [self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]:
@@ -549,7 +508,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 if self.headerPopup.headerObsprogramValue.currentText() == "None":
                     obsprogramcol = None
                 else:
-                    obsprogramcol = int(self.headerPopup.headerDecValue.currentIndex())+1
+                    obsprogramcol = int(self.headerPopup.headerObsprogramValue.currentIndex())+1
 
 
                 # obsprogram popup
