@@ -379,24 +379,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.timer.timeout.connect(self.auto_refresh)
         
         # testing stuff at startup...
-        """
-        run.refresh_status(self.observables, self.currentmeteo)
-        for o in self.observables:
-            o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
-        """
-        # self.popup = MultiPopup()
-        #self.popup.show()
 
-        #print(self.popup.alpha_col)
-        #sys.exit()
-
-        #import headerloader
-        #self.headerloader = headerloader.Ui_Dialog
-
-
-        # Custom dialog loader
-        #self.headerPopup = uic.loadUi("headerdialog.ui")
-        #self.headerPopup.show()
 
         
     def set_timer_interval(self):
@@ -547,16 +530,33 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
     def check_obs_status(self):
         """
-
-        :return:
+        :return: states of observables
         """
 
         #0 is not checked, 1 is partially checked, 2 is checked --> 0 or 2 for us
         model = self.listObs.model()
 
-        statuses = [model.item(i, 0).checkState() for i in range(model.rowCount())]
-        print(statuses)
+        states = [model.item(i, 0).checkState() for i in range(model.rowCount())]
+        states = [0 if s == 0 else 1 for s in states]
 
+        return states
+
+
+    def hide_observables(self, criterion):
+        """
+        Hide observables according to a given criterion
+
+        :return: None
+        """
+
+        model = self.listObs.model()
+        states = self.check_obs_status()
+
+
+
+
+    def unhide_observables(self):
+        pass
 
     def weather_display(self):
         
