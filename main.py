@@ -73,16 +73,16 @@ class AllSkyView(FigureCanvas):
         self.axis.clear()
         
         location = meteo.name 
-        allsyk = meteo.allsky
+        allsky = meteo.allsky
         
         #TODO: We have an issue with the layout. It seems that there is a remaining padding due to the canevas...
         # It's a secondary issue, to be solved later
         #self.figure.tight_layout()
         
         
-        rest = allsyk.im_masked
+        rest = allsky.im_masked
         self.axis.imshow(rest, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
-        self.axis.imshow(allsyk.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
+        self.axis.imshow(allsky.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
         #self.draw()
 
         theta_coordinates = np.deg2rad(np.arange(0,360,15))
