@@ -387,7 +387,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         logging.info('Startup...')
         
-        self.currentmeteo = run.startup(name='LaSilla', cloudscheck=True, debugmode=False)
+        self.allsky_debugmode = False  
+        self.name_location = 'LaSilla'
+        self.cloudscheck = True
+        self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
         
         self.allsky = AllSkyView(parent=self.allskyView)
         self.allsky_redisplay()
@@ -407,6 +410,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.configTimenow.clicked.connect(self.set_configTimeNow)
         self.configUpdate.clicked.connect(self.do_update)
         self.visibilityDraw.clicked.connect(self.visibilitytool_draw)
+        self.configCloudsDebugModeValue.clicked.connect(self.set_debug_mode)
 
         
         # Stating timer
@@ -445,6 +449,25 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         self.obs_time = Time(self.configTime.dateTime().toPyDateTime(), scale="utc")
         logging.debug("obs_time is now set to {:s}".format(str(self.obs_time)))
+        
+    def set_debug_mode(self):
+        
+        if self.configCloudsDebugModeValue.checkState() == 0:
+            goto_mode = False
+        else:
+            goto_mode = True
+        
+        if goto_mode != self.allsky_debugmode:
+            self.allsky_debugmode = goto_mode  
+            self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
+            self.auto_refresh()
+            self.do_update()
+            if goto_mode:
+                mode="debug"
+            else:
+                mode="production"
+            logging.warning("Now in {} mode for the All Sky!".format(mode))
+
         
     def do_update(self):
         
