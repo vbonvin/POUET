@@ -168,7 +168,7 @@ class Meteo:
         if WS[2] < 99:
             WS = WS[2]
         else:
-            logger.warning("WARNING: Wind speed from 3.6m unavailable, using other readings in LaSilla")
+            logger.warning("Wind speed from 3.6m unavailable, using other readings in LaSilla")
             WS = np.asarray(WS, dtype=np.float)
             WS = WS[WS > 0]
             WS = WS[WS < 99]
