@@ -484,9 +484,8 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=None, s
 		if obsprogramcol:
 			try:
 				obsprogram = str(elements[obsprogramcol-1])
-
-				assert(len(list(filter(lambda e: e != '', obsprogram))) > 0)
-				#todo: this is robust against a column filled with blank space, not against a column with incoherent obsprogram. We do not want to load default config under the hood if an obsprogram is wrongly given. Maybe we could, but nevertheless warn the user about it in a dedicated popup ?
+				assert(len(elements) > 0)
+				#todo: this is not robust against a column with incoherent obsprogram, or with a line without obsprogram. We do not want to load default config under the hood if an obsprogram is wrongly or not given. Maybe we could, but nevertheless warn the user about it in a dedicated popup ?
 			except:
 				logger.debug('nothing in obsprogramcol - using provided default instead')
 
