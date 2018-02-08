@@ -115,23 +115,7 @@
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
-  <widget class="QFrame" name="frame_2">
-   <property name="geometry">
-    <rect>
-     <x>900</x>
-     <y>440</y>
-     <width>461</width>
-     <height>461</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="visibility_airmass">
+  <widget class="QDoubleSpinBox" name="visibilityAirmassValue">
    <property name="geometry">
     <rect>
      <x>1040</x>
@@ -200,7 +184,7 @@
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
-  <widget class="QSpinBox" name="visibility_moon_angle">
+  <widget class="QSpinBox" name="visibilityMoonAngleValue">
    <property name="geometry">
     <rect>
      <x>1230</x>
@@ -213,10 +197,10 @@
     <number>180</number>
    </property>
    <property name="value">
-    <number>90</number>
+    <number>40</number>
    </property>
   </widget>
-  <widget class="QPushButton" name="visibility_plot">
+  <widget class="QPushButton" name="visibilityDraw">
    <property name="geometry">
     <rect>
      <x>1290</x>
@@ -1695,7 +1679,7 @@
     </widget>
     <widget class="QCheckBox" name="configCloudsDebugModeValue">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -1706,7 +1690,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Use static AllSky image[Debug mode]</string>
+      <string>Use local AllSky image[Debug mode]</string>
      </property>
      <property name="checked">
       <bool>true</bool>
@@ -1854,18 +1838,28 @@
     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
    </property>
   </widget>
+  <widget class="QWidget" name="visibilityView" native="true">
+   <property name="geometry">
+    <rect>
+     <x>900</x>
+     <y>440</y>
+     <width>461</width>
+     <height>381</height>
+    </rect>
+   </property>
+  </widget>
+  <zorder>visibilityView</zorder>
   <zorder>allskyView</zorder>
   <zorder>allSkyUpdateValue</zorder>
   <zorder>label_13</zorder>
   <zorder>label</zorder>
   <zorder>configTime</zorder>
   <zorder>label_14</zorder>
-  <zorder>frame_2</zorder>
-  <zorder>visibility_airmass</zorder>
+  <zorder>visibilityAirmassValue</zorder>
   <zorder>label_15</zorder>
   <zorder>label_16</zorder>
-  <zorder>visibility_moon_angle</zorder>
-  <zorder>visibility_plot</zorder>
+  <zorder>visibilityMoonAngleValue</zorder>
+  <zorder>visibilityDraw</zorder>
   <zorder>tabWidget</zorder>
   <zorder>configUpdate</zorder>
   <zorder>allSkyRefresh</zorder>
