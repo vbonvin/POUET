@@ -8,6 +8,9 @@ from astropy.time import Time
 import obs, meteo
 import importlib
 
+import logging
+logger = logging.getLogger(__name__)
+
 def startup(name='LaSilla', cloudscheck=True, debugmode=True):
     """
 	Initialize meteo
@@ -30,6 +33,7 @@ def refresh_status(meteo, observables=None, minimal=False, obs_time=Time.now()):
     """
 
     # update meteo
+
     meteo.update(obs_time, minimal=minimal)
     if observables:
         [obs.update(meteo, obs_time) for obs in observables]

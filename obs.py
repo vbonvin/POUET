@@ -221,7 +221,7 @@ class Observable:
 
 		self.get_altaz(meteo, obs_time=obs_time)
 		self.get_angletowind(meteo)
-		self.get_airmass()
+		self.get_airmass(meteo)
 		self.get_angletomoon(meteo)
 		self.get_angletosun(meteo)
 
@@ -470,7 +470,6 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=None, s
 	rdbfile.close()
 
 	observables = []
-
 	for ind, line in enumerate(rdbfilelines) :
 
 		if line[0] == "-" or line[0] == "#":
@@ -485,9 +484,11 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=None, s
 		name = str(elements[namecol-1])
 		alpha = str(elements[alphacol-1])
 		delta = str(elements[deltacol-1])
+
 		if obsprogramcol:
 			try:
 				obsprogram = str(elements[obsprogramcol-1])
+				logger.debug([name, alpha, delta, obsprogram])
 				assert(len(elements) > 0)
 				#todo: this is not robust against a column with incoherent obsprogram, or with a line without obsprogram. We do not want to load default config under the hood if an obsprogram is wrongly or not given. Maybe we could, but nevertheless warn the user about it in a dedicated popup ?
 			except:

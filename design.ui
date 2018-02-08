@@ -226,7 +226,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="obs">
     <attribute name="title">
@@ -270,7 +270,7 @@
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QPushButton" name="checkObsStatus">
+    <widget class="QPushButton" name="updateObs">
      <property name="geometry">
       <rect>
        <x>170</x>

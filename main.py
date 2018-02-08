@@ -70,10 +70,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         # signal and slots init...
         self.retrieveObs.clicked.connect(self.retrieve_obs)
+        self.updateObs.clicked.connect(self.update_obs)
         self.weatherDisplayRefresh.clicked.connect(self.weather_display)
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
         self.configCloudsShowLayersValue.clicked.connect(self.allsky_redisplay)
-        self.checkObsStatus.clicked.connect(self.check_obs_status)
+        #self.checkObsStatus.clicked.connect(self.check_obs_status)
         self.configAutoupdateFreqValue.valueChanged.connect(self.set_timer_interval)
         self.configTimenow.clicked.connect(self.set_configTimeNow)
         self.configUpdate.clicked.connect(self.do_update)
@@ -145,12 +146,15 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.visibilitytool_draw()
         logging.critical("CHECK do_update is complete (OBVISOULY NOT SINCE NO UPDATE TO OBS)!")
 
+
     def retrieve_obs(self):
 
         logmsg = ''
 
         model = QtGui.QStandardItemModel(self.listObs)
 
+        # we start from scratch
+        # todo: add an update function to load many obs one after the other
         self.listObs.clearSpans()
         filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select a file")[0]
 
@@ -159,6 +163,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         ext = os.path.splitext(filepath)[1]
 
         if ext != 'pouet':  # then it's a first load:
+
             obsprogramlist = run.retrieve_obsprogramlist()
             obsprogramnames = (o["name"] for o in obsprogramlist)
 
@@ -168,10 +173,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             # split by tabs/spaces
             headers_input = open(filepath, 'r').readlines()[0].split('\n')[0].split()
 
-            for cb in [self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]:
+            for i, cb in enumerate([self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]):
                 for h in headers_input:
                     cb.addItem(h)
+                cb.setCurrentIndex(i)
+
             self.headerPopup.headerObsprogramValue.addItem("None")
+            self.headerPopup.headerObsprogramValue.setCurrentIndex(self.headerPopup.headerObsprogramValue.findText("None"))
+
             # ok is 0 if rejected, 1 if accepted
             ok = self.headerPopup.exec()
             if ok:
@@ -184,7 +193,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                     obsprogramcol = None
                 else:
                     obsprogramcol = int(self.headerPopup.headerObsprogramValue.currentIndex())+1
-
 
                 # obsprogram popup
                 self.popup = QtWidgets.QInputDialog()
@@ -209,13 +217,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         try:
             if ext != 'pouet':
+
                 self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
-                run.refresh_status(self.currentmeteo, self.observables)
 
             else:
                 self.observables = obs.rdbimport(filepath, obsprogram=obsprogram)
-                run.refresh_status(self.currentmeteo, self.observables)
 
+
+            run.refresh_status(self.currentmeteo, self.observables)
 
             for o in self.observables:
                 o.get_observability(self.currentmeteo, cloudscheck=False, verbose=False)
@@ -229,7 +238,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 name.setCheckable(True)
                 model.appendRow([name, alpha, delta, observability, obsprogram])
                 model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability', 'Program'])
-
+            logging.debug('exiting model update')
 
             self.listObs.setModel(model)
             logmsg += 'successfully loaded'
@@ -244,15 +253,32 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.print_status("%s \n Format unknown" % filepath, COLORWARN)
 
 
+    def update_obs(self):
+
+        # refresh the observables' constraints
+        run.refresh_status(self.currentmeteo, self.observables)
+
+        # load the display model
+        obs_model = self.listObs.model()
+
+        # compute observability and refresh the model
+        for ind, o in enumerate(self.observables):
+            o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
+            obs_model.setItemData((ind, 3), QtGui.QStandardItem(str(o.observability)))
+
+        # refresh the display
+        self.listObs.setModel(obs_model)
+
+
     def check_obs_status(self):
         """
         :return: states of observables
         """
 
         #0 is not checked, 1 is partially checked, 2 is checked --> 0 or 2 for us
-        model = self.listObs.model()
+        obs_model = self.listObs.model()
 
-        states = [model.item(i, 0).checkState() for i in range(model.rowCount())]
+        states = [obs_model.item(i, 0).checkState() for i in range(obs_model.rowCount())]
         states = [0 if s == 0 else 1 for s in states]
 
         return states
