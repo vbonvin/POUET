@@ -460,7 +460,7 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=None, s
 	Import an rdb catalog into a list of observables
 	"""
 
-	logger.info("Reading \"%s\"..." % (os.path.basename(filepath)))
+	logger.debug("Reading \"%s\"..." % (os.path.basename(filepath)))
 	rdbfile = open(filepath, "r")
 	rdbfilelines = rdbfile.readlines()[startline:] # we directly "skip" the first lines of eventual headers
 	rdbfile.close()
@@ -484,8 +484,13 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=None, s
 		if obsprogramcol:
 			try:
 				obsprogram = str(elements[obsprogramcol-1])
+
+				assert(len(list(filter(lambda e: e != '', obsprogram))) > 0)
+				#todo: this is robust against a column filled with blank space, not against a column with incoherent obsprogram. We do not want to load default config under the hood if an obsprogram is wrongly given. Maybe we could, but nevertheless warn the user about it in a dedicated popup ?
 			except:
-				logger.warning('nothing in obsprogramcol - using provided default instead')
+				logger.debug('nothing in obsprogramcol - using provided default instead')
+
+
 		observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
 
 	return observables

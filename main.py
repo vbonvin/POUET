@@ -3,7 +3,7 @@ Launch the application, link POUET functions to the design
 """
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os, sys
 import obs, meteo, run, util, clouds
 import design
@@ -236,7 +236,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         #todo: find how to share the same logger for all modules, or how to send all loggers output to my widget
         self.currentmeteo = run.startup(name='LaSilla', cloudscheck=True, debugmode=True)
-        
+
+
+        #todo: do we want to load that at startup ?
         self.site_display()
         self.weather_display()
         
@@ -260,6 +262,15 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         #print(self.popup.alpha_col)
         #sys.exit()
+
+        #import headerloader
+        #self.headerloader = headerloader.Ui_Dialog
+
+
+        # Custom dialog loader
+        #self.headerPopup = uic.loadUi("headerdialog.ui")
+        #self.headerPopup.show()
+
         
     def set_timer_interval(self):
 
@@ -284,23 +295,49 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             obsprogramlist = run.retrieve_obsprogramlist()
             obsprogramnames = (o["name"] for o in obsprogramlist)
 
-            self.popup = MultiPopup()
-            self.popup.show()
+            # header popup
+            self.headerPopup = uic.loadUi("headerdialog.ui")
+
+            # split by tabs
+            headers_input = open(filepath, 'r').readlines()[0].split('\n')[0].split()
+
+            for cb in [self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]:
+                for h in headers_input:
+                    cb.addItem(h)
+            self.headerPopup.headerObsprogramValue.addItem("None")
+
+            # ok is 0 if rejected, 1 if accepted
+            ok = self.headerPopup.exec()
+            if ok:
+
+                namecol = int(self.headerPopup.headerNameValue.currentIndex())+1
+                alphacol = int(self.headerPopup.headerRAValue.currentIndex())+1
+                deltacol = int(self.headerPopup.headerDecValue.currentIndex())+1
+
+                if self.headerPopup.headerObsprogramValue.currentText() == "None":
+                    obsprogramcol = None
+                else:
+                    obsprogramcol = int(self.headerPopup.headerDecValue.currentIndex())+1
 
 
-            self.popup = QtWidgets.QInputDialog()
-            #todo rename Cancel button as default if possible
-            obsprogram, ok = self.popup.getItem(self, "Select an observing program", "Existing programs - hit Cancel to use default", obsprogramnames, 0, False)
+                # obsprogram popup
+                self.popup = QtWidgets.QInputDialog()
+                #todo rename Cancel button as default if possible
+                obsprogram, okop = self.popup.getItem(self, "Select an observing program", "Existing programs - hit Cancel to use the default configuration. This setting applies only to the observables that do not already have an obsprogram defined in the input file", obsprogramnames, 0, False)
 
-
-            if not ok:
-                obsprogram = None
-                logmsg += 'as default '
+                if okop:
+                    logmsg += 'as %s ' % obsprogram
+                else:
+                    obsprogram = None
+                    logmsg += 'as default '
 
             else:
-                logmsg += 'as %s ' % obsprogram
+                # we exit the load function
+                logging.info("Load of % aborted by user" % filepath)
+                return
 
         else:  # then it's a pouet file. We assume it follows our own convention for the rdbimport
+            # col#1 = name, col#2 = alpha, col#3 = dec, col#4 = obsprogram
             pass
 
 
