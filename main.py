@@ -243,7 +243,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.listObs.setModel(model)
             logmsg += 'successfully loaded'
             logging.info(logmsg)
-            #todo: replace by redirecting the message to a logger
             self.print_status("%s \n Sucessfully loaded" % filepath, COLORSUCCESS)
 
         except:
@@ -264,7 +263,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # compute observability and refresh the model
         for ind, o in enumerate(self.observables):
             o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
-            obs_model.setItemData((ind, 3), QtGui.QStandardItem(str(o.observability)))
+            obs_model.setItem(ind, 3, QtGui.QStandardItem(str(o.observability)))
 
         # refresh the display
         self.listObs.setModel(obs_model)
