@@ -235,7 +235,7 @@ class Observable:
 		"""
 
 		# Otherwise we kept weird stuff because of the initialisation
-		if obs_time is None: obs_time = Time.now()
+		if obs_time is None: obs_time = meteo.time
 
 		self.update(meteo=meteo, obs_time=obs_time)
 		observability = 1 # by default, we can observe
@@ -284,7 +284,7 @@ class Observable:
 			msg += '\nWS:%s' % meteo.windspeed
 
 		# check the clouds
-		self.obs_clouds = True
+		self.obs_clouds, self.obs_clouds_info = True, True
 		if cloudscheck and observability > 0:
 			self.is_cloudfree(meteo)
 			if self.cloudfree < 0.5 :
@@ -292,7 +292,8 @@ class Observable:
 				warnings += '\nWarning ! It might be cloudy'
 			elif self.cloudfree <= 1.:
 				msg += '\nSeems to be cloud-free'
-			else: 
+			else:
+				self.obs_clouds_info = False
 				warnings += '\nNo cloud info'
 
 		# check the internal observability flag

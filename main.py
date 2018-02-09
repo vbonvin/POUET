@@ -170,6 +170,48 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         logging.info("General update performed")
 
 
+    def get_weather_items(self, o):
+
+        moondist = QtGui.QStandardItem()
+        moondist.setData(str(int(o.angletomoon.degree)), role=QtCore.Qt.DisplayRole)
+        if o.obs_moondist:
+            moondist.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+        else:
+            moondist.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+
+        airmass = QtGui.QStandardItem()
+        airmass.setData(str("%.2f" % o.airmass), role=QtCore.Qt.DisplayRole)
+        if o.obs_airmass:
+            airmass.setData(QtGui.QBrush(QtCore.Qt.darkGreen), role=QtCore.Qt.BackgroundRole)
+        else:
+            if o.obs_highairmass:
+                airmass.setData(QtGui.QBrush(QtCore.Qt.darkYellow), role=QtCore.Qt.BackgroundRole)
+            else:
+                airmass.setData(QtGui.QBrush(QtCore.Qt.darkRed), role=QtCore.Qt.BackgroundRole)
+
+        wind = QtGui.QStandardItem()
+        wind.setData(str("%.2f" % o.angletowind.degree), role=QtCore.Qt.DisplayRole)
+        if o.obs_airmass:
+            wind.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+        else:
+            wind.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+
+        clouds = QtGui.QStandardItem()
+
+        if o.obs_clouds_info:
+            clouds.setData(str(o.cloudfree), role=QtCore.Qt.DisplayRole)
+            if o.obs_clouds:
+                clouds.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+            else:
+                clouds.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+        else:
+            clouds.setData(str("?"), role=QtCore.Qt.DisplayRole)
+            clouds.setData(QtGui.QBrush(QtCore.Qt.yellow), role=QtCore.Qt.BackgroundRole)
+
+        return moondist, airmass, wind, clouds
+
+
+
     def load_obs(self, filepath=None):
 
         logmsg = ''
@@ -267,36 +309,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
                 observability = QtGui.QStandardItem(str(o.observability))
 
-
-                flagnames = ["Moon", "Airmass", "Wind", "Clouds"]
-
-
-                moondist = QtGui.QStandardItem()
-                moondist.setData(str(int(o.angletomoon.degree)), role=0)
-                if o.obs_moondist:
-                    moondist.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
-                else:
-                    moondist.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
-
-
-                airmass = QtGui.QStandardItem()
-                print(o.airmass)
-                airmass.setData(str("%.2f" % o.airmass), role=0)
-                if o.obs_airmass:
-                    airmass.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
-                else:
-                    airmass.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
-
-
-
-
-
+                moondist, airmass, wind, clouds = self.get_weather_items(o)
 
                 obsprogram = QtGui.QStandardItem(o.obsprogram)
 
                 name.setCheckable(True)
-                model.appendRow([name, alpha, delta, observability, obsprogram, moondist, airmass])
-                model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability', 'Program', "M", "A"])
+                model.appendRow([name, alpha, delta, observability, obsprogram, moondist, airmass, wind, clouds])
+                model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability', 'Program', "M", "A", "W", "C"])
 
             logging.debug('exiting model update')
 
@@ -334,7 +353,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             else:
                 headers.append(h.data(0))
                 i += 1
+
         observability_index = headers.index("Observability")
+        moondist_index = headers.index("M")
+        airmass_index = headers.index("A")
+        wind_index = headers.index("W")
+        clouds_index = headers.index("C")
+
 
         # we use the obs name as a reference to update the model
         model_names = [obs_model.item(i).data(0) for i in range(len(self.observables))]
@@ -343,9 +368,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         for ind, o in enumerate(self.observables):
             o.compute_observability(self.currentmeteo, cloudscheck=True, verbose=False)
 
+            moondist, airmass, wind, clouds = self.get_weather_items(o)
+
             # make sur we update the correct observable in the model...
             obs_index = model_names.index(o.name)
             obs_model.setItem(obs_index, observability_index, QtGui.QStandardItem(str(o.observability)))
+            obs_model.setItem(obs_index, moondist_index, moondist)
+            obs_model.setItem(obs_index, airmass_index, airmass)
+            obs_model.setItem(obs_index, wind_index, wind)
+            obs_model.setItem(obs_index, clouds_index, clouds)
+
 
         # refresh the display
         self.listObs.setModel(obs_model)
