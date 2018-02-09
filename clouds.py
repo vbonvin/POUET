@@ -362,6 +362,8 @@ def get_params(location="LaSilla"):
                 'deltatetha': deltatetha,
                 'north': north,
                 'url': "http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG",
+                'image_x_size':640,
+                'image_y_size':480,
                 }
     else:
         raise ValueError("Unknown location")

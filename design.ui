@@ -270,6 +270,19 @@
       <bool>true</bool>
      </property>
     </widget>
+    <widget class="QPushButton" name="updatePlotObs">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>10</y>
+       <width>141</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>updatePlotObs</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="program">
     <attribute name="title">
@@ -1851,6 +1864,16 @@
     </rect>
    </property>
   </widget>
+  <widget class="QWidget" name="allskyViewLayer" native="true">
+   <property name="geometry">
+    <rect>
+     <x>900</x>
+     <y>40</y>
+     <width>461</width>
+     <height>351</height>
+    </rect>
+   </property>
+  </widget>
   <zorder>visibilityView</zorder>
   <zorder>allskyView</zorder>
   <zorder>allSkyUpdateValue</zorder>
@@ -1870,6 +1893,7 @@
   <zorder>statusFrame</zorder>
   <zorder>configTimenow</zorder>
   <zorder>allSkyUpdateWindValue</zorder>
+  <zorder>allskyViewLayer</zorder>
  </widget>
  <resources/>
  <connections/>

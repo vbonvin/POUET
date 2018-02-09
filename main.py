@@ -5,10 +5,12 @@ Launch the application, link POUET functions to the design
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os, sys
-import obs, run, util, clouds 
+import obs, run, util, clouds
+import meteo as meteomodule
 import design
 from astropy import units as u
 from astropy.time import Time, TimeDelta
+import astropy.coordinates.angles as angles
 import copy
 import ephem
 
@@ -59,7 +61,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
 
         # todo: do we want to load that at startup ?
-        self.allsky = AllSkyView(parent=self.allskyView)
+        self.allsky = AllSkyView(location_name=self.name_location, parent=self.allskyView)
+        self.allskylayer = AllSkyView(location_name=self.name_location, parent=self.allskyViewLayer)
         self.allsky_redisplay()
         
         self.visibilitytool = VisibilityView(parent=self.visibilityView)
@@ -79,6 +82,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.configUpdate.clicked.connect(self.do_update)
         self.visibilityDraw.clicked.connect(self.visibilitytool_draw)
         self.configDebugModeValue.clicked.connect(self.set_debug_mode)
+        self.updatePlotObs.clicked.connect(self.listObs_plot_targets)
+        self.visibilitytool.figure.canvas.mpl_connect('motion_notify_event', self.on_visibilitytoolmotion)
 
         # Stating timer
         self.timer = QtCore.QTimer()
@@ -87,7 +92,24 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.timer.timeout.connect(self.auto_refresh)
         
         # testing stuff at startup...
-        self.load_obs(filepath='2m2lenses.pouet')
+
+        #self.load_obs(filepath='2m2lenses.rdb')
+
+        
+    
+
+    def on_visibilitytoolmotion(self, event):
+        
+        if event.inaxes != self.visibilitytool.axis: return
+        
+        ra = angles.Angle(event.xdata, unit="hour")
+        dec = angles.Angle(event.ydata, unit="deg")
+        azimuth, altitude = self.currentmeteo.get_AzAlt(ra, dec, obs_time=self.obs_time)
+        xpix, ypix = clouds.get_image_coordinates(azimuth.value, altitude.value, location=self.currentmeteo.name)
+        #self.allsky_redisplay()
+        #self.allsky.show_coordinates(xpix, ypix, 'r')
+        self.allskylayer.erase()
+        self.allskylayer.show_coordinates(xpix, ypix)
 
     def print_status(self, msg, colour=COLORNOMINAL):
         self.statusLabel.setText(msg)
@@ -152,6 +174,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         logmsg = ''
 
         model = QtGui.QStandardItemModel(self.listObs)
+        
+        
 
         # we start from scratch
         # todo: add an update function to load many obs one after the other
@@ -264,7 +288,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
             self.print_status("%s \n Format unknown" % filepath, COLORWARN)
 
-
     def update_obs(self):
         """
         Update the observability of the observables, and update the display model
@@ -335,6 +358,20 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
     def unhide_observables(self):
         pass
+
+    def listObs_plot_targets(self):
+        
+        print("Coucou")
+        obs_model = self.listObs.model()
+        
+        if obs_model is None:
+            logging.debug("Nothing to plot: no obs loaded")
+            return
+            
+        status = self.check_obs_status()
+        d = [i+1 for i, s in enumerate(status) if s==1]
+        print (d)
+        
 
     def weather_display(self):
         
@@ -515,10 +552,11 @@ class MyLogger(logging.Handler):
 
 class AllSkyView(FigureCanvas):
 
-    def __init__(self, parent=None, width=4.66, height=3.5):
+    def __init__(self, location_name, parent=None, width=4.66, height=3.5):
 
         self.figure = Figure(figsize=(width, height))
-        self.figure.patch.set_facecolor((0.95, 0.94, 0.94, 1.))
+        self.figure.patch.set_facecolor("None")
+        #self.figure.patch.set_facecolor((0.95, 0.94, 0.94, 1.))
         
         self.figure.subplots_adjust(wspace=0.)
         self.figure.subplots_adjust(bottom=0.)
@@ -527,20 +565,47 @@ class AllSkyView(FigureCanvas):
         self.figure.subplots_adjust(left=0.0)
 
         self.axis = self.figure.add_subplot(111)
-
+        
         FigureCanvas.__init__(self, self.figure)
         self.setParent(parent)
 
         self.axis.axis('off')
+        
+        self.axis.patch.set_facecolor("None")
+        
+        FigureCanvas.setStyleSheet(self, "background-color:transparent;")
 
         FigureCanvas.setSizePolicy(self,
                                    QtWidgets.QSizePolicy.Expanding,
                                    QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
+        
+        img_params = clouds.get_params(location_name)
+        self.imx = img_params['image_x_size']
+        self.imy = img_params['image_y_size']
+        
+    def erase(self):
+        self.axis.clear()
+        
+    def show_coordinates(self, x, y, color='k'):
+        
+        self.axis.scatter([0,self.imy],[0,self.imx], c=color, s=1)
+
+        self.axis.patch.set_facecolor("None")
+        self.axis.axis('off')
+        
+        self.axis.axhline(y, color='k', c=color)
+        self.axis.axvline(x, color='k', c=color)
+
+        self.axis.set_ylim([self.imy, 0])
+        self.axis.set_xlim([0, self.imx])
+
+        self.axis.set_axis_off()
+        self.draw()
 
     def display(self, meteo, plot_analysis=True):
 
-        self.axis.clear()
+        self.erase()
 
         location = meteo.name
         allsky = meteo.allsky
@@ -694,6 +759,7 @@ class VisibilityView(FigureCanvas):
                                    QtWidgets.QSizePolicy.Expanding,
                                    QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
+        
 
     def visbility_draw(self, obs_time, meteo, airmass, anglemoon, check_wind=True):
 
@@ -806,13 +872,20 @@ class VisibilityView(FigureCanvas):
 
         self.draw()
 
+class ObsModel(QtCore.QAbstractTableModel):
+    
+    def __init__(self, parent, *args):
+        
+        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+        
+    def rowCount(self, parent):
+        return len(self.mylist)
+
 def main():
     app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication
     form = POUET()                 # We set the form to be our ExampleApp (design)
     form.show()                         # Show the form
     app.exec_()                         # and execute the app
-
-
 
 if __name__ == '__main__':
     main()
