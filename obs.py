@@ -501,11 +501,9 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=None, s
 		name = str(elements[namecol-1])
 		alpha = str(elements[alphacol-1])
 		delta = str(elements[deltacol-1])
-
 		if obsprogramcol:
 			try:
 				obsprogram = str(elements[obsprogramcol-1])
-				logger.debug([name, alpha, delta, obsprogram])
 				assert(len(elements) > 0)
 				#todo: this is not robust against a column with incoherent obsprogram, or with a line without obsprogram. We do not want to load default config under the hood if an obsprogram is wrongly or not given. Maybe we could, but nevertheless warn the user about it in a dedicated popup ?
 			except:

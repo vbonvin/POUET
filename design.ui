@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1368</width>
-    <height>818</height>
+    <height>826</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -232,7 +232,7 @@
     <attribute name="title">
      <string>Observations</string>
     </attribute>
-    <widget class="QPushButton" name="retrieveObs">
+    <widget class="QPushButton" name="loadObs">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -268,19 +268,6 @@
      </property>
      <property name="sortingEnabled">
       <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="updateObs">
-     <property name="geometry">
-      <rect>
-       <x>170</x>
-       <y>13</y>
-       <width>201</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Update obs only (remove me)</string>
      </property>
     </widget>
    </widget>

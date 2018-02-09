@@ -87,7 +87,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.timer.timeout.connect(self.auto_refresh)
         
         # testing stuff at startup...
-
+        self.load_obs(filepath='2m2lenses.pouet')
 
     def print_status(self, msg, colour=COLORNOMINAL):
         self.statusLabel.setText(msg)
@@ -147,7 +147,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         logging.info("General update performed")
 
 
-    def load_obs(self):
+    def load_obs(self, filepath=None):
 
         logmsg = ''
 
@@ -156,13 +156,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # we start from scratch
         # todo: add an update function to load many obs one after the other
         self.listObs.clearSpans()
-        filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select a file")[0]
+        if not filepath:
+            filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select a file")[0]
 
         logmsg += '%s ' % filepath
 
         ext = os.path.splitext(filepath)[1]
 
-        if ext != 'pouet':  # then it's a first load:
+        if ext != '.pouet':  # then it's a first load:
 
             obsprogramlist = run.retrieve_obsprogramlist()
             obsprogramnames = (o["name"] for o in obsprogramlist)
@@ -215,14 +216,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             pass
 
 
-        try:
-            if ext != 'pouet':
+        while True:  #
+            if ext != '.pouet':
 
                 self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
 
             else:
-                self.observables = obs.rdbimport(filepath, obsprogram=obsprogram)
 
+                self.observables = obs.rdbimport(filepath, obsprogram=None)
 
             run.refresh_status(self.currentmeteo, self.observables)
 
@@ -233,6 +234,18 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
                 delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
                 observability = QtGui.QStandardItem(str(o.observability))
+
+
+                #flagnames = ["Moon", "Airmass", "Wind", "Clouds"]
+
+                #for flag in [o.moondist, [o.highairmass, o.airmass], o.wind, o.clouds]:
+                    #pass
+                #moondist = QtGui.QStandardItem()
+                #moondist.setData(o.moondist, role=0)
+                #moondist.setData(QtGui.QBrush(7), role=1)
+
+
+
                 obsprogram = QtGui.QStandardItem(o.obsprogram)
 
                 name.setCheckable(True)
@@ -245,7 +258,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             logging.info(logmsg)
             self.print_status("%s \n Sucessfully loaded" % filepath, COLORSUCCESS)
 
-        except:
+        while False:
             logmsg += ' not loaded - format unknown'
             logging.error(logmsg)
 
