@@ -62,8 +62,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         # todo: do we want to load that at startup ?
         self.allsky = AllSkyView(location_name=self.name_location, parent=self.allskyView)
-        self.allskylayer = AllSkyView(location_name=self.name_location, parent=self.allskyViewLayer)
         self.allsky_redisplay()
+        self.allskylayer = AllSkyView(location_name=self.name_location, parent=self.allskyViewLayer)
+        self.allskylayerTargets = AllSkyView(location_name=self.name_location, parent=self.allskyViewLayerTargets)
         
         self.visibilitytool = VisibilityView(parent=self.visibilityView)
         self.visibilitytool_draw()
@@ -91,6 +92,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.timer.start(120000) #trigger every 2 minutes by default.
         self.timer.timeout.connect(self.auto_refresh)
         
+        # Some housekeeping stuff...
+        self.allskylayerTargets.show_coordinates(150, 150, color="None")
+        
+        
         # testing stuff at startup...
 
         self.load_obs(filepath='2m2lenses_withobsprogram.pouet')
@@ -109,7 +114,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         dec = angles.Angle(event.ydata, unit="deg")
         azimuth, altitude = self.currentmeteo.get_AzAlt(ra, dec, obs_time=self.obs_time)
         xpix, ypix = clouds.get_image_coordinates(azimuth.value, altitude.value, location=self.currentmeteo.name)
-        self.allskylayer.erase()
         self.allskylayer.show_coordinates(xpix, ypix)
 
     def print_status(self, msg, colour=COLORNOMINAL):
@@ -167,6 +171,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.site_display()
         self.visibilitytool_draw()
         self.update_obs()
+        
+        self.listObs_plot_targets()
         logging.info("General update performed")
 
 
@@ -364,16 +370,58 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
     def listObs_plot_targets(self):
         
-        print("Coucou")
         obs_model = self.listObs.model()
         
         if obs_model is None:
             logging.debug("Nothing to plot: no obs loaded")
-            return
+            return 
             
-        status = self.check_obs_status()
-        d = [i+1 for i, s in enumerate(status) if s==1]
-        print (d)
+        status, names = self.check_obs_status()
+        d = [names[i] for i, s in enumerate(status) if s==1]
+        
+        alphas = []
+        deltas = []
+        are_obs = []
+        as_xs = []
+        as_ys = []
+        ord_names = []
+        
+        for target in self.observables:
+            
+            if target.name not in d:
+                continue
+            
+            ord_names.append(target.name)
+            
+            az, elev = self.currentmeteo.get_AzAlt(target.alpha, target.delta, self.obs_time)
+            as_x, as_y = clouds.get_image_coordinates(az.radian, elev.radian, location=self.currentmeteo.name)
+            
+            alphas.append(target.alpha.value)
+            deltas.append(target.delta.value)
+            as_xs.append(as_x)
+            as_ys.append(as_y)
+            are_obs.append(target.observability)
+            
+        #-------- Plots on visibility layer
+        
+        # This is not the most perfect code ever, however if drawing on another layer, it's hard to read the coordinates of the mouse in the plot
+        # for the show_coordinate in all_sky, so by passing.
+        # (however visibilitytool_draw_exec is fast...)
+        self.visibilitytool_draw_exec() 
+        
+        self.visibilitytool.show_targets(alphas, deltas, ord_names, meteo=self.currentmeteo)
+        
+        #-------- Plots on all sky layer
+        
+        self.allskylayerTargets.erase()
+        
+        if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.obs_time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
+            logging.debug("Not showing targets on All Sky, delta time too large")
+            return
+        
+        self.allskylayerTargets.show_targets(as_xs, as_ys, ord_names)
+        
+        logging.debug("Plotted {} targets in All Sky".format(len(d)))
 
 
     def weather_display(self):
@@ -473,12 +521,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def allsky_refresh(self):
         
         self.print_status("Refreshing All Sky...", COLORWARN)
+        
+        self.allskylayer.erase()
 
         self.currentmeteo.allsky.update()
         
         logging.info("Updated All Sky")
         
         self.allsky_redisplay()
+        
+        
         
         self.print_status("All Sky refresh done.", COLORNOMINAL)
         
@@ -498,7 +550,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         msg = "Drawn All Sky."
         logging.debug(msg)
         
-    def visibilitytool_draw(self):
+    def visibilitytool_draw_exec(self):
         
         airmass = self.visibilityAirmassValue.value()
         anglemoon = self.visibilityMoonAngleValue.value()
@@ -512,6 +564,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.visibilitytool.visbility_draw(obs_time=self.obs_time, meteo=self.currentmeteo, airmass=airmass, anglemoon=float(anglemoon), check_wind=check_wind)
         
         logging.debug("Drawn visibility with airmass={:1.1f}, anglemoon={:d}d".format(airmass, anglemoon))
+        
+    def visibilitytool_draw(self):
+    
+        self.visibilitytool_draw_exec()
+        self.listObs_plot_targets()
         
     def auto_refresh(self):
         
@@ -590,25 +647,42 @@ class AllSkyView(FigureCanvas):
     def erase(self):
         self.axis.clear()
         
-    def show_coordinates(self, x, y, color='k'):
+        self.axis.scatter([0,self.imy],[0,self.imx], c='None', s=1)
         
-        self.axis.scatter([0,self.imy],[0,self.imx], c=color, s=1)
+        self.axis.set_ylim([self.imy, 0])
+        self.axis.set_xlim([0, self.imx])
 
         self.axis.patch.set_facecolor("None")
         self.axis.axis('off')
         
+        self.draw()
+        
+    def show_coordinates(self, x, y, color='k'):
+        
+        self.erase()
+        
         self.axis.axhline(y, color='k', c=color)
         self.axis.axvline(x, color='k', c=color)
 
-        self.axis.set_ylim([self.imy, 0])
-        self.axis.set_xlim([0, self.imx])
-
-        self.axis.set_axis_off()
         self.draw()
+        
+    def show_targets(self, xs, ys, names):
+        
+        self.erase()
+        
+        self.axis.scatter(xs, ys, c='k', s=4)
+        
+        for x, y, name in zip(xs, ys, names):
+            self.axis.annotate('{}'.format(name), xy=(x+6, y+1),
+                               horizontalalignment='left', verticalalignment='center', size=8)
+        
+        self.draw()
+            
+            
 
     def display(self, meteo, plot_analysis=True):
 
-        self.erase()
+        self.axis.clear()
 
         location = meteo.name
         allsky = meteo.allsky
@@ -669,7 +743,7 @@ class AllSkyView(FigureCanvas):
             rr = clouds.get_radius(angle, ff, k1, k2, r0)
 
             # if angle >= np.pi/2: print rr/330.
-            self.figure.gca().add_artist(plt.Circle((cx, cy), rr, color='k', fill=False, alpha=0.5))
+            self.figure.gca().add_artist(plt.Circle((cx, cy), rr, color='k', fill=False, alpha=0.3))
 
             textx = np.cos(north + np.deg2rad(180)) * (rr - 2) + cx
             texty = np.sin(north + np.deg2rad(180)) * (rr - 2) + cy
@@ -679,7 +753,7 @@ class AllSkyView(FigureCanvas):
 
         # plt.plot([cx, northx], [cy, northy], lw=2, color='k')
         for ccx, ccy in zip(coordinatesx, coordinatesy):
-            self.axis.plot([cx, ccx], [cy, ccy], lw=1, color='k', alpha=0.5)
+            self.axis.plot([cx, ccx], [cy, ccy], lw=1, color='k', alpha=0.3)
         self.axis.set_ylim([np.shape(rest)[0], 0])
         self.axis.set_xlim([0, np.shape(rest)[1]])
 
@@ -733,15 +807,9 @@ class AllSkyView(FigureCanvas):
 class VisibilityView(FigureCanvas):
 
     def __init__(self, parent=None, width=4.5, height=4):
-        # fig = Figure(figsize=(width, height), dpi=100)
-
-        # self.figure.subplots_adjust(bottom=0.01)
-        # self.figure.subplots_adjust(top=0.499)
-        # self.figure.subplots_adjust(right=0.98)
-        # self.figure.subplots_adjust(left=0.)
 
         self.figure = Figure(figsize=(width, height))
-        self.figure.patch.set_facecolor((0.95, 0.94, 0.94, 1.))
+        self.figure.patch.set_facecolor("None")
 
         self.figure.subplots_adjust(wspace=0.)
         self.figure.subplots_adjust(bottom=0.23)
@@ -757,13 +825,30 @@ class VisibilityView(FigureCanvas):
         self.parent = parent
 
         self.setParent(parent)
+        
+        self.axis.patch.set_facecolor("None")
+        
+        FigureCanvas.setStyleSheet(self, "background-color:transparent;")
 
         FigureCanvas.setSizePolicy(self,
                                    QtWidgets.QSizePolicy.Expanding,
                                    QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         
-
+        
+    def show_targets(self, xs, ys, names, meteo):
+        
+        self.axis.scatter(xs, ys, color='k', s=2)
+        for x, y, name in zip(xs, ys, names):
+            self.axis.annotate('{}'.format(name), xy=(x-0.2, y), color='k',
+                               horizontalalignment='left', verticalalignment='center', size=7)
+            
+            
+        tel_lat, _, _ = meteo.get_telescope_params()
+        
+        #self.finish_plot(tel_lat)
+        self.draw()
+        
     def visbility_draw(self, obs_time, meteo, airmass, anglemoon, check_wind=True):
 
         self.axis.clear()
@@ -860,16 +945,23 @@ class VisibilityView(FigureCanvas):
             tick.set_rotation(70)
         self.axis.set_xlabel('Right ascension', fontsize=9, )
         self.axis.set_ylabel('Declination', fontsize=9, )
-
+        
+        
+        self.axis.set_title("%s - Moon sep %d deg - max airmass %1.1f" % (str(obs_time).split('.')[0], \
+                                                                          anglemoon, airmass), fontsize=9)
+        
         self.axis.set_xticks(np.linspace(0, 24, 25))
         self.axis.set_yticks(np.linspace(-90, 90, 19))
+        
+
+        
+        self.finish_plot(tel_lat)
+        
+    def finish_plot(self, tel_lat):
 
         self.axis.set_xlim([0, 24])
         lat = float(tel_lat.to_string(unit=u.degree, decimal=True))
         self.axis.set_ylim([np.max([lat - 90, -90]), np.min([lat + 90, 90])])
-
-        self.axis.set_title("%s - Moon sep %d deg - max airmass %1.1f" % (str(obs_time).split('.')[0], \
-                                                                          anglemoon, airmass), fontsize=9)
 
         self.axis.grid()
         self.axis.invert_xaxis()

@@ -184,7 +184,16 @@ class Meteo:
             WS = WS[WS > 0]
             WS = WS[WS < 99]
             WS = np.mean(WS)
-            
+
+        for var in [WD, WS, Temps, RH]:
+            if not np.isnan(var):
+                var = -9999
+        FLAG = -9999
+        WD = util.check_value(WD, FLAG)
+        WS = util.check_value(WS, FLAG)
+        Temps = util.check_value(Temps, FLAG)
+        RH = util.check_value(RH, FLAG)
+        
         self.winddirection = WD
         self.windspeed = WS
         self.temperature = Temps 

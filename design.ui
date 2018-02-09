@@ -1874,6 +1874,16 @@
     </rect>
    </property>
   </widget>
+  <widget class="QWidget" name="allskyViewLayerTargets" native="true">
+   <property name="geometry">
+    <rect>
+     <x>900</x>
+     <y>40</y>
+     <width>461</width>
+     <height>351</height>
+    </rect>
+   </property>
+  </widget>
   <zorder>visibilityView</zorder>
   <zorder>allskyView</zorder>
   <zorder>allSkyUpdateValue</zorder>
@@ -1894,6 +1904,7 @@
   <zorder>configTimenow</zorder>
   <zorder>allSkyUpdateWindValue</zorder>
   <zorder>allskyViewLayer</zorder>
+  <zorder>allskyViewLayerTargets</zorder>
  </widget>
  <resources/>
  <connections/>
