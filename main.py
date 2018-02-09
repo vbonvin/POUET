@@ -93,7 +93,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         # testing stuff at startup...
 
-        self.load_obs(filepath='2m2lenses_withobsprogram.pouet')
+        self.load_obs(filepath='2m2lenses.rdb')
 
         
 
@@ -239,10 +239,18 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             pass
 
 
-        if True:  #
+        if True:  #todo: replace that by a try/except when the loader is fully debugged...
             if ext != '.pouet':
 
                 self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
+
+                # check that names are unique
+                try:
+                    names = [o.name for o in self.observables]
+                    assert(len(names) == len(set(names)))
+                except:
+                    logging.error("Names in your catalog are not unique!")
+                    return
 
             else:
 
