@@ -69,7 +69,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.weather_display()
         
         # signal and slots init...
-        self.retrieveObs.clicked.connect(self.retrieve_obs)
+        self.loadObs.clicked.connect(self.load_obs)
         self.weatherDisplayRefresh.clicked.connect(self.weather_display)
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
         self.configCloudsShowLayersValue.clicked.connect(self.allsky_redisplay)
@@ -147,7 +147,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         logging.info("General update performed")
 
 
-    def retrieve_obs(self):
+    def load_obs(self):
 
         logmsg = ''
 
@@ -253,6 +253,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
     def update_obs(self):
+        """
+        Update the observability of the observables, and update the display model
+
+        :return: None
+        """
 
         # refresh the observables' constraints
         run.refresh_status(self.currentmeteo, self.observables)
@@ -269,11 +274,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 i += 1
         observability_index = headers.index("Observability")
 
+        # we use the obs name as a reference to update the model
+        model_names = [obs_model.item(i).data(0) for i in range(len(self.observables))]
 
         # compute observability and refresh the model
         for ind, o in enumerate(self.observables):
             o.compute_observability(self.currentmeteo, cloudscheck=True, verbose=False)
-            obs_model.setItem(ind, observability_index, QtGui.QStandardItem(str(o.observability)))
+
+            # make sur we update the correct observable in the model...
+            obs_index = model_names.index(o.name)
+            obs_model.setItem(obs_index, observability_index, QtGui.QStandardItem(str(o.observability)))
 
         # refresh the display
         self.listObs.setModel(obs_model)
