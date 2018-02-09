@@ -322,4 +322,11 @@ def elev2airmass(el, alt, threshold=10.):
 		airmass = (1.0 + altitudeFactor - altitudeFactor / (cosz * cosz)) / cosz;
 
 	return airmass
-   
+
+def check_value(var, flag):
+	
+	if np.isnan(var):
+		var = flag 
+	
+	return var
+	

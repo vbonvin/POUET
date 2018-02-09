@@ -226,7 +226,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="obs">
     <attribute name="title">
@@ -279,14 +279,27 @@
     <widget class="QPushButton" name="updatePlotObs">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>10</y>
-       <width>141</width>
+       <x>320</x>
+       <y>14</y>
+       <width>151</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>updatePlotObs</string>
+      <string>Plot selected targets</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="updateSelectall">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>14</y>
+       <width>151</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>(De)select all targets</string>
      </property>
     </widget>
    </widget>
@@ -1601,9 +1614,9 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QCheckBox" name="config_show_obs_visibility">
+    <widget class="QCheckBox" name="configShowTargetsVisibilityValue">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -1620,9 +1633,9 @@
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QCheckBox" name="config_show_obs_allsky">
+    <widget class="QCheckBox" name="configShowTargetsAllSkyValue">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -1880,6 +1893,16 @@
     </rect>
    </property>
   </widget>
+  <widget class="QWidget" name="allskyViewLayerTargets" native="true">
+   <property name="geometry">
+    <rect>
+     <x>900</x>
+     <y>40</y>
+     <width>461</width>
+     <height>351</height>
+    </rect>
+   </property>
+  </widget>
   <zorder>visibilityView</zorder>
   <zorder>allskyView</zorder>
   <zorder>allSkyUpdateValue</zorder>
@@ -1900,6 +1923,7 @@
   <zorder>configTimenow</zorder>
   <zorder>allSkyUpdateWindValue</zorder>
   <zorder>allskyViewLayer</zorder>
+  <zorder>allskyViewLayerTargets</zorder>
  </widget>
  <resources/>
  <connections/>
