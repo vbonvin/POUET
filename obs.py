@@ -234,6 +234,7 @@ class Observable:
 		0 is impossible to observe
 
 		"""
+
 		# Otherwise we kept weird stuff because of the initialisation
 		if obs_time is None: obs_time = Time.now()
 
@@ -246,35 +247,49 @@ class Observable:
 		warnings = ''
 
 		### General conditions:
-
+		# Each condition has an associated bool flag to tell if it is respected or not
+		# Not respected conditions decrease the overall observability by a given amount
+		# todo: configure the observability amount decrease in the obsprogram files.
 
 		# check the	moondistance:
+		self.obs_moondist = True
 		if self.angletomoon.degree < self.minangletomoon:
 			observability -= 0.2
+			self.obs_moondist = False
 			msg += '\nMoonDist:%0.1f' % self.angletomoon.degree
 
 		# high airmass
+		self.obs_highairmass = True
 		if self.airmass > 1.5:
+			self.obs_highairmass = False
 			observability -= 0.3
 			msg += '\nAirmass:%0.2f' % self.airmass
 
 		# check the airmass:
+		self.obs_airmass = True
 		if self.airmass > self.maxairmass:
+			self.obs_airmass = False
 			observability = 0
 			msg += '\nAirmass:%0.2f' % self.airmass
 
 		# check the wind:
+		self.obs_wind = True
 		if self.angletowind.degree < 90 and meteo.windspeed > 15:
+			self.obs_wind = False
 			observability = 0
 			msg += '\nWA:%0.1f/WS:%0.1f' % (self.angletowind.degree, meteo.windspeed)
 
 		if meteo.windspeed > 20:
+			self.obs_wind = False
 			observability = 0
 			msg += '\nWS:%s' % meteo.windspeed
 
+		# check the clouds
+		self.obs_clouds = True
 		if cloudscheck and observability > 0:
 			self.is_cloudfree(meteo)
 			if self.cloudfree < 0.5 :
+				self.obs_clouds = False
 				warnings += '\nWarning ! It might be cloudy'
 			elif self.cloudfree <= 1.:
 				msg += '\nSeems to be cloud-free'
@@ -282,8 +297,10 @@ class Observable:
 				warnings += '\nNo cloud info'
 
 		# check the internal observability flag
+		self.obs_internal = True
 		if hasattr(self, 'internalobs'):
 			if self.internalobs == 0:
+				self.obs_internal = False
 				observability = self.internalobs
 				msg += '\nSpreadsheet NO'
 
