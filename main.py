@@ -101,7 +101,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         # testing stuff at startup...
 
-        self.load_obs(filepath='2m2lenses_withobsprogram.pouet')
+        #self.load_obs(filepath='2m2lenses_withobsprogram.pouet')
 
         
 
