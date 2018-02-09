@@ -269,6 +269,12 @@
      <property name="sortingEnabled">
       <bool>true</bool>
      </property>
+     <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>100</number>
+     </attribute>
+     <attribute name="horizontalHeaderMinimumSectionSize">
+      <number>25</number>
+     </attribute>
     </widget>
     <widget class="QPushButton" name="updatePlotObs">
      <property name="geometry">

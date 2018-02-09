@@ -164,8 +164,6 @@ class Observable:
 		:return: actualize airmass and return it
 		"""
 
-		#TODO : see how the computation belows varies regarding Euler computation (in CoordinatesAwayFromMoon)
-
 		try:
 			self.airmass = util.elev2airmass(np.pi/2 -self.altitude.radian, meteo.elev)
 

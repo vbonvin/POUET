@@ -93,7 +93,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         # testing stuff at startup...
 
-        self.load_obs(filepath='2m2lenses.rdb')
+        self.load_obs(filepath='2m2lenses_withobsprogram.pouet')
 
         
 
@@ -268,24 +268,41 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 observability = QtGui.QStandardItem(str(o.observability))
 
 
-                #flagnames = ["Moon", "Airmass", "Wind", "Clouds"]
+                flagnames = ["Moon", "Airmass", "Wind", "Clouds"]
 
-                #for flag in [o.moondist, [o.highairmass, o.airmass], o.wind, o.clouds]:
-                    #pass
-                #moondist = QtGui.QStandardItem()
-                #moondist.setData(o.moondist, role=0)
-                #moondist.setData(QtGui.QBrush(7), role=1)
+
+                moondist = QtGui.QStandardItem()
+                moondist.setData(str(int(o.angletomoon.degree)), role=0)
+                if o.obs_moondist:
+                    moondist.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+                else:
+                    moondist.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+
+
+                airmass = QtGui.QStandardItem()
+                print(o.airmass)
+                airmass.setData(str("%.2f" % o.airmass), role=0)
+                if o.obs_airmass:
+                    airmass.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+                else:
+                    airmass.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+
+
+
 
 
 
                 obsprogram = QtGui.QStandardItem(o.obsprogram)
 
                 name.setCheckable(True)
-                model.appendRow([name, alpha, delta, observability, obsprogram])
-                model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability', 'Program'])
+                model.appendRow([name, alpha, delta, observability, obsprogram, moondist, airmass])
+                model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability', 'Program', "M", "A"])
+
             logging.debug('exiting model update')
 
             self.listObs.setModel(model)
+            self.listObs.resizeColumnsToContents()
+
             logmsg += 'successfully loaded'
             logging.info(logmsg)
             self.print_status("%s \n Sucessfully loaded" % filepath, COLORSUCCESS)
