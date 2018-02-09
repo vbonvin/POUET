@@ -102,12 +102,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         if event.inaxes != self.visibilitytool.axis: return
         
+        if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.obs_time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
+            #logging.debug("Not showing coordinates on All Sky, delta time too large")
+            return
+        
         ra = angles.Angle(event.xdata, unit="hour")
         dec = angles.Angle(event.ydata, unit="deg")
         azimuth, altitude = self.currentmeteo.get_AzAlt(ra, dec, obs_time=self.obs_time)
         xpix, ypix = clouds.get_image_coordinates(azimuth.value, altitude.value, location=self.currentmeteo.name)
-        #self.allsky_redisplay()
-        #self.allsky.show_coordinates(xpix, ypix, 'r')
         self.allskylayer.erase()
         self.allskylayer.show_coordinates(xpix, ypix)
 
@@ -869,6 +871,7 @@ class VisibilityView(FigureCanvas):
                                                                           anglemoon, airmass), fontsize=9)
 
         self.axis.grid()
+        self.axis.invert_xaxis()
 
         self.draw()
 
