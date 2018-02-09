@@ -197,7 +197,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 # obsprogram popup
                 self.popup = QtWidgets.QInputDialog()
                 #todo rename Cancel button as default if possible
-                obsprogram, okop = self.popup.getItem(self, "Select an observing program", "Existing programs - hit Cancel to use the default configuration. This setting applies only to the observables that do not already have an obsprogram defined in the input file", obsprogramnames, 0, False)
+                obsprogram, okop = self.popup.getItem(self, "Select an observing program", " - Existing programs -\nSelect Cancel to use the default configuration.\nThis setting applies only to the observables\nthat do not already have an obsprogram defined in the input file", obsprogramnames, 1, False)
 
                 if okop:
                     logmsg += 'as %s ' % obsprogram
