@@ -37,6 +37,7 @@ class Observable:
 		if not self.obsprogram == None:
 			try:
 				module_name = "obsprogram.prog{}".format(self.obsprogram)
+				print(self.obsprogram, module_name)
 				program = importlib.import_module(module_name, package=None)
 				self.minangletomoon = program.minangletomoon
 				self.maxairmass = program.maxairmass
@@ -475,7 +476,7 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 
 
 
-def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=None, startline=1, obsprogram=None, verbose=False):
+def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, startline=1, obsprogram=None, verbose=False):
 
 	"""
 	Import an rdb catalog into a list of observables

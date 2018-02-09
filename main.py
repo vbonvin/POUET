@@ -93,10 +93,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         # testing stuff at startup...
 
-        #self.load_obs(filepath='2m2lenses.rdb')
+        self.load_obs(filepath='2m2lenses_withobsprogram.pouet')
 
         
-    
 
     def on_visibilitytoolmotion(self, event):
         
@@ -174,8 +173,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         logmsg = ''
 
         model = QtGui.QStandardItemModel(self.listObs)
-        
-        
 
         # we start from scratch
         # todo: add an update function to load many obs one after the other
@@ -240,7 +237,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             pass
 
 
-        while True:  #
+        if True:  #
             if ext != '.pouet':
 
                 self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
@@ -252,6 +249,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             run.refresh_status(self.currentmeteo, self.observables)
 
             for o in self.observables:
+                logging.debug("entering compute observability")
                 o.compute_observability(self.currentmeteo, cloudscheck=False, verbose=False)
 
                 name = QtGui.QStandardItem(o.name)
@@ -282,11 +280,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             logging.info(logmsg)
             self.print_status("%s \n Sucessfully loaded" % filepath, COLORSUCCESS)
 
-        while False:
+        if False:
             logmsg += ' not loaded - format unknown'
             logging.error(logmsg)
 
             self.print_status("%s \n Format unknown" % filepath, COLORWARN)
+
 
     def update_obs(self):
         """
@@ -338,9 +337,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         obs_model = self.listObs.model()
 
         states = [obs_model.item(i, 0).checkState() for i in range(obs_model.rowCount())]
+        names = [obs_model.item(i, 0).data(0) for i in range(obs_model.rowCount())]
+
         states = [0 if s == 0 else 1 for s in states]
 
-        return states
+        return states, names
 
 
     def hide_observables(self, criterion):
@@ -371,7 +372,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         status = self.check_obs_status()
         d = [i+1 for i, s in enumerate(status) if s==1]
         print (d)
-        
+
 
     def weather_display(self):
         
