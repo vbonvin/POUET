@@ -23,7 +23,7 @@ def startup(name='LaSilla', cloudscheck=True, debugmode=True):
     return currentmeteo
 
 
-def refresh_status(meteo, observables=None, minimal=False, obs_time=Time.now()):
+def refresh_status(meteo, observables=None, minimal=False, obs_time=None):
     """
     Refresh the status
 
@@ -33,10 +33,12 @@ def refresh_status(meteo, observables=None, minimal=False, obs_time=Time.now()):
     """
 
     # update meteo
+    if obs_time == None:
+        obs_time = meteo.time
 
     meteo.update(obs_time, minimal=minimal)
     if observables:
-        [obs.update(meteo, obs_time) for obs in observables]
+        [obs.update(meteo) for obs in observables]
 
 
 def retrieve_obsprogramlist():

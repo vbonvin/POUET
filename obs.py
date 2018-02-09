@@ -216,16 +216,16 @@ class Observable:
 		self.cloudfree = float(self.cloudfree)
 
 
-	def update(self, meteo, obs_time=Time.now()):
+	def update(self, meteo):
 
-		self.compute_altaz(meteo, obs_time=obs_time)
+		self.compute_altaz(meteo, obs_time=meteo.time)
 		self.compute_angletowind(meteo)
 		self.compute_airmass(meteo)
 		self.compute_angletomoon(meteo)
 		self.compute_angletosun(meteo)
 
 
-	def compute_observability(self, meteo, obs_time=None, displayall=True, cloudscheck=True, verbose=True):
+	def compute_observability(self, meteo, displayall=True, cloudscheck=True, verbose=True):
 		"""
 		Compute the observability, a value between 0 and 1 that tells if the target can be observed at a given time. Also define flags for each situation (moon, wind, etc...)
 
@@ -234,11 +234,11 @@ class Observable:
 
 		"""
 
-		# Otherwise we kept weird stuff because of the initialisation
-		if obs_time is None: obs_time = meteo.time
 
-		self.update(meteo=meteo, obs_time=obs_time)
-		observability = 1 # by default, we can observe
+
+		logger.info("current time is %s"  % meteo.time)
+		self.update(meteo=meteo)
+		observability = 1  # by default, we can observe
 
 		# Let's start with a simple yes/no version
 		# We add a small message to display if it's impossible to observe:
@@ -306,7 +306,7 @@ class Observable:
 
 
 		### Program specific conditions:
-		pobs, pmsg, pwarn = self.program.observability(self.attributes, obs_time)
+		pobs, pmsg, pwarn = self.program.observability(self.attributes, meteo.time)
 		if pobs == 0: observability = 0
 		msg += pmsg
 		warnings += pwarn
@@ -316,7 +316,7 @@ class Observable:
 			msg += '\n %s' % self.comment
 
 		if verbose:
-			to_print = "%s | %s\nalpha=%s, delta=%s\naz=%0.2f, alt=%0.2f%s" % (self.name, obs_time.iso, self.alpha, self.delta, rad2deg(self.azimuth.value), rad2deg(self.altitude.value), msg)
+			to_print = "%s | %s\nalpha=%s, delta=%s\naz=%0.2f, alt=%0.2f%s" % (self.name, meteo.time.iso, self.alpha, self.delta, rad2deg(self.azimuth.value), rad2deg(self.altitude.value), msg)
 			if observability == 1:
 				print((util.hilite(to_print, True, True)))
 				if not warnings == '': print((util.hilite(warnings, False, False)))

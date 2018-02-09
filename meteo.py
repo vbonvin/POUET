@@ -58,9 +58,6 @@ class Meteo:
         self.update()
         
 
-    def updatedate(self):
-        pass
-
     def updatemoonpos(self, obs_time=Time.now()):
         Az, Alt = self.get_moon(obs_time=obs_time)
         self.moonalt = Alt

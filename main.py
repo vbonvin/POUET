@@ -41,9 +41,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.setupUi(self)
         
         print("Starting up... This can take a minute...")
-        self.set_configTimeNow()
-        self.save_Time2obstime()
-        
+
         # logger startup...
         logTextBox = MyLogger(self.verticalLayoutWidget)
         logTextBox.setFormatter(logging.Formatter(fmt='%(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s', datefmt='%m-%d-%Y %H:%M:%S'))
@@ -59,6 +57,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.name_location = 'LaSilla'
         self.cloudscheck = True
         self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
+        self.set_configTimeNow()
+        self.save_Time2obstime()
+
 
         # todo: do we want to load that at startup ?
         self.allsky = AllSkyView(location_name=self.name_location, parent=self.allskyView)
@@ -108,13 +109,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         if event.inaxes != self.visibilitytool.axis: return
         
-        if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.obs_time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
+        if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.currentmeteo.time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
             #logging.debug("Not showing coordinates on All Sky, delta time too large")
             return
         
         ra = angles.Angle(event.xdata, unit="hour")
         dec = angles.Angle(event.ydata, unit="deg")
-        azimuth, altitude = self.currentmeteo.get_AzAlt(ra, dec, obs_time=self.obs_time)
+        azimuth, altitude = self.currentmeteo.get_AzAlt(ra, dec, obs_time=self.currentmeteo.time)
         xpix, ypix = clouds.get_image_coordinates(azimuth.value, altitude.value, location=self.currentmeteo.name)
         self.allskylayer.show_coordinates(xpix, ypix)
 
@@ -139,8 +140,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
     def save_Time2obstime(self):
         
-        self.obs_time = Time(self.configTime.dateTime().toPyDateTime(), scale="utc")
-        logging.debug("obs_time is now set to {:s}".format(str(self.obs_time)))
+        self.currentmeteo.time = Time(self.configTime.dateTime().toPyDateTime(), scale="utc")
+        logging.debug("obs_time is now set to {:s}".format(str(self.currentmeteo.time)))
         
     def set_debug_mode(self):
         
@@ -168,7 +169,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         
     def do_update(self):
-        
+
         self.save_Time2obstime()
         self.site_display()
         self.visibilitytool_draw()
@@ -466,7 +467,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             
             ord_names.append(target.name)
             
-            az, elev = self.currentmeteo.get_AzAlt(target.alpha, target.delta, self.obs_time)
+            az, elev = self.currentmeteo.get_AzAlt(target.alpha, target.delta, self.currentmeteo.time)
             as_x, as_y = clouds.get_image_coordinates(az.radian, elev.radian, location=self.currentmeteo.name)
             
             alphas.append(target.alpha.value)
@@ -492,7 +493,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.allskylayerTargets.erase()
         if self.configShowTargetsAllSkyValue.checkState() == 2:
             
-            if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.obs_time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
+            if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.currentmeteo.time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
                 logging.debug("Not showing targets on All Sky, delta time too large")
                 return
             
@@ -540,7 +541,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         self.siteLocationValue.setText(str('Lat={:s}\tLon={:s}\tElev={:s} m'.format(self.currentmeteo.location.get("location", "longitude"), self.currentmeteo.location.get("location", "latitude"), self.currentmeteo.location.get("location", "elevation"))))
         
-        obs_time = self.obs_time
+        obs_time = self.currentmeteo.time
         
         #-------------------------------------------------------- Bright objects now
         
@@ -632,13 +633,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         airmass = self.visibilityAirmassValue.value()
         anglemoon = self.visibilityMoonAngleValue.value()
         
-        if self.currentmeteo.lastest_weatherupdate_time is None or np.abs((self.obs_time - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value / 60.) > 10:
+        if self.currentmeteo.lastest_weatherupdate_time is None or np.abs((self.currentmeteo.time - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value / 60.) > 10:
             check_wind = False
             logging.info("Visibility is not considering the wind, too much difference between date weather report and obs time")
         else:
             check_wind = True
         
-        self.visibilitytool.visbility_draw(obs_time=self.obs_time, meteo=self.currentmeteo, airmass=airmass, anglemoon=float(anglemoon), check_wind=check_wind)
+        self.visibilitytool.visbility_draw(obs_time=self.currentmeteo.time, meteo=self.currentmeteo, airmass=airmass, anglemoon=float(anglemoon), check_wind=check_wind)
         
         logging.debug("Drawn visibility with airmass={:1.1f}, anglemoon={:d}d".format(airmass, anglemoon))
         
