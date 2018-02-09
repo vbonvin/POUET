@@ -72,8 +72,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.weather_display()
         
         # signal and slots init...
-        self.retrieveObs.clicked.connect(self.retrieve_obs)
-        self.updateObs.clicked.connect(self.update_obs)
+        self.loadObs.clicked.connect(self.load_obs)
         self.weatherDisplayRefresh.clicked.connect(self.weather_display)
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
         self.configCloudsShowLayersValue.clicked.connect(self.allsky_redisplay)
@@ -163,10 +162,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.save_Time2obstime()
         self.site_display()
         self.visibilitytool_draw()
-        logging.critical("CHECK do_update is complete (OBVISOULY NOT SINCE NO UPDATE TO OBS)!")
+        self.update_obs()
+        logging.info("General update performed")
 
 
-    def retrieve_obs(self):
+    def load_obs(self):
 
         logmsg = ''
 
@@ -218,7 +218,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 # obsprogram popup
                 self.popup = QtWidgets.QInputDialog()
                 #todo rename Cancel button as default if possible
-                obsprogram, okop = self.popup.getItem(self, "Select an observing program", "Existing programs - hit Cancel to use the default configuration. This setting applies only to the observables that do not already have an obsprogram defined in the input file", obsprogramnames, 0, False)
+                obsprogram, okop = self.popup.getItem(self, "Select an observing program", " - Existing programs -\nSelect Cancel to use the default configuration.\nThis setting applies only to the observables\nthat do not already have an obsprogram defined in the input file", obsprogramnames, 1, False)
 
                 if okop:
                     logmsg += 'as %s ' % obsprogram
@@ -248,7 +248,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             run.refresh_status(self.currentmeteo, self.observables)
 
             for o in self.observables:
-                o.get_observability(self.currentmeteo, cloudscheck=False, verbose=False)
+                o.compute_observability(self.currentmeteo, cloudscheck=False, verbose=False)
 
                 name = QtGui.QStandardItem(o.name)
                 alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
@@ -273,20 +273,44 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.print_status("%s \n Format unknown" % filepath, COLORWARN)
 
     def update_obs(self):
+        """
+        Update the observability of the observables, and update the display model
+
+        :return: None
+        """
 
         # refresh the observables' constraints
         run.refresh_status(self.currentmeteo, self.observables)
 
-        # load the display model
+        # load the display model and the current header
         obs_model = self.listObs.model()
+        headers, i, go_on = [], 0, True
+        while go_on:
+            h = obs_model.horizontalHeaderItem(i)  # will return None if there's no header...
+            if not h:
+                go_on = False
+            else:
+                headers.append(h.data(0))
+                i += 1
+        observability_index = headers.index("Observability")
+
+        # we use the obs name as a reference to update the model
+        model_names = [obs_model.item(i).data(0) for i in range(len(self.observables))]
 
         # compute observability and refresh the model
         for ind, o in enumerate(self.observables):
-            o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
-            obs_model.setItem(ind, 3, QtGui.QStandardItem(str(o.observability)))
+            o.compute_observability(self.currentmeteo, cloudscheck=True, verbose=False)
+
+            # make sur we update the correct observable in the model...
+            obs_index = model_names.index(o.name)
+            obs_model.setItem(obs_index, observability_index, QtGui.QStandardItem(str(o.observability)))
 
         # refresh the display
         self.listObs.setModel(obs_model)
+
+        msg = "Observability refreshed"
+        logging.info(msg)
+        self.print_status(msg, colour=COLORSUCCESS)
 
 
     def check_obs_status(self):
