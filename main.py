@@ -257,16 +257,30 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # refresh the observables' constraints
         run.refresh_status(self.currentmeteo, self.observables)
 
-        # load the display model
+        # load the display model and the current header
         obs_model = self.listObs.model()
+        headers, i, go_on = [], 0, True
+        while go_on:
+            h = obs_model.horizontalHeaderItem(i)  # will return None if there's no header...
+            if not h:
+                go_on = False
+            else:
+                headers.append(h.data(0))
+                i += 1
+        observability_index = headers.index("Observability")
+
 
         # compute observability and refresh the model
         for ind, o in enumerate(self.observables):
             o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
-            obs_model.setItem(ind, 3, QtGui.QStandardItem(str(o.observability)))
+            obs_model.setItem(ind, observability_index, QtGui.QStandardItem(str(o.observability)))
 
         # refresh the display
         self.listObs.setModel(obs_model)
+
+        msg = "Observability refreshed"
+        logging.info(msg)
+        self.print_status(msg, colour=COLORSUCCESS)
 
 
     def check_obs_status(self):
