@@ -445,26 +445,28 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             
         #-------- Plots on visibility layer
         
-        # This is not the most perfect code ever, however if drawing on another layer, it's hard to read the coordinates of the mouse in the plot
-        # for the show_coordinate in all_sky, so by passing.
-        # (however visibilitytool_draw_exec is fast...)
         self.visibilitytool_draw_exec() 
+        if self.configShowTargetsVisibilityValue.checkState() == 2:
+            # This is not the most perfect code ever, however if drawing on another layer, it's hard to read the coordinates of the mouse in the plot
+            # for the show_coordinate in all_sky, so by passing.
+            # (however visibilitytool_draw_exec is fast...)
         
-        self.visibilitytool.show_targets(alphas, deltas, ord_names, meteo=self.currentmeteo)
+            self.visibilitytool.show_targets(alphas, deltas, ord_names, meteo=self.currentmeteo)
         
-        logging.debug("Plotted {} targets in visibility".format(len(d)))
+            logging.debug("Plotted {} targets in visibility".format(len(d)))
         
         #-------- Plots on all sky layer
         
         self.allskylayerTargets.erase()
-        
-        if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.obs_time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
-            logging.debug("Not showing targets on All Sky, delta time too large")
-            return
-        
-        self.allskylayerTargets.show_targets(as_xs, as_ys, ord_names)
-        
-        logging.debug("Plotted {} targets in All Sky".format(len(d)))
+        if self.configShowTargetsAllSkyValue.checkState() == 2:
+            
+            if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.obs_time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
+                logging.debug("Not showing targets on All Sky, delta time too large")
+                return
+            
+            self.allskylayerTargets.show_targets(as_xs, as_ys, ord_names)
+            
+            logging.debug("Plotted {} targets in All Sky".format(len(d)))
 
 
     def weather_display(self):

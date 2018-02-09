@@ -226,7 +226,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="obs">
     <attribute name="title">
@@ -1614,9 +1614,9 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QCheckBox" name="config_show_obs_visibility">
+    <widget class="QCheckBox" name="configShowTargetsVisibilityValue">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -1633,9 +1633,9 @@
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QCheckBox" name="config_show_obs_allsky">
+    <widget class="QCheckBox" name="configShowTargetsAllSkyValue">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
