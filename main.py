@@ -84,6 +84,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.visibilityDraw.clicked.connect(self.visibilitytool_draw)
         self.configDebugModeValue.clicked.connect(self.set_debug_mode)
         self.updatePlotObs.clicked.connect(self.listObs_plot_targets)
+        self.updateSelectall.clicked.connect(self.listObs_selectall)
         self.visibilitytool.figure.canvas.mpl_connect('motion_notify_event', self.on_visibilitytoolmotion)
 
         # Stating timer
@@ -94,6 +95,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         # Some housekeeping stuff...
         self.allskylayerTargets.show_coordinates(150, 150, color="None")
+        self.listObs_check_state = 0
         
         
         # testing stuff at startup...
@@ -393,6 +395,20 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def unhide_observables(self):
         pass
 
+    def listObs_selectall(self):
+        
+        obs_model = self.listObs.model()
+                
+        if self.listObs_check_state == 0:
+            out_state = 2
+        else:
+            out_state = 0
+        
+        for ii in range(obs_model.rowCount()):
+            obs_model.item(ii, 0).setCheckState(out_state)
+            
+        self.listObs_check_state = out_state
+    
     def listObs_plot_targets(self):
         
         obs_model = self.listObs.model()

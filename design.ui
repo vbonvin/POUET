@@ -279,14 +279,27 @@
     <widget class="QPushButton" name="updatePlotObs">
      <property name="geometry">
       <rect>
-       <x>300</x>
-       <y>10</y>
+       <x>320</x>
+       <y>14</y>
        <width>151</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
       <string>Plot selected targets</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="updateSelectall">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>14</y>
+       <width>151</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>(De)select all targets</string>
      </property>
     </widget>
    </widget>
