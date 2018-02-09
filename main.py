@@ -70,7 +70,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         # signal and slots init...
         self.retrieveObs.clicked.connect(self.retrieve_obs)
-        self.updateObs.clicked.connect(self.update_obs)
         self.weatherDisplayRefresh.clicked.connect(self.weather_display)
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
         self.configCloudsShowLayersValue.clicked.connect(self.allsky_redisplay)
@@ -144,7 +143,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.save_Time2obstime()
         self.site_display()
         self.visibilitytool_draw()
-        logging.critical("CHECK do_update is complete (OBVISOULY NOT SINCE NO UPDATE TO OBS)!")
+        self.update_obs()
+        logging.info("General update performed")
 
 
     def retrieve_obs(self):
@@ -227,7 +227,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             run.refresh_status(self.currentmeteo, self.observables)
 
             for o in self.observables:
-                o.get_observability(self.currentmeteo, cloudscheck=False, verbose=False)
+                o.compute_observability(self.currentmeteo, cloudscheck=False, verbose=False)
 
                 name = QtGui.QStandardItem(o.name)
                 alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
@@ -272,7 +272,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         # compute observability and refresh the model
         for ind, o in enumerate(self.observables):
-            o.get_observability(self.currentmeteo, cloudscheck=True, verbose=False)
+            o.compute_observability(self.currentmeteo, cloudscheck=True, verbose=False)
             obs_model.setItem(ind, observability_index, QtGui.QStandardItem(str(o.observability)))
 
         # refresh the display

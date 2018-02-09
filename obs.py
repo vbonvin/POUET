@@ -89,7 +89,7 @@ class Observable:
 	def copy(self):
 		return pythoncopy.deepcopy(self)
 
-	def get_angletomoon(self, meteo):
+	def compute_angletomoon(self, meteo):
 		"""
 		Compute the distance to the moon
 
@@ -105,7 +105,7 @@ class Observable:
 		self.angletomoon = angletomoon
 
 
-	def get_angletosun(self, meteo):
+	def compute_angletosun(self, meteo):
 		"""
 		compute distance to the Sun
 
@@ -121,7 +121,7 @@ class Observable:
 		self.angletosun = angletosun
 
 
-	def get_angletowind(self, meteo):
+	def compute_angletowind(self, meteo):
 		"""
 		Actualize the angle to wind, from the most recent meteo update and altitude and azimuth computed
 
@@ -143,7 +143,7 @@ class Observable:
 		except AttributeError:
 			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
 
-	def get_altaz(self, meteo, obs_time=Time.now()):
+	def compute_altaz(self, meteo, obs_time=Time.now()):
 		"""
 		Actualize altitude and azimuth of the observable at the given observation time.
 
@@ -155,7 +155,7 @@ class Observable:
 		self.azimuth = azimuth
 
 
-	def get_airmass(self, meteo):
+	def compute_airmass(self, meteo):
 
 		"""
 		Compute the airmass using the altitude. We cap the maximum value at 10.
@@ -219,16 +219,16 @@ class Observable:
 
 	def update(self, meteo, obs_time=Time.now()):
 
-		self.get_altaz(meteo, obs_time=obs_time)
-		self.get_angletowind(meteo)
-		self.get_airmass(meteo)
-		self.get_angletomoon(meteo)
-		self.get_angletosun(meteo)
+		self.compute_altaz(meteo, obs_time=obs_time)
+		self.compute_angletowind(meteo)
+		self.compute_airmass(meteo)
+		self.compute_angletomoon(meteo)
+		self.compute_angletosun(meteo)
 
 
-	def get_observability(self, meteo, obs_time=None, displayall=True, cloudscheck=True, verbose=True):
+	def compute_observability(self, meteo, obs_time=None, displayall=True, cloudscheck=True, verbose=True):
 		"""
-		Return the observability, a value between 0 and 1 that tells if the target can be observed at a given time
+		Compute the observability, a value between 0 and 1 that tells if the target can be observed at a given time. Also define flags for each situation (moon, wind, etc...)
 
 		The closer to 1 the better
 		0 is impossible to observe
@@ -344,7 +344,7 @@ def showstatus(observables, meteo, obs_time=None, displayall=True, cloudscheck=T
 	# NO, we keep meteo update outside obs functions !
 	# meteo.update(obs_time=obs_time)
 	for observable in observables:
-		observable.get_observability(meteo=meteo, obs_time=obs_time, displayall=displayall, 
+		observable.compute_observability(meteo=meteo, obs_time=obs_time, displayall=displayall,
 								cloudscheck=cloudscheck, verbose=True)
 
 
@@ -363,8 +363,8 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 	airmasses = []
 	for time in times:
 		mymeteo.update(obs_time=time, minimal=True) # This is the ONLY function in obs that updates the meteo !!
-		observable.getobservability(meteo=mymeteo, obs_time=time, displayall=True, check_clouds=False, verbose=verbose)
-		observable.getairmass()
+		observable.compute_observability(meteo=mymeteo, obs_time=time, displayall=True, check_clouds=False, verbose=verbose)
+		observable.compute_airmass()
 		obss.append(observable.observability)
 		moonseps.append(observable.angletomoon.degree)
 		airmasses.append(observable.airmass)

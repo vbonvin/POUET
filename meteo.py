@@ -193,9 +193,7 @@ class Meteo:
     
     
     def get_moon(self, obs_time=Time.now()):
-    
-        #lat, lon, elev = self.get_telescope_params()
-    
+
         observer = ephem.Observer()
         observer.date = obs_time.iso
         observer.lat, observer.lon, observer.elevation = self.lat.degree, self.lon.degree, self.elev
@@ -212,9 +210,7 @@ class Meteo:
     
     
     def get_sun(self, obs_time=Time.now()):
-    
-        #lat, lon, elev = self.get_telescope_params()
-    
+
         observer = ephem.Observer()
         observer.date = obs_time.iso
         observer.lat, observer.lon, observer.elevation = self.lat.degree, self.lon.degree, self.elev
