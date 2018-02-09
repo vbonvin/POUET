@@ -88,7 +88,7 @@ class Clouds():
         x, y = self.detect_stars()
         return self.get_observability_map(x, y)
         
-    def detect_stars(self, sigma_blur=1.5, threshold=8, neighborhood_size=20, fwhm_threshold=5, meas_star=True, return_all=False):
+    def detect_stars(self, sigma_blur=1.2, threshold=8, neighborhood_size=20, fwhm_threshold=5, meas_star=True, return_all=False):
         """
         Analyses the images to find the stars. 
 
@@ -97,7 +97,7 @@ class Clouds():
         :param sigma_blur: Sigma of the Gaussian kernel (in px)
         :param threshold: threshold of detection
         :param neighborhood_size: footprint of the maximum and minimum filters
-        :param fwhm_threshold: select objects small than this fwhm
+        :param fwhm_threshold: select objects smaller than this fwhm
         :param meas_star: if not interested in computing fwhm for all objects bypass and return positions of objects
         :param return_all: if `True`, returns the positions of stars + detected objects otherwise only stars
 
@@ -406,7 +406,7 @@ if __name__ == "__main__":
     
     logging.basicConfig(level=logging.DEBUG)
     
-    list_of_images = glob.glob("to_test/AllSkyImage*.JPG")
+    list_of_images = glob.glob("to_test/*.JPG")
     print("I found %s images" % len(list_of_images))
     
     imgs = []
