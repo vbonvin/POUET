@@ -436,6 +436,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         self.visibilitytool.show_targets(alphas, deltas, ord_names, meteo=self.currentmeteo)
         
+        logging.debug("Plotted {} targets in visibility".format(len(d)))
+        
         #-------- Plots on all sky layer
         
         self.allskylayerTargets.erase()

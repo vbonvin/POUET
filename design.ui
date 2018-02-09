@@ -281,12 +281,12 @@
       <rect>
        <x>300</x>
        <y>10</y>
-       <width>141</width>
+       <width>151</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>updatePlotObs</string>
+      <string>Plot selected targets</string>
      </property>
     </widget>
    </widget>
