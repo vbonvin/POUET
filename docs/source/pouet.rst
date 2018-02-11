@@ -14,7 +14,7 @@ Submodules
 pouet\.clouds module
 --------------------
 
-.. automodule:: pouet.clouds
+.. automodule:: clouds
     :members:
     :undoc-members:
     :show-inheritance:
@@ -23,7 +23,7 @@ pouet\.clouds module
 pouet\.main module
 ------------------
 
-.. automodule:: pouet.main
+.. automodule:: main
     :members:
     :undoc-members:
     :show-inheritance:

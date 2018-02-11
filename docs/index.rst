@@ -11,6 +11,7 @@ Welcome to POUET's documentation!
    :caption: Contents:
 
    source/modules.rst
+   source/pouet.rst
 
 Indices and tables
 ==================
