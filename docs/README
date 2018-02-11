@@ -10,3 +10,8 @@ How to compile the doc with that half shit-half genius software that is Spinx
 If you want to add a new module, do it BY HAND in source/foo.rst
 
 #todo: fix that sphinx-apidoc issue
+
+
+requirements.txt list all the requirements needed for pouet to work, pip style.
+
+pip freeze > stable-req.txt , but a lot of packages cannot be found on readthedocs (who need to set up a virtualenv to run properly...)
