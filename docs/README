@@ -2,4 +2,11 @@ How to compile the doc with that half shit-half genius software that is Spinx
 
 1) Do NOT run the sphinx-apidoc command anymore. That will break the current structure.
 
-2)
+2) make clean
+
+3) make html - a few warning are still popping up...
+
+
+If you want to add a new module, do it BY HAND in source/foo.rst
+
+#todo: fix that sphinx-apidoc issue
