@@ -1,0 +1,688 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>clouds &mdash; POUET 0.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="POUET 0.2 documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> POUET
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../source/modules.html">pouet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source/pouet.html">pouet package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">POUET</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>clouds</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for clouds</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.ndimage</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">leastsq</span>
+<span class="kn">import</span> <span class="nn">scipy.ndimage.filters</span> <span class="k">as</span> <span class="nn">filters</span>
+<span class="kn">import</span> <span class="nn">scipy.ndimage</span> <span class="k">as</span> <span class="nn">ndimage</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="k">import</span> <span class="n">cKDTree</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="c1">#todo: there seem to be a problem with urllib.request which does not exists anymore...?</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span><span class="o">,</span> <span class="nn">urllib.parse</span><span class="o">,</span> <span class="nn">urllib.error</span>
+<span class="kn">import</span> <span class="nn">astropy.time</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1">###################################################################################################</span>
+<span class="c1"># Definition of the class</span>
+<span class="c1">###################################################################################################</span>
+
+<div class="viewcode-block" id="Clouds"><a class="viewcode-back" href="../source/pouet.html#clouds.Clouds">[docs]</a><span class="k">class</span> <span class="nc">Clouds</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class loads and analyses an all sky image of the Sky and returns an observability map that</span>
+<span class="sd">    can be used by another method to advise the observer on the sky quality.</span>
+<span class="sd">    </span>
+<span class="sd">    :note: This module can also be used to explore older images, see the example code in `__main__()`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">fimage</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debugmode</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the class</span>
+<span class="sd">        </span>
+<span class="sd">        :param fimage: (default is None) filename of the all sky image to analyse</span>
+<span class="sd">        :type: string</span>
+<span class="sd">        :param location: (default is &quot;LaSilla&quot;) name of the location to load the right config file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">location</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">get_params</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_im_refresh</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debugmode</span> <span class="o">=</span> <span class="n">debugmode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failed_connection</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="k">if</span> <span class="n">fimage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fimage</span> <span class="o">=</span> <span class="s2">&quot;current.JPG&quot;</span>
+            <span class="k">if</span> <span class="n">debugmode</span><span class="p">:</span> 
+                <span class="n">fimage</span> <span class="o">=</span> <span class="s2">&quot;config/AllSkyDebugMode.JPG&quot;</span> <span class="c1"># To be used for debug purposes</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cloud analysis is working in debug mode (not using the real current image)&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fimage</span> <span class="o">=</span> <span class="n">fimage</span>
+            <span class="c1">#self.retrieve_image()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">observability_map</span> <span class="o">=</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="Clouds.retrieve_image"><a class="viewcode-back" href="../source/pouet.html#clouds.Clouds.retrieve_image">[docs]</a>    <span class="k">def</span> <span class="nf">retrieve_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Downloads the current all sky from the server and saves it to disk.</span>
+<span class="sd">        The url of the image is retrived from the configuration file at that location</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">debugmode</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading all sky from </span><span class="si">{}</span><span class="s2">...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]))</span>
+                <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="s2">&quot;current.JPG&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">failed_connection</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">except</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">failed_connection</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cannot download All Sky image. Either you or the server is offline!&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">im_masked</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">im_original</span> <span class="o">=</span> <span class="n">loadallsky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fimage</span><span class="p">,</span> <span class="n">return_complete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_im_refresh</span> <span class="o">=</span> <span class="n">astropy</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span></div>
+        
+<div class="viewcode-block" id="Clouds.update"><a class="viewcode-back" href="../source/pouet.html#clouds.Clouds.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Downloads the image, detects the stars and returns the observability map</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_im_refresh</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">astropy</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_im_refresh</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mf">60.</span> <span class="o">&lt;</span> <span class="mf">1.5</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Last image was downloaded more recently than 1.5 minutes ago, I don&#39;t download it again&quot;</span><span class="p">)</span>
+            <span class="c1">#Seems to be okay#logger.critical(&quot;TODO: make sure that this map is correct and there&#39;s no .T missing (see get_observability_map)&quot;)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">observability_map</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">retrieve_image</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">failed_connection</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Connection down and not running in debugmode so cannot analyse All Sky&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_stars</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_observability_map</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="Clouds.detect_stars"><a class="viewcode-back" href="../source/pouet.html#clouds.Clouds.detect_stars">[docs]</a>    <span class="k">def</span> <span class="nf">detect_stars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma_blur</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">neighborhood_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">fwhm_threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">meas_star</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_all</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Analyses the images to find the stars. </span>
+
+<span class="sd">        :todo: describe algo in more details</span>
+<span class="sd">        </span>
+<span class="sd">        :param sigma_blur: Sigma of the Gaussian kernel (in px)</span>
+<span class="sd">        :param threshold: threshold of detection</span>
+<span class="sd">        :param neighborhood_size: footprint of the maximum and minimum filters</span>
+<span class="sd">        :param fwhm_threshold: select objects smaller than this fwhm</span>
+<span class="sd">        :param meas_star: if not interested in computing fwhm for all objects bypass and return positions of objects</span>
+<span class="sd">        :param return_all: if `True`, returns the positions of stars + detected objects otherwise only stars</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Detecting stars in All Sky...&quot;</span><span class="p">)</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">im_original</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">im_masked</span><span class="p">,</span> <span class="n">sigma_blur</span><span class="p">)</span>
+        <span class="n">data_max</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">maximum_filter</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">neighborhood_size</span><span class="p">)</span>
+        <span class="n">maxima</span> <span class="o">=</span> <span class="p">(</span><span class="n">image</span> <span class="o">==</span> <span class="n">data_max</span><span class="p">)</span>
+        
+        <span class="n">data_min</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">minimum_filter</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">neighborhood_size</span><span class="p">)</span>
+        
+        <span class="c1"># In order to avoid outputing warnings, remove all nans (not the Indian bread)</span>
+        <span class="n">delta_arr</span> <span class="o">=</span> <span class="n">data_max</span> <span class="o">-</span> <span class="n">data_min</span>
+        <span class="n">delta_arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">delta_arr</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.</span>
+
+        <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta_arr</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span>
+        <span class="n">maxima</span><span class="p">[</span><span class="n">diff</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="n">labeled</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">maxima</span><span class="p">)</span>
+        <span class="n">slices</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">find_objects</span><span class="p">(</span><span class="n">labeled</span><span class="p">)</span>
+        
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dx</span> <span class="ow">in</span> <span class="n">slices</span><span class="p">:</span>
+            <span class="n">x_center</span> <span class="o">=</span> <span class="p">(</span><span class="n">dx</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">dx</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_center</span><span class="p">)</span>
+            <span class="n">y_center</span> <span class="o">=</span> <span class="p">(</span><span class="n">dy</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">dy</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>    
+            <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_center</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">meas_star</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+        
+        <span class="n">resx</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">resy</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">fwhm</span><span class="p">(</span><span class="n">original</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="o">&lt;</span> <span class="n">fwhm_threshold</span><span class="p">:</span>
+                <span class="n">resx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
+                <span class="n">resy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yy</span><span class="p">)</span>
+                <span class="c1">#resfwhm.append(f)</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done. </span><span class="si">{}</span><span class="s2"> stars found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">resx</span><span class="p">)))</span>
+        
+        <span class="k">if</span> <span class="n">return_all</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resx</span><span class="p">,</span> <span class="n">resy</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resx</span><span class="p">,</span> <span class="n">resy</span></div>
+        
+<div class="viewcode-block" id="Clouds.get_observability_map"><a class="viewcode-back" href="../source/pouet.html#clouds.Clouds.get_observability_map">[docs]</a>    <span class="k">def</span> <span class="nf">get_observability_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an observability map (an image of the sky)</span>
+<span class="sd">        </span>
+<span class="sd">        :param x: x coordinates of detected stars</span>
+<span class="sd">        :param y: y coordinates of detected stars</span>
+<span class="sd">        :param threshold: distance threshold in px of stars such that we have observations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">observability</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">im_masked</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">notnans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">im_masked</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">notnans</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">notnans</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">notnans</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">cKDTree</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)))</span>    
+            <span class="k">for</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="ow">in</span> <span class="n">notnans</span><span class="p">:</span>
+                <span class="n">obs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">query_ball_point</span><span class="p">((</span><span class="n">ny</span><span class="p">,</span><span class="n">nx</span><span class="p">),</span> <span class="n">threshold</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">obs</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">:</span> <span class="n">observability</span><span class="p">[</span><span class="n">nx</span><span class="p">,</span><span class="n">ny</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> 
+                <span class="k">elif</span> <span class="n">obs</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">observability</span><span class="p">[</span><span class="n">nx</span><span class="p">,</span><span class="n">ny</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="c1">#0.5</span>
+                <span class="c1">#elif obs == 1 : observability[nx,ny] = 0.3</span>
+            <span class="c1">#res = tree.count_neighbors(pixels, 10)</span>
+            <span class="c1">#print res</span>
+            <span class="n">observability</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">gaussian_filter</span><span class="p">(</span><span class="n">observability</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        #print np.size(np.where(observability &gt; 0.5)[0])</span>
+<span class="sd">        if np.size(np.where(observability &gt; 0.5)[0]) &lt; 100000:</span>
+<span class="sd">            obsmap = np.ones_like(observability)</span>
+<span class="sd">            hstep = 30</span>
+<span class="sd">            medim = np.nanmedian(self.im_masked)</span>
+<span class="sd">            #print medim </span>
+<span class="sd">            #medim = 150</span>
+<span class="sd">            for ix in range(hstep,np.shape(self.im_masked)[0],5):#range(hstep,np.shape(self.im_masked)[0],hstep*2):</span>
+<span class="sd">                for iy in range(hstep,np.shape(self.im_masked)[1],5):</span>
+<span class="sd">                    if not np.isnan(np.nanmedian(self.im_masked[ix-hstep:ix+hstep,iy-hstep:iy+hstep])):</span>
+<span class="sd">                        mar = self.im_masked[ix-hstep:ix+hstep,iy-hstep:iy+hstep]</span>
+<span class="sd">                        res = np.nanmedian(mar) &lt; 0.9*medim</span>
+<span class="sd">                        obsmap[ix-hstep:ix+hstep,iy-hstep:iy+hstep] = res</span>
+<span class="sd">                        #= np.ones_like(mar) * res</span>
+<span class="sd">            obsmap[np.isnan(self.im_masked)] = np.nan</span>
+<span class="sd">            #print np.nanmedian(self.im_masked)</span>
+<span class="sd">            #exit()</span>
+<span class="sd">    </span>
+
+<span class="sd">            observability = np.logical_and(observability, obsmap)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">observability_map</span> <span class="o">=</span> <span class="n">observability</span><span class="o">.</span><span class="n">T</span>
+        
+        <span class="k">return</span> <span class="n">observability</span></div></div>
+
+<span class="c1">###################################################################################################</span>
+<span class="c1"># Utilitaries for clouds (only specific functions for that particular module</span>
+<span class="c1">###################################################################################################</span>
+
+<div class="viewcode-block" id="rgb2gray"><a class="viewcode-back" href="../source/pouet.html#clouds.rgb2gray">[docs]</a><span class="k">def</span> <span class="nf">rgb2gray</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The all sky in LaSilla is not RGB, but JPG is is 3D...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">red</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">green</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">blue</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[:,:,</span><span class="mi">2</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="mf">0.299</span> <span class="o">*</span> <span class="n">red</span> <span class="o">+</span> <span class="mf">0.587</span> <span class="o">*</span> <span class="n">green</span> <span class="o">+</span> <span class="mf">0.144</span> <span class="o">*</span> <span class="n">blue</span></div>
+
+<div class="viewcode-block" id="get_mask"><a class="viewcode-back" href="../source/pouet.html#clouds.get_mask">[docs]</a><span class="k">def</span> <span class="nf">get_mask</span><span class="p">(</span><span class="n">ar</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the mask to apply on the AllSky to remove the image of the danish...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">s</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span>
+    <span class="c1">#xxa, xxb = s[0]/2, s[1]/2</span>
+    <span class="c1">#r = 210#285</span>
+    <span class="c1">#xxb = 279</span>
+    <span class="c1">#xxa = 230</span>
+    
+    <span class="c1">#    y,x = np.ogrid[-xxa:s[0]-xxa, -xxb:s[1]-xxb]</span>
+    <span class="n">xxa</span><span class="p">,</span> <span class="n">xxb</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="mi">285</span>
+    <span class="n">y</span><span class="p">,</span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[</span><span class="o">-</span><span class="n">xxa</span><span class="p">:</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">xxa</span><span class="p">,</span> <span class="o">-</span><span class="n">xxb</span><span class="p">:</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">xxb</span><span class="p">]</span>
+    
+    <span class="n">adan</span><span class="p">,</span> <span class="n">bdan</span> <span class="o">=</span> <span class="mi">145</span><span class="p">,</span> <span class="mi">570</span>
+    <span class="n">rdan</span> <span class="o">=</span> <span class="mi">88</span>
+    <span class="n">ydan</span><span class="p">,</span><span class="n">xdan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ogrid</span><span class="p">[</span><span class="o">-</span><span class="n">adan</span><span class="p">:</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">adan</span><span class="p">,</span> <span class="o">-</span><span class="n">bdan</span><span class="p">:</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bdan</span><span class="p">]</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="o">*</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="n">r</span><span class="o">*</span><span class="n">r</span><span class="p">,</span> <span class="n">xdan</span><span class="o">*</span><span class="n">xdan</span> <span class="o">+</span> <span class="n">ydan</span><span class="o">*</span><span class="n">ydan</span> <span class="o">&lt;=</span> <span class="n">rdan</span><span class="o">*</span><span class="n">rdan</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+<div class="viewcode-block" id="loadallsky"><a class="viewcode-back" href="../source/pouet.html#clouds.loadallsky">[docs]</a><span class="k">def</span> <span class="nf">loadallsky</span><span class="p">(</span><span class="n">fnimg</span><span class="p">,</span> <span class="n">return_complete</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads the image</span>
+<span class="sd">    :param return_complete: returns the masked image and the unmasked image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loading image </span><span class="si">{}</span><span class="s2">...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fnimg</span><span class="p">))</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">fnimg</span><span class="p">)</span>
+    <span class="n">ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+    <span class="n">ar</span> <span class="o">=</span> <span class="n">rgb2gray</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span>
+    <span class="n">rest</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span>
+    
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">get_mask</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span>
+    <span class="n">ar</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    
+    <span class="k">if</span> <span class="n">return_complete</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ar</span><span class="p">,</span> <span class="n">rest</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ar</span></div>
+    
+<div class="viewcode-block" id="gaussian"><a class="viewcode-back" href="../source/pouet.html#clouds.gaussian">[docs]</a><span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">params</span><span class="p">,</span><span class="n">stamp</span><span class="p">,</span><span class="n">stampsize</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a 2D gaussian profile</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">xc</span><span class="p">,</span><span class="n">yc</span><span class="p">,</span><span class="n">std</span><span class="p">,</span><span class="n">i0</span><span class="p">,</span><span class="n">sky</span><span class="o">=</span><span class="n">params</span>
+
+    <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">stampsize</span><span class="p">)</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">i0</span><span class="o">=</span><span class="n">i0</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span><span class="o">-=</span><span class="n">xc</span>
+    <span class="n">y</span><span class="o">-=</span><span class="n">yc</span>
+    <span class="n">r</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="n">g</span><span class="o">=</span><span class="n">i0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="n">std</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">+</span> <span class="n">sky</span>
+    <span class="n">g</span><span class="o">-=</span><span class="n">stamp</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">g</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="fwhm"><a class="viewcode-back" href="../source/pouet.html#clouds.fwhm">[docs]</a><span class="k">def</span> <span class="nf">fwhm</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">xc</span><span class="p">,</span><span class="n">yc</span><span class="p">,</span><span class="n">stampsize</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fits a 2D Gaussian profile and returns the FWHM in px</span>
+<span class="sd">    </span>
+<span class="sd">    :param data: the stamp containing the image </span>
+<span class="sd">    :param xc: centroid x position</span>
+<span class="sd">    :param yc: centroid y position</span>
+<span class="sd">    :param stampsize: size of nominal square stampe</span>
+<span class="sd">    :param show: shows a diagnostic plot of the fit</span>
+<span class="sd">    :param verbose: should I speak? </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#TODO: remove verbose since I use loggger?</span>
+    
+    <span class="k">if</span> <span class="n">xc</span> <span class="o">&lt;</span> <span class="n">stampsize</span> <span class="ow">or</span> <span class="n">yc</span> <span class="o">&lt;</span> <span class="n">stampsize</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">xc</span> <span class="o">&lt;</span> <span class="n">stampsize</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">yc</span> <span class="o">&lt;</span> <span class="n">stampsize</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;WARNING: Star at </span><span class="si">%d</span><span class="s2"> </span><span class="si">%d</span><span class="s2"> could not be measured (too close to edge)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="n">yc</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">assert</span> <span class="n">stampsize</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span> <span class="c1">#make sure it&#39;s an integer</span>
+    
+    <span class="n">xi</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">xc</span><span class="o">-</span><span class="n">stampsize</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+    <span class="n">xf</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">xc</span><span class="o">+</span><span class="n">stampsize</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+    <span class="n">yi</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">yc</span><span class="o">-</span><span class="n">stampsize</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+    <span class="n">yf</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">yc</span><span class="o">+</span><span class="n">stampsize</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+    <span class="n">stamp</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">yi</span><span class="p">:</span><span class="n">yf</span><span class="p">,</span><span class="n">xi</span><span class="p">:</span><span class="n">xf</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">stamp</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;WARNING: Star at </span><span class="si">%d</span><span class="s2"> </span><span class="si">%d</span><span class="s2"> could not be measured (contains NaN)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="n">yc</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">stamp</span><span class="p">,</span><span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+    
+        <span class="sd">&quot;&quot;&quot;plt.figure()</span>
+<span class="sd">        plt.scatter([xc],[yc],marker=&#39;+&#39;, s=50,c=&#39;k&#39;)</span>
+<span class="sd">        plt.scatter([xi,xi,xf,xf],[yi,yf,yi,yf],marker=&#39;+&#39;, s=50,c=&#39;k&#39;)</span>
+<span class="sd">        plt.imshow(data,interpolation=&quot;nearest&quot;)&quot;&quot;&quot;</span>
+
+    <span class="n">guess</span><span class="o">=</span><span class="p">[</span><span class="n">stampsize</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span><span class="n">stampsize</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span><span class="mf">2.</span><span class="p">,</span><span class="mf">1e5</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span>
+
+    <span class="n">p</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">leastsq</span><span class="p">(</span><span class="n">gaussian</span><span class="p">,</span><span class="n">guess</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">stamp</span><span class="p">,</span><span class="n">stampsize</span><span class="p">))</span>
+
+
+    <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">&lt;</span><span class="mf">0.2</span> <span class="ow">or</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">&gt;</span><span class="mf">1e3</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;WARNING: Star at </span><span class="si">%d</span><span class="s2"> </span><span class="si">%d</span><span class="s2"> could not be measured (width unphysical)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xc</span><span class="p">,</span><span class="n">yc</span><span class="p">))</span>
+        <span class="c1">#return np.nan</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;x=</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xi</span><span class="o">+</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;y=</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">yi</span><span class="o">+</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;width=</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;FWHM=</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.</span><span class="p">))))</span>
+
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">data</span><span class="p">),</span><span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+
+        <span class="n">xs</span><span class="o">=</span><span class="p">[</span><span class="n">xi</span><span class="p">,</span><span class="n">xf</span><span class="p">,</span><span class="n">xf</span><span class="p">,</span><span class="n">xi</span><span class="p">,</span><span class="n">xi</span><span class="p">]</span>
+        <span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="n">yi</span><span class="p">,</span><span class="n">yi</span><span class="p">,</span><span class="n">yf</span><span class="p">,</span><span class="n">yf</span><span class="p">,</span><span class="n">yi</span><span class="p">]</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xi</span><span class="o">+</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">yi</span><span class="o">+</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">marker</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span><span class="n">ys</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">data</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="get_params"><a class="viewcode-back" href="../source/pouet.html#clouds.get_params">[docs]</a><span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="s2">&quot;LaSilla&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">location</span> <span class="o">==</span> <span class="s2">&quot;LaSilla&quot;</span><span class="p">:</span>
+        <span class="n">cx</span> <span class="o">=</span> <span class="mi">279</span>
+        <span class="n">cy</span> <span class="o">=</span> <span class="mi">230</span>
+        <span class="n">prefered_direction</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dir&#39;</span><span class="p">:</span><span class="mf">194.3</span><span class="p">,</span> <span class="s1">&#39;posx&#39;</span><span class="p">:</span><span class="mi">297</span><span class="p">,</span> <span class="s1">&#39;posy&#39;</span><span class="p">:</span><span class="mi">336</span><span class="p">}</span>
+        <span class="n">prefered_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">prefered_direction</span><span class="p">[</span><span class="s1">&#39;posy&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">cy</span><span class="p">,</span> <span class="n">prefered_direction</span><span class="p">[</span><span class="s1">&#39;posx&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">cx</span><span class="p">)</span>
+        <span class="n">north</span> <span class="o">=</span> <span class="n">prefered_theta</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">prefered_direction</span><span class="p">[</span><span class="s1">&#39;dir&#39;</span><span class="p">])</span>
+        <span class="n">deltatetha</span><span class="o">=</span><span class="mi">180</span><span class="o">-</span><span class="n">prefered_direction</span><span class="p">[</span><span class="s1">&#39;dir&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">5</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;k1&#39;</span><span class="p">:</span> <span class="mf">1.96263549291</span><span class="o">*</span><span class="mf">0.945</span><span class="p">,</span>
+                <span class="s1">&#39;k2&#39;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span>
+                <span class="s1">&#39;ff&#39;</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+                <span class="s1">&#39;r0&#39;</span><span class="p">:</span> <span class="mi">330</span><span class="p">,</span>
+                <span class="s1">&#39;cx&#39;</span><span class="p">:</span> <span class="n">cx</span><span class="p">,</span>
+                <span class="s1">&#39;cy&#39;</span><span class="p">:</span> <span class="n">cy</span><span class="p">,</span>
+                <span class="s1">&#39;prefered_direction&#39;</span><span class="p">:</span><span class="n">prefered_direction</span><span class="p">,</span>
+                <span class="s1">&#39;prefered_theta&#39;</span><span class="p">:</span> <span class="n">prefered_theta</span><span class="p">,</span>
+                <span class="s1">&#39;deltatetha&#39;</span><span class="p">:</span> <span class="n">deltatetha</span><span class="p">,</span>
+                <span class="s1">&#39;north&#39;</span><span class="p">:</span> <span class="n">north</span><span class="p">,</span>
+                <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s2">&quot;http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG&quot;</span><span class="p">,</span>
+                <span class="s1">&#39;image_x_size&#39;</span><span class="p">:</span><span class="mi">640</span><span class="p">,</span>
+                <span class="s1">&#39;image_y_size&#39;</span><span class="p">:</span><span class="mi">480</span><span class="p">,</span>
+                <span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown location&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">params</span></div>
+
+<div class="viewcode-block" id="get_radius"><a class="viewcode-back" href="../source/pouet.html#clouds.get_radius">[docs]</a><span class="k">def</span> <span class="nf">get_radius</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">ff</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">r0</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ff</span><span class="o">*</span><span class="n">k1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">k2</span> <span class="o">*</span> <span class="n">elev</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="n">r0</span></div>
+
+<div class="viewcode-block" id="get_image_coordinates"><a class="viewcode-back" href="../source/pouet.html#clouds.get_image_coordinates">[docs]</a><span class="k">def</span> <span class="nf">get_image_coordinates</span><span class="p">(</span><span class="n">az</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">get_params</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+    
+    <span class="n">k1</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span>
+    <span class="n">k2</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;k2&#39;</span><span class="p">]</span>
+    <span class="n">ff</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;ff&#39;</span><span class="p">]</span>
+    <span class="n">r0</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;r0&#39;</span><span class="p">]</span>
+    <span class="n">north</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;north&#39;</span><span class="p">]</span>
+    <span class="n">cx</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;cx&#39;</span><span class="p">]</span>
+    <span class="n">cy</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;cy&#39;</span><span class="p">]</span>
+
+    <span class="n">az</span> <span class="o">*=</span> <span class="o">-</span><span class="mf">1.</span>
+    <span class="n">elev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">2.</span> <span class="o">-</span> <span class="n">elev</span>
+    
+    <span class="n">rr</span> <span class="o">=</span> <span class="n">get_radius</span><span class="p">(</span><span class="n">elev</span><span class="p">,</span> <span class="n">ff</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">r0</span><span class="p">)</span>
+    
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">north</span> <span class="o">+</span> <span class="n">az</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">rr</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">cx</span> 
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">north</span> <span class="o">+</span> <span class="n">az</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">rr</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">cy</span>
+    
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> 
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
+
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span></div>
+
+<span class="c1">###################################################################################################</span>
+<span class="c1"># Standard examples to be analysed when running clouds.py</span>
+<span class="c1">###################################################################################################</span>
+            
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">glob</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    
+    <span class="n">list_of_images</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;to_test/*.JPG&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;I found </span><span class="si">%s</span><span class="s2"> images&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_of_images</span><span class="p">))</span>
+    
+    <span class="n">imgs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">fim</span> <span class="ow">in</span> <span class="n">list_of_images</span><span class="p">:</span>
+        <span class="n">imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loadallsky</span><span class="p">(</span><span class="n">fim</span><span class="p">))</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    img = None</span>
+<span class="sd">    for fim in list_of_images:</span>
+<span class="sd">        if img is None:</span>
+<span class="sd">            img = util.loadallsky(fim)</span>
+<span class="sd">        else:</span>
+<span class="sd">            img += util.loadallsky(fim)</span>
+<span class="sd">    imgs = [img]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#plt.imshow(img, interpolation=&#39;nearest&#39;)</span>
+    <span class="c1">#plt.show(); exit()</span>
+        
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">imgs</span><span class="p">):</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Treating&#39;</span><span class="p">,</span> <span class="n">list_of_images</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    
+        <span class="n">imo</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+        <span class="n">analysis</span> <span class="o">=</span> <span class="n">Clouds</span><span class="p">(</span><span class="n">fimage</span> <span class="o">=</span> <span class="n">list_of_images</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">location</span><span class="o">=</span><span class="s2">&quot;LaSilla&quot;</span><span class="p">)</span>
+        <span class="n">analysis</span><span class="o">.</span><span class="n">im_masked</span><span class="p">,</span> <span class="n">analysis</span><span class="o">.</span><span class="n">im_original</span> <span class="o">=</span> <span class="n">loadallsky</span><span class="p">(</span><span class="n">list_of_images</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">return_complete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">analysis</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">get_mask</span><span class="p">(</span><span class="n">analysis</span><span class="o">.</span><span class="n">im_original</span><span class="p">)</span>
+        
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">ay</span> <span class="o">=</span> <span class="n">analysis</span><span class="o">.</span><span class="n">detect_stars</span><span class="p">(</span><span class="n">return_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">observability</span> <span class="o">=</span> <span class="n">analysis</span><span class="o">.</span><span class="n">get_observability_map</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        
+        <span class="c1">#print &#39;0, 30,&#39;, analysis.is_observable(np.deg2rad(0), np.deg2rad(30))</span>
+        <span class="c1">#print &#39;0, -30,&#39;, analysis.is_observable(np.deg2rad(0), np.deg2rad(-30))</span>
+        <span class="c1">#print &#39;180, 0,&#39;, analysis.is_observable(np.deg2rad(180), np.deg2rad(0))</span>
+        
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">imo</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;Greys_r&#39;</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+        <span class="c1">#plt.scatter(x, y, s=4, marker=&#39;o&#39;, edgecolors=&#39;r&#39;, color=&#39;none&#39;)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Detected peaks&#39;</span><span class="p">)</span>
+        
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">imo</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;Greys_r&#39;</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Detected stars&#39;</span><span class="p">)</span>
+        
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">imo</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;Greys_r&#39;</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">observability</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;RdYlGn&#39;</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Observability&quot;</span><span class="p">)</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Vivien Bonvin, Thibault Kuntzer.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
