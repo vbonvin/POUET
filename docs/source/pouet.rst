@@ -6,7 +6,7 @@ Subpackages
 
 .. toctree::
 
-    obsprogram
+    pouet.obsprogram
 
 Submodules
 ----------
