@@ -1,0 +1,5 @@
+How to compile the doc with that half shit-half genius software that is Spinx
+
+1) Do NOT run the sphinx-apidoc command anymore. That will break the current structure.
+
+2)
