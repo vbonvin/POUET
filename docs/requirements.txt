@@ -8,3 +8,4 @@ pyephem==3.7.6.0
 scipy==0.19.1
 pickleshare==0.7.4
 pycparser==2.18
+requests==2.18.4
