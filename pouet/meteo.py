@@ -12,7 +12,7 @@ Observables interact only with Meteo to get their constaints (position to the mo
 import astropy.coordinates.angles as angles
 from astropy.time import Time
 #todo: using requests instead of urllib, that has versioning issues ?
-import urllib.request, urllib.error, urllib.parse
+#import urllib.request, urllib.error, urllib.parse
 import requests
 import re
 import ephem
