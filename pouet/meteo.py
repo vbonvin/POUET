@@ -11,7 +11,9 @@ Observables interact only with Meteo to get their constaints (position to the mo
 
 import astropy.coordinates.angles as angles
 from astropy.time import Time
+#todo: using requests instead of urllib, that has versioning issues ?
 import urllib.request, urllib.error, urllib.parse
+import requests
 import re
 import ephem
 import numpy as np
@@ -139,8 +141,10 @@ class Meteo:
                 data += line
         else:
             try:
-                data=urllib.request.urlopen(self.location.get("weather", "url")).read()
-            except urllib.error.URLError:
+                #data=urllib.request.urlopen(self.location.get("weather", "url")).read()
+                data = requests.get(self.location.get("weather", "url")).read()
+            #except urllib.error.URLError:
+            except requests.ConnectionError:
                 logger.warning("Cannot download weather data. Either you or the weather server is offline!")
                 return np.nan, np.nan
             data = data.decode("utf-8")

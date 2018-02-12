@@ -6,7 +6,8 @@ import scipy.ndimage as ndimage
 from scipy.spatial import cKDTree
 import copy
 #todo: there seem to be a problem with urllib.request which does not exists anymore...?
-import urllib.request, urllib.parse, urllib.error
+#import urllib.request, urllib.parse, urllib.error
+import requests
 import astropy.time
 from astropy import units as u
 
@@ -59,7 +60,8 @@ class Clouds():
         if not self.debugmode:
             try:
                 logger.info("Loading all sky from {}...".format(self.params['url']))
-                urllib.request.urlretrieve(self.params['url'], "current.JPG")
+                #urllib.request.urlretrieve(self.params['url'], "current.JPG")
+                open("current.JPG", 'wb').write(requests.get(self.params['url']).content)
                 self.failed_connection = False
             except :
                 self.failed_connection = True
@@ -342,6 +344,9 @@ def fwhm(data,xc,yc,stampsize,show=False, verbose=False):
         plt.show()
 
     return p[2] * 2. * np.sqrt(2.*np.log(2.))
+
+
+#todo: this should be hardcoded OUTSIDE of clouds.py ! use e.g. LaSilla.cfg ?
 
 def get_params(location="LaSilla"):
     if location == "LaSilla":
