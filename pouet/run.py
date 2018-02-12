@@ -58,8 +58,6 @@ def retrieve_obsprogramlist():
 if __name__ == "__main__":
 
 
-
-
     import logging
 
     logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',
@@ -73,6 +71,12 @@ if __name__ == "__main__":
 
     # load a catalogue of observables
     observables = obs.rdbimport("../cats/2m2lenses.rdb", obsprogramcol=None, obsprogram='lens')
+
+    observables = [o for o in observables if o.name == "PSJ1606-2333"]
+
+    obs_night = Time("2018-02-12 01:00:00", format='iso', scale='utc')
+    obs.shownightobs(observable=observables[0], meteo=currentmeteo, obs_night="2018-02-12", savefig=False, verbose=True)
+
 
     # show current status of all observables
     obs.showstatus(observables, currentmeteo, displayall=True)

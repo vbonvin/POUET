@@ -165,7 +165,7 @@ class Observable:
 		"""
 
 		try:
-			self.airmass = util.elev2airmass(np.pi/2 -self.altitude.radian, meteo.elev)
+			self.airmass = util.elev2airmass(self.altitude.radian, meteo.elev)
 
 
 			"""	
@@ -354,17 +354,19 @@ def shownightobs(observable, meteo=None, obs_night=None, savefig=False, dirpath=
 	"""
 
 	# list of times between nautical twilights
-	times = util.get_nighthours(obs_night)
+	times = meteo.get_nighthours(obs_night)
 
-	mymeteo = pythoncopy.deepcopy(meteo) # as we don't want to affect the current meteo, we make a copy that we update with the time
+	#mymeteo = pythoncopy.deepcopy(meteo) # as we don't want to affect the current meteo, we make a copy that we update with the time
+
+	mymeteo = meteo
 
 	obss = []
 	moonseps = []
 	airmasses = []
 	for time in times:
 		mymeteo.update(obs_time=time, minimal=True) # This is the ONLY function in obs that updates the meteo !!
-		observable.compute_observability(meteo=mymeteo, obs_time=time, displayall=True, check_clouds=False, verbose=verbose)
-		observable.compute_airmass()
+		observable.compute_observability(meteo=mymeteo, displayall=True, cloudscheck=False, verbose=verbose)
+		observable.compute_airmass(mymeteo)
 		obss.append(observable.observability)
 		moonseps.append(observable.angletomoon.degree)
 		airmasses.append(observable.airmass)
