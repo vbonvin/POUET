@@ -10,8 +10,6 @@ Welcome to POUET's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   source/module.rst
-   source/pouet.rst
 
 Indices and tables
 ==================

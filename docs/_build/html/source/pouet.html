@@ -35,9 +35,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="POUET 0.2 documentation" href="../index.html"/>
-        <link rel="next" title="pouet.obsprogram package" href="pouet.obsprogram.html"/>
-        <link rel="prev" title="Welcome to POUET’s documentation!" href="../index.html"/> 
+    <link rel="top" title="POUET 0.2 documentation" href="../index.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -90,24 +88,21 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">pouet package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pouet.obsprogram.html">pouet.obsprogram package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-clouds">pouet.clouds module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-main">pouet.main module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-meteo">pouet.meteo module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-obs">pouet.obs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-run">pouet.run module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-util">pouet.util module</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">pouet package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-clouds">pouet.clouds module</a></li>
+<li><a class="reference internal" href="#module-main">pouet.main module</a></li>
+<li><a class="reference internal" href="#module-meteo">pouet.meteo module</a></li>
+<li><a class="reference internal" href="#module-obs">pouet.obs module</a></li>
+<li><a class="reference internal" href="#module-run">pouet.run module</a></li>
+<li><a class="reference internal" href="#module-util">pouet.util module</a></li>
 </ul>
 </li>
 </ul>
-
+</div>
             
           
         </div>
@@ -174,17 +169,6 @@
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="pouet.obsprogram.html">pouet.obsprogram package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pouet.obsprogram.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pouet.obsprogram.html#module-obsprogram.prog703">pouet.obsprogram.prog703 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pouet.obsprogram.html#module-obsprogram.prog714">pouet.obsprogram.prog714 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pouet.obsprogram.html#module-obsprogram.progbebop">pouet.obsprogram.progbebop module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pouet.obsprogram.html#module-obsprogram.proglens">pouet.obsprogram.proglens module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pouet.obsprogram.html#module-obsprogram">Module contents</a></li>
-</ul>
-</li>
-</ul>
 </div>
 </div>
 <div class="section" id="submodules">
@@ -569,7 +553,7 @@ It is the only object that interact outside POUET, i.e. communicate with website
 <p>Typically, a Site object is created when POUET starts, and then update itself every XX minutes</p>
 <dl class="method">
 <dt id="meteo.Meteo.get_AzAlt">
-<code class="descname">get_AzAlt</code><span class="sig-paren">(</span><em>alpha</em>, <em>delta</em>, <em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-11 17:13:02.433887&gt;</em>, <em>ref_dir=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_AzAlt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_AzAlt" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_AzAlt</code><span class="sig-paren">(</span><em>alpha</em>, <em>delta</em>, <em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625950&gt;</em>, <em>ref_dir=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_AzAlt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_AzAlt" title="Permalink to this definition">¶</a></dt>
 <dd><p>idea from <a class="reference external" href="http://aa.usno.navy.mil/faq/docs/Alt_Az.php">http://aa.usno.navy.mil/faq/docs/Alt_Az.php</a></p>
 <p>Compute the azimuth and altitude of a source at a given time (by default current time of
 execution), given its alpha and delta coordinates.</p>
@@ -577,7 +561,7 @@ execution), given its alpha and delta coordinates.</p>
 
 <dl class="method">
 <dt id="meteo.Meteo.get_moon">
-<code class="descname">get_moon</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-11 17:13:02.433798&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_moon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_moon" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_moon</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625844&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_moon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_moon" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -588,7 +572,7 @@ execution), given its alpha and delta coordinates.</p>
 
 <dl class="method">
 <dt id="meteo.Meteo.get_sun">
-<code class="descname">get_sun</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-11 17:13:02.433841&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_sun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_sun" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_sun</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625904&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_sun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_sun" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -604,7 +588,7 @@ execution), given its alpha and delta coordinates.</p>
 
 <dl class="method">
 <dt id="meteo.Meteo.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-11 17:13:02.433693&gt;</em>, <em>minimal=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.update" title="Permalink to this definition">¶</a></dt>
+<code class="descname">update</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625684&gt;</em>, <em>minimal=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>minimal=True update only the moon and sun position. Useful for predictions (as you can’t predict the clouds or winds, no need to refresh them)</p>
 </dd></dl>
 
@@ -616,12 +600,12 @@ execution), given its alpha and delta coordinates.</p>
 
 <dl class="method">
 <dt id="meteo.Meteo.updatemoonpos">
-<code class="descname">updatemoonpos</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-11 17:13:02.433566&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.updatemoonpos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.updatemoonpos" title="Permalink to this definition">¶</a></dt>
+<code class="descname">updatemoonpos</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625549&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.updatemoonpos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.updatemoonpos" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="meteo.Meteo.updatesunpos">
-<code class="descname">updatesunpos</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-11 17:13:02.433641&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.updatesunpos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.updatesunpos" title="Permalink to this definition">¶</a></dt>
+<code class="descname">updatesunpos</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625623&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.updatesunpos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.updatesunpos" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -658,7 +642,7 @@ execution), given its alpha and delta coordinates.</p>
 
 <dl class="method">
 <dt id="obs.Observable.compute_altaz">
-<code class="descname">compute_altaz</code><span class="sig-paren">(</span><em>meteo</em>, <em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-11 17:13:02.433009&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.compute_altaz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.compute_altaz" title="Permalink to this definition">¶</a></dt>
+<code class="descname">compute_altaz</code><span class="sig-paren">(</span><em>meteo</em>, <em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625034&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.compute_altaz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.compute_altaz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Actualize altitude and azimuth of the observable at the given observation time.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -906,15 +890,6 @@ Leave protocol = -1 : I’ll use the latest binary protocol of pickle.</p>
            </div>
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="pouet.obsprogram.html" class="btn btn-neutral float-right" title="pouet.obsprogram package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="../index.html" class="btn btn-neutral" title="Welcome to POUET’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>
