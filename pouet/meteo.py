@@ -78,7 +78,7 @@ class Meteo:
             self.allsky.update()
             self.cloudmap = self.allsky.observability_map
         except:
-            logger.warning("Could not retrive cloud map")
+            logger.warning("Could not retrieve cloud map")
             self.cloudmap = None
         
 

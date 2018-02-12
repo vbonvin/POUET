@@ -37,6 +37,7 @@ def refresh_status(meteo, observables=None, minimal=False, obs_time=None):
         obs_time = meteo.time
 
     meteo.update(obs_time, minimal=minimal)
+
     if observables:
         [obs.update(meteo) for obs in observables]
 
@@ -68,13 +69,13 @@ if __name__ == "__main__":
     logger.critical("This should say Python >= 3.0: {}".format(sys.version))
 
     # initialize meteo
-    currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=True, debugmode=True)
+    currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=False, debugmode=False)
 
     # load a catalogue of observables
-    observables = obs.rdbimport("2m2lenses.rdb", obsprogram='lens')
+    observables = obs.rdbimport("../cats/2m2lenses.rdb", obsprogramcol=None, obsprogram='lens')
 
     # show current status of all observables
-    obs.showstatus(observables, currentmeteo, displayall=False)
+    obs.showstatus(observables, currentmeteo, displayall=True)
 
     # update meteo at now
     currentmeteo.update(obs_time=Time.now())

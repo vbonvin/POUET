@@ -344,7 +344,7 @@ def showstatus(observables, meteo, obs_time=None, displayall=True, cloudscheck=T
 	# NO, we keep meteo update outside obs functions !
 	# meteo.update(obs_time=obs_time)
 	for observable in observables:
-		observable.compute_observability(meteo=meteo, obs_time=obs_time, displayall=displayall,
+		observable.compute_observability(meteo=meteo, displayall=displayall,
 								cloudscheck=cloudscheck, verbose=True)
 
 

@@ -101,7 +101,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         # testing stuff at startup...
 
-        #self.load_obs(filepath='2m2lenses_withobsprogram.pouet')
+        self.load_obs(filepath='../cats/2m2lenses_withobsprogram.pouet')
 
         
 
@@ -180,6 +180,15 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
     def get_weather_items(self, o):
+        """
+        Create QStandardItem for various meteo parameters from an observable o
+
+        Assumes the time has been refreshed
+
+        :param o:
+        :return:
+        """
+
 
         moondist = QtGui.QStandardItem()
         moondist.setData(str(int(o.angletomoon.degree)), role=QtCore.Qt.DisplayRole)
@@ -307,7 +316,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
                 self.observables = obs.rdbimport(filepath, obsprogram=None)
 
+
             run.refresh_status(self.currentmeteo, self.observables)
+
 
             for o in self.observables:
                 logging.debug("entering compute observability")
@@ -318,6 +329,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
                 observability = QtGui.QStandardItem(str(o.observability))
 
+                if "WFI2033" in o.name:
+                    pass
                 moondist, airmass, wind, clouds = self.get_weather_items(o)
 
                 obsprogram = QtGui.QStandardItem(o.obsprogram)
