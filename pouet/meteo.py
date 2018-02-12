@@ -142,7 +142,7 @@ class Meteo:
         else:
             try:
                 #data=urllib.request.urlopen(self.location.get("weather", "url")).read()
-                data = requests.get(self.location.get("weather", "url")).read()
+                data = requests.get(self.location.get("weather", "url")).content
             #except urllib.error.URLError:
             except requests.ConnectionError:
                 logger.warning("Cannot download weather data. Either you or the weather server is offline!")
