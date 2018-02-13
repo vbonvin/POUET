@@ -16,7 +16,7 @@ class WeatherReport():
         
         self.config = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
         
-    def get(self, debugmode):
+    def get(self, debugmode, FLAG = -9999):
         #todo: add a "no connection" message if page is not reachable instead of an error
         WS=[]
         WD=[]
@@ -36,7 +36,7 @@ class WeatherReport():
                 data = requests.get(self.config.get("weather", "url")).content
             except requests.ConnectionError:
                 logger.warning("Cannot download weather data. Either you or the weather server is offline!")
-                return np.nan, np.nan
+                return FLAG, FLAG, FLAG, FLAG
             data = data.decode("utf-8")
         data=data.split("\n") # then split it into lines
         for line in data:
@@ -79,7 +79,7 @@ class WeatherReport():
         for var in [WD, WS, Temps, RH]:
             if not np.isnan(var):
                 var = -9999
-        FLAG = -9999
+        
         WD = util.check_value(WD, FLAG)
         WS = util.check_value(WS, FLAG)
         Temps = util.check_value(Temps, FLAG)
