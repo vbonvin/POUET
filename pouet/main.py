@@ -179,7 +179,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         logging.info("General update performed")
 
 
-    def get_weather_items(self, o):
+    def get_weather_items(self, o, FLAG='---'):
         """
         Create QStandardItem for various meteo parameters from an observable o
 
@@ -196,6 +196,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             moondist.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
         else:
             moondist.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+        
+        # Angle to the Sun, TODO: What default requirements?   
+        sundist = QtGui.QStandardItem()
+        sundist.setData(str(int(o.angletosun.degree)), role=QtCore.Qt.DisplayRole)
 
         airmass = QtGui.QStandardItem()
         airmass.setData(str("%.2f" % o.airmass), role=QtCore.Qt.DisplayRole)
@@ -208,11 +212,15 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 airmass.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
 
         wind = QtGui.QStandardItem()
-        wind.setData(str("%.2f" % o.angletowind.degree), role=QtCore.Qt.DisplayRole)
-        if o.obs_wind:
-            wind.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+        if o.obs_clouds_info:
+            wind.setData(str("%.2f" % o.angletowind.degree), role=QtCore.Qt.DisplayRole)
+            if o.obs_wind:
+                wind.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+            else:
+                wind.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
         else:
-            wind.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+            wind.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
+            wind.setData(QtGui.QBrush(QtCore.Qt.yellow), role=QtCore.Qt.BackgroundRole)
 
         clouds = QtGui.QStandardItem()
 
@@ -223,10 +231,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             else:
                 clouds.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
         else:
-            clouds.setData(str("---"), role=QtCore.Qt.DisplayRole)
+            clouds.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
             clouds.setData(QtGui.QBrush(QtCore.Qt.yellow), role=QtCore.Qt.BackgroundRole)
 
-        return moondist, airmass, wind, clouds
+        return moondist, sundist, airmass, wind, clouds
 
 
 
@@ -331,15 +339,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False)
                 observability = QtGui.QStandardItem(str(o.observability))
                 
-                if "WFI2033" in o.name:
-                    pass
-                moondist, airmass, wind, clouds = self.get_weather_items(o)
+                moondist, sundist, airmass, wind, clouds = self.get_weather_items(o)
 
                 obsprogram = QtGui.QStandardItem(o.obsprogram)
 
                 name.setCheckable(True)
-                model.appendRow([name, alpha, delta, observability, obsprogram, moondist, airmass, wind, clouds])
-                model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability', 'Program', "M", "A", "W", "C"])
+                model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
+                model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability', 'Program', "S", "M", "A", "W", "C"])
 
             logging.debug('exiting model update')
 
@@ -380,6 +386,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         observability_index = headers.index("Observability")
         moondist_index = headers.index("M")
+        sundist_index = headers.index("S")
         airmass_index = headers.index("A")
         wind_index = headers.index("W")
         clouds_index = headers.index("C")

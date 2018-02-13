@@ -135,11 +135,13 @@ class Observable:
 		"""
 
 		winddirection = meteo.winddirection
+		if winddirection < 0 or winddirection > 360:
+			self.angletowind = None
+			return
+			
 		try:
 			angletowind = abs(winddirection-self.azimuth.degree)
 			self.angletowind = angles.Angle(angletowind, unit='degree')
-
-
 		except AttributeError:
 			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
 
@@ -271,16 +273,20 @@ class Observable:
 			msg += '\nAirmass:%0.2f' % self.airmass
 
 		# check the wind:
-		self.obs_wind = True
-		if self.angletowind.degree < 90 and meteo.windspeed >= float(meteo.location.get("weather", "windWarnLevel")):
-			self.obs_wind = False
-			observability = 0
-			msg += '\nWA:%0.1f/WS:%0.1f' % (self.angletowind.degree, meteo.windspeed)
-
-		if meteo.windspeed >= float(meteo.location.get("weather", "windLimitLevel")):
-			self.obs_wind = False
-			observability = 0
-			msg += '\nWS:%s' % meteo.windspeed
+		self.obs_wind, self.obs_wind_info = True, True
+		if meteo.windspeed > 0. and meteo.windspeed < 100. and self.angletowind is not None:
+			if self.angletowind.degree < 90 and meteo.windspeed >= float(meteo.location.get("weather", "windWarnLevel")):
+				self.obs_wind = False
+				observability = 0
+				msg += '\nWA:%0.1f/WS:%0.1f' % (self.angletowind.degree, meteo.windspeed)
+	
+			if meteo.windspeed >= float(meteo.location.get("weather", "windLimitLevel")):
+				self.obs_wind = False
+				observability = 0
+				msg += '\nWS:%s' % meteo.windspeed
+		else:
+			self.obs_clouds_info = False
+			warnings += '\nNo wind info'
 
 		# check the clouds
 		self.obs_clouds, self.obs_clouds_info = True, True

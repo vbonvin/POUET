@@ -134,7 +134,12 @@ class Meteo:
         self.temperature = Temps 
         self.humidity = RH
         """
-        self.lastest_weatherupdate_time = Time.now()
+        
+        checkvals = np.array([self.winddirection, self.windspeed, self.temperature, self.humidity])
+        li = np.where(checkvals == -9999)[0]
+        
+        if not len(li) == len(checkvals):
+            self.lastest_weatherupdate_time = Time.now()
     
     
     def get_moon(self, obs_time=Time.now()):

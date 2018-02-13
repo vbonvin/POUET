@@ -682,7 +682,7 @@ class Ui_POUET(object):
         self.allskyViewLayerTargets.raise_()
 
         self.retranslateUi(POUET)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(POUET)
 
     def retranslateUi(self, POUET):
