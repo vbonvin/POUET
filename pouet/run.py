@@ -11,7 +11,7 @@ import importlib
 import logging
 logger = logging.getLogger(__name__)
 
-def startup(name='LaSilla', cloudscheck=True, debugmode=True):
+def startup(name='LaSilla', cloudscheck=True, debugmode=False):
     """
 	Initialize meteo
 
