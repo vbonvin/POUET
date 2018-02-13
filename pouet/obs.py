@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import importlib
 
 import util
-import clouds
 
 import logging
 logger = logging.getLogger(__name__)
@@ -191,7 +190,7 @@ class Observable:
 		ERROR_CONN = 2.
 		ERROR_COMPUTE = 3.
 
-		xpix, ypix = clouds.get_image_coordinates(self.azimuth.value, self.altitude.value, location=meteo.name)
+		xpix, ypix = meteo.allsky.station.get_image_coordinates(self.azimuth.value, self.altitude.value)
 		
 		if meteo.cloudmap is None:
 			self.cloudfree = ERROR_CONN

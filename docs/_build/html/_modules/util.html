@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -32,9 +30,6 @@
   
 
   
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="POUET 0.2 documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
@@ -45,7 +40,6 @@
 
 <body class="wy-body-for-nav" role="document">
 
-   
   <div class="wy-grid-for-nav">
 
     
@@ -86,11 +80,10 @@
           
             
             
-              
-            
-            
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="simple">
+</ul>
+
             
           
         </div>
@@ -101,10 +94,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">POUET</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">POUET</a>
       </nav>
 
 
@@ -117,36 +108,19 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html">Docs</a> &raquo;</li>
-        
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
           <li><a href="index.html">Module code</a> &raquo;</li>
-        
-      <li>util</li>
-    
-    
+      
+    <li>util</li>
       <li class="wy-breadcrumbs-aside">
         
-            
+          
         
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -156,28 +130,28 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Useful functions and definitions</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">astropy.coordinates.angles</span> <span class="k">as</span> <span class="nn">angles</span>
+<span class="kn">import</span> <span class="nn">astropy.coordinates.angles</span> <span class="kn">as</span> <span class="nn">angles</span>
 <span class="c1">#from astropy.table import Table</span>
-<span class="kn">from</span> <span class="nn">astropy.time</span> <span class="k">import</span> <span class="n">Time</span>
-<span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span> <span class="nn">astropy.time</span> <span class="kn">import</span> <span class="n">Time</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">getopt</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
 <span class="k">try</span><span class="p">:</span>
 	<span class="kn">import</span> <span class="nn">openpyxl</span>  <span class="c1"># see http://openpyxl.readthedocs.org/en/latest/index.html</span>
-	<span class="n">noexcelimport</span> <span class="o">=</span> <span class="kc">False</span>
+	<span class="n">noexcelimport</span> <span class="o">=</span> <span class="bp">False</span>
 <span class="k">except</span><span class="p">:</span>
-	<span class="n">noexcelimport</span> <span class="o">=</span> <span class="kc">True</span>
+	<span class="n">noexcelimport</span> <span class="o">=</span> <span class="bp">True</span>
 <span class="kn">import</span> <span class="nn">obs</span>
-<span class="kn">from</span> <span class="nn">bisect</span> <span class="k">import</span> <span class="n">bisect_left</span>
-<span class="kn">import</span> <span class="nn">pickle</span> <span class="k">as</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">bisect</span> <span class="kn">import</span> <span class="n">bisect_left</span>
+<span class="kn">import</span> <span class="nn">pickle</span> <span class="kn">as</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">ephem</span>
-<span class="kn">from</span> <span class="nn">configparser</span> <span class="k">import</span> <span class="n">SafeConfigParser</span>
+<span class="kn">from</span> <span class="nn">configparser</span> <span class="kn">import</span> <span class="n">SafeConfigParser</span>
 
 <span class="c1">#import csv</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
 
 
@@ -219,7 +193,7 @@
 	<span class="k">return</span> <span class="s1">&#39;</span><span class="se">\x1b</span><span class="s1">[</span><span class="si">%s</span><span class="s1">m</span><span class="si">%s</span><span class="se">\x1b</span><span class="s1">[0m&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attr</span><span class="p">),</span> <span class="n">string</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="excelimport"><a class="viewcode-back" href="../source/pouet.html#util.excelimport">[docs]</a><span class="k">def</span> <span class="nf">excelimport</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">obsprogram</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="excelimport"><a class="viewcode-back" href="../source/pouet.html#util.excelimport">[docs]</a><span class="k">def</span> <span class="nf">excelimport</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">obsprogram</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
 	<span class="k">if</span> <span class="n">noexcelimport</span><span class="p">:</span>
 		<span class="k">raise</span> <span class="bp">NotImplemented</span><span class="p">(</span><span class="s2">&quot;Excel files cannot be imported at the moment&quot;</span><span class="p">)</span>
 	<span class="k">else</span><span class="p">:</span>
@@ -245,7 +219,7 @@
 <span class="sd">			&quot;&quot;&quot;</span>
 
 			<span class="k">try</span><span class="p">:</span>
-				<span class="n">wb</span> <span class="o">=</span> <span class="n">openpyxl</span><span class="o">.</span><span class="n">load_workbook</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">data_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Read the excel spreadsheet, loading the values directly</span>
+				<span class="n">wb</span> <span class="o">=</span> <span class="n">openpyxl</span><span class="o">.</span><span class="n">load_workbook</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">data_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># Read the excel spreadsheet, loading the values directly</span>
 				<span class="c1">#ws = wb.active  # choose active sheet</span>
 				<span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">]</span>
 			<span class="k">except</span><span class="p">:</span>
@@ -254,10 +228,10 @@
 			<span class="c1"># Get tabler limits</span>
 			<span class="n">rows</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">rows</span>
 			<span class="n">columns</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">columns</span>
-			<span class="n">breakcolind</span> <span class="o">=</span> <span class="kc">None</span>
-			<span class="n">breakrowind</span> <span class="o">=</span> <span class="kc">None</span>
+			<span class="n">breakcolind</span> <span class="o">=</span> <span class="bp">None</span>
+			<span class="n">breakrowind</span> <span class="o">=</span> <span class="bp">None</span>
 			<span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-				<span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
 					<span class="c1">#breakcolind = cell.column</span>
 					<span class="n">breakcolind</span> <span class="o">=</span> <span class="n">rows</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">ind</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">column</span>
 					<span class="k">break</span>
@@ -265,7 +239,7 @@
 					<span class="k">pass</span>
 
 			<span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-				<span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
 					<span class="c1">#breakrowind = cell.row</span>
 					<span class="n">breakrowind</span> <span class="o">=</span> <span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">ind</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">row</span>
 					<span class="k">break</span>
@@ -322,7 +296,7 @@
 					<span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">)</span>
 
 				<span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-				<span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;C</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;C</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
 					<span class="n">comment</span> <span class="o">=</span> <span class="n">comment</span> <span class="o">+</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;C</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
 				<span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;J</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
 					<span class="n">comment</span> <span class="o">=</span> <span class="n">comment</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;Requested phase: &#39;</span> <span class="o">+</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;J</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
@@ -349,7 +323,7 @@
 
 			<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;reading </span><span class="si">%s</span><span class="s1">...&#39;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
 			<span class="k">try</span><span class="p">:</span>
-				<span class="n">wb</span> <span class="o">=</span> <span class="n">openpyxl</span><span class="o">.</span><span class="n">load_workbook</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">data_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Read the excel spreadsheet, loading the values directly</span>
+				<span class="n">wb</span> <span class="o">=</span> <span class="n">openpyxl</span><span class="o">.</span><span class="n">load_workbook</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">data_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># Read the excel spreadsheet, loading the values directly</span>
 				<span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="s1">&#39;Observations&#39;</span><span class="p">]</span>  <span class="c1"># choose active sheet</span>
 			<span class="k">except</span><span class="p">:</span>
 				<span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Either </span><span class="si">%s</span><span class="s2"> does not exists, or it is not in .xlsx format !!&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
@@ -358,10 +332,10 @@
 			<span class="c1"># Get tabler limits</span>
 			<span class="n">rows</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">rows</span>
 			<span class="n">columns</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">columns</span>
-			<span class="n">breakcolind</span> <span class="o">=</span> <span class="kc">None</span>
-			<span class="n">breakrowind</span> <span class="o">=</span> <span class="kc">None</span>
+			<span class="n">breakcolind</span> <span class="o">=</span> <span class="bp">None</span>
+			<span class="n">breakrowind</span> <span class="o">=</span> <span class="bp">None</span>
 			<span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-				<span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
 					<span class="c1">#breakcolind = cell.column</span>
 					<span class="n">breakcolind</span> <span class="o">=</span> <span class="n">rows</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">ind</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">column</span>
 					<span class="k">break</span>
@@ -369,7 +343,7 @@
 					<span class="k">pass</span>
 
 			<span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-				<span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
 					<span class="c1">#breakrowind = cell.row</span>
 					<span class="n">breakrowind</span> <span class="o">=</span> <span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">ind</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">row</span>
 					<span class="k">break</span>
@@ -403,7 +377,7 @@
 
 
 
-<div class="viewcode-block" id="writepickle"><a class="viewcode-back" href="../source/pouet.html#util.writepickle">[docs]</a><span class="k">def</span> <span class="nf">writepickle</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">protocol</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="writepickle"><a class="viewcode-back" href="../source/pouet.html#util.writepickle">[docs]</a><span class="k">def</span> <span class="nf">writepickle</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">protocol</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
 	<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">	I write your python object obj into a pickle file at filepath.</span>
 <span class="sd">	If filepath ends with .gz, I&#39;ll use gzip to compress the pickle.</span>
@@ -419,7 +393,7 @@
 	<span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrote </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filepath</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="readpickle"><a class="viewcode-back" href="../source/pouet.html#util.readpickle">[docs]</a><span class="k">def</span> <span class="nf">readpickle</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="readpickle"><a class="viewcode-back" href="../source/pouet.html#util.readpickle">[docs]</a><span class="k">def</span> <span class="nf">readpickle</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
 	<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">	I read a pickle file and return whatever object it contains.</span>
 <span class="sd">	If the filepath ends with .gz, I&#39;ll unzip the pickle file.</span>
@@ -437,11 +411,11 @@
 	<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">	Reads in a config file</span>
 <span class="sd">	&quot;&quot;&quot;</span>
-	<span class="n">config</span> <span class="o">=</span> <span class="n">SafeConfigParser</span><span class="p">(</span><span class="n">allow_no_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="n">config</span> <span class="o">=</span> <span class="n">SafeConfigParser</span><span class="p">(</span><span class="n">allow_no_value</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 	
 	<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">configpath</span><span class="p">):</span>
-		<span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Config file &#39;</span><span class="si">{}</span><span class="s2">&#39; does not exist!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">configpath</span><span class="p">))</span>
-	<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading config from &#39;</span><span class="si">{}</span><span class="s2">&#39;...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">configpath</span><span class="p">))</span>
+		<span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Config file &#39;{}&#39; does not exist!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">configpath</span><span class="p">))</span>
+	<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading config from &#39;{}&#39;...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">configpath</span><span class="p">))</span>
 	<span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">configpath</span><span class="p">)</span>
 	
 	<span class="k">return</span> <span class="n">config</span></div>
@@ -488,9 +462,6 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
           <footer>
   
@@ -524,14 +495,13 @@
             VERSION:'0.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -226,7 +226,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="obs">
     <attribute name="title">
@@ -303,36 +303,9 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="program">
-    <attribute name="title">
-     <string>Programs</string>
-    </attribute>
-    <widget class="QLabel" name="label_27">
-     <property name="geometry">
-      <rect>
-       <x>190</x>
-       <y>150</y>
-       <width>541</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Here we can select the programs we want to include</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </widget>
    <widget class="QWidget" name="weather">
     <attribute name="title">
-     <string>Site</string>
+     <string>Station</string>
     </attribute>
     <widget class="QPushButton" name="weatherDisplayRefresh">
      <property name="geometry">
@@ -607,7 +580,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Site</string>
+      <string>Station</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

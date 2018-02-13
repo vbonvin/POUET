@@ -11,6 +11,8 @@ import requests
 import astropy.time
 from astropy import units as u
 
+import util
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -26,17 +28,18 @@ class Clouds():
     :note: This module can also be used to explore older images, see the example code in `__main__()`.
     """
     
-    def __init__(self, location, fimage=None, debugmode=False):
+    def __init__(self, name, fimage=None, debugmode=False):
         """
         Initialises the class
         
         :param fimage: (default is None) filename of the all sky image to analyse
         :type: string
-        :param location: (default is "LaSilla") name of the location to load the right config file
+        :param name: (default is "LaSilla") name of the location to load the right config file
         """
         
-        self.location = location
-        self.params = get_params(location)
+        self.location = name
+        
+        self.station = (util.load_station(name)).AllSky()
         self.last_im_refresh = None
         self.debugmode = debugmode
         self.failed_connection = False
@@ -59,16 +62,16 @@ class Clouds():
 
         if not self.debugmode:
             try:
-                logger.info("Loading all sky from {}...".format(self.params['url']))
+                logger.info("Loading all sky from {}...".format(self.station.params['url']))
                 #urllib.request.urlretrieve(self.params['url'], "current.JPG")
-                open("current.JPG", 'wb').write(requests.get(self.params['url']).content)
+                open("current.JPG", 'wb').write(requests.get(self.station.params['url']).content)
                 self.failed_connection = False
             except :
                 self.failed_connection = True
                 logger.warning("Cannot download All Sky image. Either you or the server is offline!")
                 return 1
 
-        self.im_masked, self.im_original = loadallsky(self.fimage, return_complete=True)
+        self.im_masked, self.im_original = loadallsky(self.fimage, station=self.station, return_complete=True)
         self.last_im_refresh = astropy.time.Time.now()
         
     def update(self):
@@ -213,30 +216,7 @@ def rgb2gray(arr):
     
     return 0.299 * red + 0.587 * green + 0.144 * blue
 
-def get_mask(ar):
-    """
-    Returns the mask to apply on the AllSky to remove the image of the danish...
-    """
-    s=np.shape(ar)
-    #xxa, xxb = s[0]/2, s[1]/2
-    #r = 210#285
-    #xxb = 279
-    #xxa = 230
-    
-    #    y,x = np.ogrid[-xxa:s[0]-xxa, -xxb:s[1]-xxb]
-    xxa, xxb = s[0]/2, s[1]/2
-    r = 285
-    y,x = np.ogrid[-xxa:s[0]-xxa, -xxb:s[1]-xxb]
-    
-    adan, bdan = 145, 570
-    rdan = 88
-    ydan,xdan = np.ogrid[-adan:s[0]-adan, -bdan:s[1]-bdan]
-
-    mask = np.logical_or(x*x + y*y >= r*r, xdan*xdan + ydan*ydan <= rdan*rdan)
-    
-    return mask
-
-def loadallsky(fnimg, return_complete=False):
+def loadallsky(fnimg, station, return_complete=False):
     """
     Loads the image
     :param return_complete: returns the masked image and the unmasked image
@@ -248,7 +228,7 @@ def loadallsky(fnimg, return_complete=False):
     ar = rgb2gray(ar)
     rest = copy.copy(ar)
     
-    mask = get_mask(ar)
+    mask = station.get_mask(ar)
     ar[mask] = np.nan
     
     if return_complete:
@@ -346,63 +326,6 @@ def fwhm(data,xc,yc,stampsize,show=False, verbose=False):
     return p[2] * 2. * np.sqrt(2.*np.log(2.))
 
 
-#todo: this should be hardcoded OUTSIDE of clouds.py ! use e.g. LaSilla.cfg ?
-
-def get_params(location="LaSilla"):
-    if location == "LaSilla":
-        cx = 279
-        cy = 230
-        prefered_direction = {'dir':194.3, 'posx':297, 'posy':336}
-        prefered_theta = np.arctan2(prefered_direction['posy']-cy, prefered_direction['posx']-cx)
-        north = prefered_theta + np.deg2rad(prefered_direction['dir'])
-        deltatetha=180-prefered_direction['dir']+5
-        params = {'k1': 1.96263549291*0.945,
-                'k2': 0.6,
-                'ff': 1.,
-                'r0': 330,
-                'cx': cx,
-                'cy': cy,
-                'prefered_direction':prefered_direction,
-                'prefered_theta': prefered_theta,
-                'deltatetha': deltatetha,
-                'north': north,
-                'url': "http://allsky-dk154.asu.cas.cz/raw/AllSkyCurrentImage.JPG",
-                'image_x_size':640,
-                'image_y_size':480,
-                }
-    else:
-        raise ValueError("Unknown location")
-    
-    return params
-
-def get_radius(elev, ff, k1, k2, r0):
-    return ff*k1*np.tan(k2 * elev / 2.) * r0
-
-def get_image_coordinates(az, elev, location):
-    params = get_params(location)
-    
-    k1 = params['k1']
-    k2 = params['k2']
-    ff = params['ff']
-    r0 = params['r0']
-    north = params['north']
-    cx = params['cx']
-    cy = params['cy']
-
-    az *= -1.
-    elev = np.pi/2. - elev
-    
-    rr = get_radius(elev, ff, k1, k2, r0)
-    
-    x = np.cos(north + az) * (rr - 2) + cx 
-    y = np.sin(north + az) * (rr - 2) + cy
-    
-    if x < 0 or y < 0: 
-        x = np.nan
-        y = np.nan 
-
-    return x, y
-
 ###################################################################################################
 # Standard examples to be analysed when running clouds.py
 ###################################################################################################
@@ -413,12 +336,14 @@ if __name__ == "__main__":
     
     logging.basicConfig(level=logging.DEBUG)
     
+    station = util.load_station("LaSilla").AllSky()
+    
     list_of_images = glob.glob("to_test/*.JPG")
     print("I found %s images" % len(list_of_images))
     
     imgs = []
     for fim in list_of_images:
-        imgs.append(loadallsky(fim))
+        imgs.append(loadallsky(fim, station=station))
     """
     img = None
     for fim in list_of_images:
@@ -436,9 +361,9 @@ if __name__ == "__main__":
         print('Treating', list_of_images[i])
     
         imo = copy.deepcopy(im)
-        analysis = Clouds(fimage = list_of_images[i], location="LaSilla")
-        analysis.im_masked, analysis.im_original = loadallsky(list_of_images[i], return_complete=True)
-        analysis.mask = get_mask(analysis.im_original)
+        analysis = Clouds(fimage = list_of_images[i], name="LaSilla")
+        analysis.im_masked, analysis.im_original = loadallsky(list_of_images[i], station=station, return_complete=True)
+        analysis.mask = station.get_mask(analysis.im_original)
         
         x, y, ax, ay = analysis.detect_stars(return_all=True)
         observability = analysis.get_observability_map(x, y)

@@ -12,14 +12,16 @@ try:
 	noexcelimport = False
 except:
 	noexcelimport = True
-import obs
 from bisect import bisect_left
 import pickle as pickle
 import ephem
 from configparser import SafeConfigParser
+import importlib
 
 #import csv
 import numpy as np
+
+import obs
 
 import logging
 logger = logging.getLogger(__name__)
@@ -329,4 +331,9 @@ def check_value(var, flag):
 		var = flag 
 	
 	return var
+
+def load_station(name):
+	module_name = "config.{}".format(name)
+	station = importlib.import_module(module_name, package=None)
+	return station
 	

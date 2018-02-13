@@ -5,7 +5,7 @@ Launch the application, link POUET functions to the design
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os, sys
-import obs, run, util, clouds
+import obs, run, util
 import meteo as meteomodule
 import design
 from astropy import units as u
@@ -62,10 +62,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
         # todo: do we want to load that at startup ?
-        self.allsky = AllSkyView(location_name=self.name_location, parent=self.allskyView)
+        self.allsky = AllSkyView(meteo=self.currentmeteo, parent=self.allskyView)
         self.allsky_redisplay()
-        self.allskylayer = AllSkyView(location_name=self.name_location, parent=self.allskyViewLayer)
-        self.allskylayerTargets = AllSkyView(location_name=self.name_location, parent=self.allskyViewLayerTargets)
+        self.allskylayer = AllSkyView(meteo=self.currentmeteo, parent=self.allskyViewLayer)
+        self.allskylayerTargets = AllSkyView(meteo=self.currentmeteo, parent=self.allskyViewLayerTargets)
         
         self.visibilitytool = VisibilityView(parent=self.visibilityView)
         self.visibilitytool_draw()
@@ -116,7 +116,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         ra = angles.Angle(event.xdata, unit="hour")
         dec = angles.Angle(event.ydata, unit="deg")
         azimuth, altitude = self.currentmeteo.get_AzAlt(ra, dec, obs_time=self.currentmeteo.time)
-        xpix, ypix = clouds.get_image_coordinates(azimuth.value, altitude.value, location=self.currentmeteo.name)
+        xpix, ypix = self.currentmeteo.allsky.station.get_image_coordinates(azimuth.value, altitude.value)
         self.allskylayer.show_coordinates(xpix, ypix)
 
     def print_status(self, msg, colour=COLORNOMINAL):
@@ -481,7 +481,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             ord_names.append(target.name)
             
             az, elev = self.currentmeteo.get_AzAlt(target.alpha, target.delta, self.currentmeteo.time)
-            as_x, as_y = clouds.get_image_coordinates(az.radian, elev.radian, location=self.currentmeteo.name)
+            as_x, as_y = self.currentmeteo.allsky.station.get_image_coordinates(az.radian, elev.radian)
             
             alphas.append(target.alpha.value)
             deltas.append(target.delta.value)
@@ -703,7 +703,7 @@ class MyLogger(logging.Handler):
 
 class AllSkyView(FigureCanvas):
 
-    def __init__(self, location_name, parent=None, width=4.66, height=3.5):
+    def __init__(self, meteo, parent=None, width=4.66, height=3.5):
 
         self.figure = Figure(figsize=(width, height))
         self.figure.patch.set_facecolor("None")
@@ -731,9 +731,8 @@ class AllSkyView(FigureCanvas):
                                    QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         
-        img_params = clouds.get_params(location_name)
-        self.imx = img_params['image_x_size']
-        self.imy = img_params['image_y_size']
+        self.imx = meteo.allsky.station.params['image_x_size']
+        self.imy = meteo.allsky.station.params['image_y_size']
         
     def erase(self):
         self.axis.clear()
@@ -806,22 +805,17 @@ class AllSkyView(FigureCanvas):
 
         theta_coordinates = np.deg2rad(np.arange(0, 360, 15))
 
-        params = clouds.get_params(location)
-
-        ff = params['ff']
-        k1 = params['k1']
-        k2 = params['k2']
-        r0 = params['r0']
-        cx = params['cx']
-        cy = params['cy']
-        north = params['north']
-        deltatetha = params['deltatetha']
+        r0 = allsky.station.params['r0']
+        cx = allsky.station.params['cx']
+        cy = allsky.station.params['cy']
+        north = allsky.station.params['north']
+        deltatetha = allsky.station.params['deltatetha']
 
         coordinatesx = np.cos(north + theta_coordinates) * r0 + cx
         coordinatesy = np.sin(north + theta_coordinates) * r0 + cy
 
-        northx, northy = clouds.get_image_coordinates(np.deg2rad(0), np.deg2rad(24), location)
-        eastx, easty = clouds.get_image_coordinates(np.deg2rad(90), np.deg2rad(20), location)
+        northx, northy = allsky.station.get_image_coordinates(np.deg2rad(0), np.deg2rad(24))
+        eastx, easty = allsky.station.get_image_coordinates(np.deg2rad(90), np.deg2rad(20))
 
         self.axis.annotate('N', xy=(northx, northy), rotation=deltatetha,
                            horizontalalignment='center', verticalalignment='center')
@@ -831,7 +825,7 @@ class AllSkyView(FigureCanvas):
 
         altshow = [15, 30, 45, 60, 75, 90]
         for angle in np.deg2rad(altshow):
-            rr = clouds.get_radius(angle, ff, k1, k2, r0)
+            rr = allsky.station.get_radius(angle)
 
             # if angle >= np.pi/2: print rr/330.
             self.figure.gca().add_artist(plt.Circle((cx, cy), rr, color='k', fill=False, alpha=0.3))
@@ -856,7 +850,7 @@ class AllSkyView(FigureCanvas):
         Should this call some other function elsewhere? Maybe
         """
 
-        params = clouds.get_params(meteo.name)
+        params = meteo.allsky.station.params
 
         r0 = params['r0']
         cx = params['cx']

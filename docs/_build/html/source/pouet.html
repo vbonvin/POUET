@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -32,9 +30,6 @@
   
 
   
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="POUET 0.2 documentation" href="../index.html"/> 
 
   
@@ -44,7 +39,6 @@
 
 <body class="wy-body-for-nav" role="document">
 
-   
   <div class="wy-grid-for-nav">
 
     
@@ -85,24 +79,10 @@
           
             
             
-              
-            
-            
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">pouet package</a><ul>
-<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-clouds">pouet.clouds module</a></li>
-<li><a class="reference internal" href="#module-main">pouet.main module</a></li>
-<li><a class="reference internal" href="#module-meteo">pouet.meteo module</a></li>
-<li><a class="reference internal" href="#module-obs">pouet.obs module</a></li>
-<li><a class="reference internal" href="#module-run">pouet.run module</a></li>
-<li><a class="reference internal" href="#module-util">pouet.util module</a></li>
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="simple">
 </ul>
-</li>
-</ul>
-</div>
+
             
           
         </div>
@@ -113,10 +93,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">POUET</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">POUET</a>
       </nav>
 
 
@@ -125,40 +103,23 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html">Docs</a> &raquo;</li>
-        
-      <li>pouet package</li>
-    
-    
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>pouet package</li>
       <li class="wy-breadcrumbs-aside">
         
-            
-            <a href="../_sources/source/pouet.rst.txt" rel="nofollow"> View page source</a>
+          
+            <a href="../_sources/source/pouet.txt" rel="nofollow"> View page source</a>
           
         
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -169,652 +130,27 @@
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
 </div>
 </div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-clouds">
-<span id="pouet-clouds-module"></span><h2>pouet.clouds module<a class="headerlink" href="#module-clouds" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="clouds.Clouds">
-<em class="property">class </em><code class="descclassname">clouds.</code><code class="descname">Clouds</code><span class="sig-paren">(</span><em>location</em>, <em>fimage=None</em>, <em>debugmode=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#Clouds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.Clouds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>This class loads and analyses an all sky image of the Sky and returns an observability map that
-can be used by another method to advise the observer on the sky quality.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Note:</th><td class="field-body">This module can also be used to explore older images, see the example code in <cite>__main__()</cite>.</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="clouds.Clouds.detect_stars">
-<code class="descname">detect_stars</code><span class="sig-paren">(</span><em>sigma_blur=1.2</em>, <em>threshold=8</em>, <em>neighborhood_size=20</em>, <em>fwhm_threshold=5</em>, <em>meas_star=True</em>, <em>return_all=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#Clouds.detect_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.Clouds.detect_stars" title="Permalink to this definition">¶</a></dt>
-<dd><p>Analyses the images to find the stars.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Todo:</th><td class="field-body"><p class="first">describe algo in more details</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>sigma_blur</strong> – Sigma of the Gaussian kernel (in px)</li>
-<li><strong>threshold</strong> – threshold of detection</li>
-<li><strong>neighborhood_size</strong> – footprint of the maximum and minimum filters</li>
-<li><strong>fwhm_threshold</strong> – select objects smaller than this fwhm</li>
-<li><strong>meas_star</strong> – if not interested in computing fwhm for all objects bypass and return positions of objects</li>
-<li><strong>return_all</strong> – if <cite>True</cite>, returns the positions of stars + detected objects otherwise only stars</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="clouds.Clouds.get_observability_map">
-<code class="descname">get_observability_map</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>threshold=50</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#Clouds.get_observability_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.Clouds.get_observability_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an observability map (an image of the sky)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> – x coordinates of detected stars</li>
-<li><strong>y</strong> – y coordinates of detected stars</li>
-<li><strong>threshold</strong> – distance threshold in px of stars such that we have observations</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="clouds.Clouds.retrieve_image">
-<code class="descname">retrieve_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#Clouds.retrieve_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.Clouds.retrieve_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Downloads the current all sky from the server and saves it to disk.
-The url of the image is retrived from the configuration file at that location</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="clouds.Clouds.update">
-<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#Clouds.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.Clouds.update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Downloads the image, detects the stars and returns the observability map</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="clouds.fwhm">
-<code class="descclassname">clouds.</code><code class="descname">fwhm</code><span class="sig-paren">(</span><em>data</em>, <em>xc</em>, <em>yc</em>, <em>stampsize</em>, <em>show=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#fwhm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.fwhm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fits a 2D Gaussian profile and returns the FWHM in px</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> – the stamp containing the image</li>
-<li><strong>xc</strong> – centroid x position</li>
-<li><strong>yc</strong> – centroid y position</li>
-<li><strong>stampsize</strong> – size of nominal square stampe</li>
-<li><strong>show</strong> – shows a diagnostic plot of the fit</li>
-<li><strong>verbose</strong> – should I speak?</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="clouds.gaussian">
-<code class="descclassname">clouds.</code><code class="descname">gaussian</code><span class="sig-paren">(</span><em>params</em>, <em>stamp</em>, <em>stampsize</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.gaussian" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a 2D gaussian profile</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="clouds.get_image_coordinates">
-<code class="descclassname">clouds.</code><code class="descname">get_image_coordinates</code><span class="sig-paren">(</span><em>az</em>, <em>elev</em>, <em>location</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#get_image_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.get_image_coordinates" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="clouds.get_mask">
-<code class="descclassname">clouds.</code><code class="descname">get_mask</code><span class="sig-paren">(</span><em>ar</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#get_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.get_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the mask to apply on the AllSky to remove the image of the danish…</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="clouds.get_params">
-<code class="descclassname">clouds.</code><code class="descname">get_params</code><span class="sig-paren">(</span><em>location='LaSilla'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.get_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="clouds.get_radius">
-<code class="descclassname">clouds.</code><code class="descname">get_radius</code><span class="sig-paren">(</span><em>elev</em>, <em>ff</em>, <em>k1</em>, <em>k2</em>, <em>r0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#get_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.get_radius" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="clouds.loadallsky">
-<code class="descclassname">clouds.</code><code class="descname">loadallsky</code><span class="sig-paren">(</span><em>fnimg</em>, <em>return_complete=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#loadallsky"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.loadallsky" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads the image
-:param return_complete: returns the masked image and the unmasked image</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="clouds.rgb2gray">
-<code class="descclassname">clouds.</code><code class="descname">rgb2gray</code><span class="sig-paren">(</span><em>arr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clouds.html#rgb2gray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clouds.rgb2gray" title="Permalink to this definition">¶</a></dt>
-<dd><p>The all sky in LaSilla is not RGB, but JPG is is 3D…</p>
-</dd></dl>
-
+<div class="section" id="pouet-clouds-module">
+<h2>pouet.clouds module<a class="headerlink" href="#pouet-clouds-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-main">
-<span id="pouet-main-module"></span><h2>pouet.main module<a class="headerlink" href="#module-main" title="Permalink to this headline">¶</a></h2>
-<p>Launch the application, link POUET functions to the design</p>
-<dl class="class">
-<dt id="main.AllSkyView">
-<em class="property">class </em><code class="descclassname">main.</code><code class="descname">AllSkyView</code><span class="sig-paren">(</span><em>location_name</em>, <em>parent=None</em>, <em>width=4.66</em>, <em>height=3.5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#AllSkyView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.AllSkyView" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">matplotlib.backends.backend_qt5agg.FigureCanvasQTAgg</span></code></p>
-<dl class="method">
-<dt id="main.AllSkyView.display">
-<code class="descname">display</code><span class="sig-paren">(</span><em>meteo</em>, <em>plot_analysis=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#AllSkyView.display"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.AllSkyView.display" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.AllSkyView.display_wind_limits">
-<code class="descname">display_wind_limits</code><span class="sig-paren">(</span><em>meteo</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#AllSkyView.display_wind_limits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.AllSkyView.display_wind_limits" title="Permalink to this definition">¶</a></dt>
-<dd><p>Should this call some other function elsewhere? Maybe</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="main.AllSkyView.erase">
-<code class="descname">erase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#AllSkyView.erase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.AllSkyView.erase" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.AllSkyView.show_coordinates">
-<code class="descname">show_coordinates</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>color='k'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#AllSkyView.show_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.AllSkyView.show_coordinates" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.AllSkyView.show_targets">
-<code class="descname">show_targets</code><span class="sig-paren">(</span><em>xs</em>, <em>ys</em>, <em>names</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#AllSkyView.show_targets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.AllSkyView.show_targets" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="main.MyLogger">
-<em class="property">class </em><code class="descclassname">main.</code><code class="descname">MyLogger</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#MyLogger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.MyLogger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">logging.Handler</span></code></p>
-<dl class="method">
-<dt id="main.MyLogger.emit">
-<code class="descname">emit</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#MyLogger.emit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.MyLogger.emit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="main.ObsModel">
-<em class="property">class </em><code class="descclassname">main.</code><code class="descname">ObsModel</code><span class="sig-paren">(</span><em>parent</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#ObsModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.ObsModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt5.QtCore.QAbstractTableModel</span></code></p>
-<dl class="method">
-<dt id="main.ObsModel.rowCount">
-<code class="descname">rowCount</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#ObsModel.rowCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.ObsModel.rowCount" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="main.POUET">
-<em class="property">class </em><code class="descclassname">main.</code><code class="descname">POUET</code><span class="sig-paren">(</span><em>parent=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt5.QtWidgets.QMainWindow</span></code>, <code class="xref py py-class docutils literal"><span class="pre">design.Ui_POUET</span></code></p>
-<dl class="method">
-<dt id="main.POUET.allsky_redisplay">
-<code class="descname">allsky_redisplay</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.allsky_redisplay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.allsky_redisplay" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.allsky_refresh">
-<code class="descname">allsky_refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.allsky_refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.allsky_refresh" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.auto_refresh">
-<code class="descname">auto_refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.auto_refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.auto_refresh" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.check_obs_status">
-<code class="descname">check_obs_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.check_obs_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.check_obs_status" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">states of observables</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.do_update">
-<code class="descname">do_update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.do_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.do_update" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.get_weather_items">
-<code class="descname">get_weather_items</code><span class="sig-paren">(</span><em>o</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.get_weather_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.get_weather_items" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.hide_observables">
-<code class="descname">hide_observables</code><span class="sig-paren">(</span><em>criterion</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.hide_observables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.hide_observables" title="Permalink to this definition">¶</a></dt>
-<dd><p>Hide observables according to a given criterion</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.listObs_plot_targets">
-<code class="descname">listObs_plot_targets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.listObs_plot_targets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.listObs_plot_targets" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.listObs_selectall">
-<code class="descname">listObs_selectall</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.listObs_selectall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.listObs_selectall" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.load_obs">
-<code class="descname">load_obs</code><span class="sig-paren">(</span><em>filepath=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.load_obs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.load_obs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.on_visibilitytoolmotion">
-<code class="descname">on_visibilitytoolmotion</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.on_visibilitytoolmotion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.on_visibilitytoolmotion" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.print_status">
-<code class="descname">print_status</code><span class="sig-paren">(</span><em>msg</em>, <em>colour='black'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.print_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.print_status" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.save_Time2obstime">
-<code class="descname">save_Time2obstime</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.save_Time2obstime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.save_Time2obstime" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.set_configTimeNow">
-<code class="descname">set_configTimeNow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.set_configTimeNow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.set_configTimeNow" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.set_debug_mode">
-<code class="descname">set_debug_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.set_debug_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.set_debug_mode" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.set_timer_interval">
-<code class="descname">set_timer_interval</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.set_timer_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.set_timer_interval" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.site_display">
-<code class="descname">site_display</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.site_display"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.site_display" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.unhide_observables">
-<code class="descname">unhide_observables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.unhide_observables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.unhide_observables" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.update_obs">
-<code class="descname">update_obs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.update_obs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.update_obs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update the observability of the observables, and update the display model</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.visibilitytool_draw">
-<code class="descname">visibilitytool_draw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.visibilitytool_draw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.visibilitytool_draw" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.visibilitytool_draw_exec">
-<code class="descname">visibilitytool_draw_exec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.visibilitytool_draw_exec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.visibilitytool_draw_exec" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.POUET.weather_display">
-<code class="descname">weather_display</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#POUET.weather_display"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.POUET.weather_display" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="main.VisibilityView">
-<em class="property">class </em><code class="descclassname">main.</code><code class="descname">VisibilityView</code><span class="sig-paren">(</span><em>parent=None</em>, <em>width=4.5</em>, <em>height=4</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#VisibilityView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.VisibilityView" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">matplotlib.backends.backend_qt5agg.FigureCanvasQTAgg</span></code></p>
-<dl class="method">
-<dt id="main.VisibilityView.finish_plot">
-<code class="descname">finish_plot</code><span class="sig-paren">(</span><em>tel_lat</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#VisibilityView.finish_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.VisibilityView.finish_plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.VisibilityView.show_targets">
-<code class="descname">show_targets</code><span class="sig-paren">(</span><em>xs</em>, <em>ys</em>, <em>names</em>, <em>meteo</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#VisibilityView.show_targets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.VisibilityView.show_targets" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="main.VisibilityView.visbility_draw">
-<code class="descname">visbility_draw</code><span class="sig-paren">(</span><em>obs_time</em>, <em>meteo</em>, <em>airmass</em>, <em>anglemoon</em>, <em>check_wind=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#VisibilityView.visbility_draw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.VisibilityView.visbility_draw" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="main.main">
-<code class="descclassname">main.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/main.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#main.main" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="pouet-main-module">
+<h2>pouet.main module<a class="headerlink" href="#pouet-main-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-meteo">
-<span id="pouet-meteo-module"></span><h2>pouet.meteo module<a class="headerlink" href="#module-meteo" title="Permalink to this headline">¶</a></h2>
-<p>Define the METEO class and related functions</p>
-<p>Meteo is an object containing all the external weather condition (wind speed and direction, temperature, moon position, clouds pattern,…)
-It is the only object that interact outside POUET, i.e. communicate with website to get the meteo,…</p>
-<p>Observables interact only with Meteo to get their constaints (position to the moon, angle to wind, …)</p>
-<p>!!! DO NOT CALL THIS site.py OTHERWISE IT CLASHES WITH SOME WEIRD SYSTEM PACKAGE!!!!</p>
-<dl class="class">
-<dt id="meteo.Meteo">
-<em class="property">class </em><code class="descclassname">meteo.</code><code class="descname">Meteo</code><span class="sig-paren">(</span><em>name='uknsite'</em>, <em>time=None</em>, <em>moonaltitude=None</em>, <em>moonazimuth=None</em>, <em>sunaltitude=None</em>, <em>sunazimuth=None</em>, <em>winddirection=-1</em>, <em>windspeed=-1</em>, <em>cloudscheck=True</em>, <em>fimage=None</em>, <em>debugmode=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Class to hold the meteorological conditions of the current night and the location of the site</p>
-<p>Typically, a Site object is created when POUET starts, and then update itself every XX minutes</p>
-<dl class="method">
-<dt id="meteo.Meteo.get_AzAlt">
-<code class="descname">get_AzAlt</code><span class="sig-paren">(</span><em>alpha</em>, <em>delta</em>, <em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625950&gt;</em>, <em>ref_dir=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_AzAlt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_AzAlt" title="Permalink to this definition">¶</a></dt>
-<dd><p>idea from <a class="reference external" href="http://aa.usno.navy.mil/faq/docs/Alt_Az.php">http://aa.usno.navy.mil/faq/docs/Alt_Az.php</a></p>
-<p>Compute the azimuth and altitude of a source at a given time (by default current time of
-execution), given its alpha and delta coordinates.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.get_moon">
-<code class="descname">get_moon</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625844&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_moon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_moon" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.get_nighthours">
-<code class="descname">get_nighthours</code><span class="sig-paren">(</span><em>obs_night</em>, <em>twilight='nautical'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_nighthours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_nighthours" title="Permalink to this definition">¶</a></dt>
-<dd><p>return a list of astropy Time objects, corresponding to the different hours of the obs_night</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.get_sun">
-<code class="descname">get_sun</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625904&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_sun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_sun" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.get_telescope_params">
-<code class="descname">get_telescope_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_telescope_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_telescope_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.get_twilights">
-<code class="descname">get_twilights</code><span class="sig-paren">(</span><em>obs_night</em>, <em>twilight='nautical'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.get_twilights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.get_twilights" title="Permalink to this definition">¶</a></dt>
-<dd><p>return a list of astropy Time objects: twilight in, twilight out</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625684&gt;</em>, <em>minimal=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.update" title="Permalink to this definition">¶</a></dt>
-<dd><p>minimal=True update only the moon and sun position. Useful for predictions (as you can’t predict the clouds or winds, no need to refresh them)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.updateclouds">
-<code class="descname">updateclouds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.updateclouds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.updateclouds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Excecutes the clouds code, if map not available, saves None to cloudmap</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.updatemoonpos">
-<code class="descname">updatemoonpos</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625549&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.updatemoonpos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.updatemoonpos" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.updatesunpos">
-<code class="descname">updatesunpos</code><span class="sig-paren">(</span><em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625623&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.updatesunpos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.updatesunpos" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="meteo.Meteo.updateweather">
-<code class="descname">updateweather</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/meteo.html#Meteo.updateweather"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#meteo.Meteo.updateweather" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<div class="section" id="pouet-meteo-module">
+<h2>pouet.meteo module<a class="headerlink" href="#pouet-meteo-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-obs">
-<span id="pouet-obs-module"></span><h2>pouet.obs module<a class="headerlink" href="#module-obs" title="Permalink to this headline">¶</a></h2>
-<p>Define the Observable class, the standard object of pouet, and related functions</p>
-<dl class="class">
-<dt id="obs.Observable">
-<em class="property">class </em><code class="descclassname">obs.</code><code class="descname">Observable</code><span class="sig-paren">(</span><em>name='emptyobservable'</em>, <em>obsprogram=None</em>, <em>attributes=None</em>, <em>alpha=None</em>, <em>delta=None</em>, <em>minangletomoon=None</em>, <em>maxairmass=None</em>, <em>exptime=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Class to hold a specific target from any observational progamm</p>
-<p>Unvariable parameters are defined at initialisation</p>
-<p>Variable parameters (distance to moon, azimuth, observability,…) are undefined until associated methods are called</p>
-<dl class="method">
-<dt id="obs.Observable.compute_airmass">
-<code class="descname">compute_airmass</code><span class="sig-paren">(</span><em>meteo</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.compute_airmass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.compute_airmass" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the airmass using the altitude. We cap the maximum value at 10.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">actualize airmass and return it</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="obs.Observable.compute_altaz">
-<code class="descname">compute_altaz</code><span class="sig-paren">(</span><em>meteo</em>, <em>obs_time=&lt;Time object: scale='utc' format='datetime' value=2018-02-12 07:11:56.625034&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.compute_altaz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.compute_altaz" title="Permalink to this definition">¶</a></dt>
-<dd><p>Actualize altitude and azimuth of the observable at the given observation time.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obs_time</strong> – time of observation. Default = current execution time</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">actualise altitude and azimuth for obs_time, and return them</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="obs.Observable.compute_angletomoon">
-<code class="descname">compute_angletomoon</code><span class="sig-paren">(</span><em>meteo</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.compute_angletomoon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.compute_angletomoon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the distance to the moon</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>meteo</strong> – </td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="obs.Observable.compute_angletosun">
-<code class="descname">compute_angletosun</code><span class="sig-paren">(</span><em>meteo</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.compute_angletosun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.compute_angletosun" title="Permalink to this definition">¶</a></dt>
-<dd><p>compute distance to the Sun</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>meteo</strong> – </td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="obs.Observable.compute_angletowind">
-<code class="descname">compute_angletowind</code><span class="sig-paren">(</span><em>meteo</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.compute_angletowind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.compute_angletowind" title="Permalink to this definition">¶</a></dt>
-<dd><p>Actualize the angle to wind, from the most recent meteo update and altitude and azimuth computed</p>
-<p>WARNING : you need to actualize the meteo and altaz by yourself before calling this function !</p>
-<p>TODO: implement a warning flag when the wind is above pointing limit…? or do it somewhere else ?</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>meteo</strong> – a Meteo object, from where I get the wind</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">actualize angle to wind and return it</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="obs.Observable.compute_observability">
-<code class="descname">compute_observability</code><span class="sig-paren">(</span><em>meteo</em>, <em>displayall=True</em>, <em>cloudscheck=True</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.compute_observability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.compute_observability" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the observability, a value between 0 and 1 that tells if the target can be observed at a given time. Also define flags for each situation (moon, wind, etc…)</p>
-<p>The closer to 1 the better
-0 is impossible to observe</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="obs.Observable.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.copy" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="obs.Observable.is_cloudfree">
-<code class="descname">is_cloudfree</code><span class="sig-paren">(</span><em>meteo</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.is_cloudfree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.is_cloudfree" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes whether the pointing direction is cloudy according to the altaz coordinates in memeory</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">actualize is_cloudfree (1: no cloud, 0: cloudy)</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Note:</th><td class="field-body">if unavailable, returns 2: connection error, if error during computation of observability from map: 3</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="obs.Observable.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>meteo</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#Observable.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.Observable.update" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="obs.rdbexport">
-<code class="descclassname">obs.</code><code class="descname">rdbexport</code><span class="sig-paren">(</span><em>observables</em>, <em>filepath</em>, <em>namecol=1</em>, <em>alphacol=2</em>, <em>deltacol=3</em>, <em>obsprogramcol=4</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#rdbexport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.rdbexport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Export a list of observables as an rdb catalogue, to be read again later</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="obs.rdbimport">
-<code class="descclassname">obs.</code><code class="descname">rdbimport</code><span class="sig-paren">(</span><em>filepath</em>, <em>namecol=1</em>, <em>alphacol=2</em>, <em>deltacol=3</em>, <em>obsprogramcol=4</em>, <em>startline=1</em>, <em>obsprogram=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#rdbimport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.rdbimport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Import an rdb catalog into a list of observables</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="obs.shownightobs">
-<code class="descclassname">obs.</code><code class="descname">shownightobs</code><span class="sig-paren">(</span><em>observable</em>, <em>meteo=None</em>, <em>obs_night=None</em>, <em>savefig=False</em>, <em>dirpath=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#shownightobs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.shownightobs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the observability of one observable along the night</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="obs.showstatus">
-<code class="descclassname">obs.</code><code class="descname">showstatus</code><span class="sig-paren">(</span><em>observables</em>, <em>meteo</em>, <em>obs_time=None</em>, <em>displayall=True</em>, <em>cloudscheck=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obs.html#showstatus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obs.showstatus" title="Permalink to this definition">¶</a></dt>
-<dd><p>Using a list of observables, print their observability at the given obs_time. The moon position
-and all observables are updated according to the given obs_time. The wind is always taken at
-the current time.</p>
-<p>displayall = True allows all the targets to be displayed, even if they cannot be observed</p>
-</dd></dl>
-
+<div class="section" id="pouet-obs-module">
+<h2>pouet.obs module<a class="headerlink" href="#pouet-obs-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-run">
-<span id="pouet-run-module"></span><h2>pouet.run module<a class="headerlink" href="#module-run" title="Permalink to this headline">¶</a></h2>
-<p>High-level functions around meteo and obs
-Running the script should provide a minimal text output</p>
-<dl class="function">
-<dt id="run.refresh_status">
-<code class="descclassname">run.</code><code class="descname">refresh_status</code><span class="sig-paren">(</span><em>meteo</em>, <em>observables=None</em>, <em>minimal=False</em>, <em>obs_time=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/run.html#refresh_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#run.refresh_status" title="Permalink to this definition">¶</a></dt>
-<dd><p>Refresh the status</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>observables</strong> – </li>
-<li><strong>obs_time</strong> – </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="run.retrieve_obsprogramlist">
-<code class="descclassname">run.</code><code class="descname">retrieve_obsprogramlist</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/run.html#retrieve_obsprogramlist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#run.retrieve_obsprogramlist" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="run.startup">
-<code class="descclassname">run.</code><code class="descname">startup</code><span class="sig-paren">(</span><em>name='LaSilla'</em>, <em>cloudscheck=True</em>, <em>debugmode=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/run.html#startup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#run.startup" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>Initialize meteo</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+<div class="section" id="pouet-run-module">
+<h2>pouet.run module<a class="headerlink" href="#pouet-run-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-util">
 <span id="pouet-util-module"></span><h2>pouet.util module<a class="headerlink" href="#module-util" title="Permalink to this headline">¶</a></h2>
@@ -861,7 +197,7 @@ This is the code used for the Euler EDP at La Silla.</p>
 <dt id="util.readpickle">
 <code class="descclassname">util.</code><code class="descname">readpickle</code><span class="sig-paren">(</span><em>filepath</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/util.html#readpickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.readpickle" title="Permalink to this definition">¶</a></dt>
 <dd><p>I read a pickle file and return whatever object it contains.
-If the filepath ends with .gz, I’ll unzip the pickle file.</p>
+If the filepath ends with .gz, I&#8217;ll unzip the pickle file.</p>
 </dd></dl>
 
 <dl class="function">
@@ -876,17 +212,14 @@ This is much faster than a simple min loop, although a bit more tedious to use.<
 <dt id="util.writepickle">
 <code class="descclassname">util.</code><code class="descname">writepickle</code><span class="sig-paren">(</span><em>obj</em>, <em>filepath</em>, <em>verbose=True</em>, <em>protocol=-1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/util.html#writepickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.writepickle" title="Permalink to this definition">¶</a></dt>
 <dd><p>I write your python object obj into a pickle file at filepath.
-If filepath ends with .gz, I’ll use gzip to compress the pickle.
-Leave protocol = -1 : I’ll use the latest binary protocol of pickle.</p>
+If filepath ends with .gz, I&#8217;ll use gzip to compress the pickle.
+Leave protocol = -1 : I&#8217;ll use the latest binary protocol of pickle.</p>
 </dd></dl>
 
 </div>
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -921,14 +254,13 @@ Leave protocol = -1 : I’ll use the latest binary protocol of pickle.</p>
             VERSION:'0.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

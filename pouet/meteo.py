@@ -13,8 +13,6 @@ import astropy.coordinates.angles as angles
 from astropy.time import Time
 #todo: using requests instead of urllib, that has versioning issues ?
 #import urllib.request, urllib.error, urllib.parse
-import requests
-import re
 import ephem
 import numpy as np
 import os 
@@ -39,6 +37,8 @@ class Meteo:
         self.name = name
         self.location = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
         self.get_telescope_params()
+        
+        self.weatherReport = (util.load_station(name)).WeatherReport()
 
         self.time = time
         self.moonalt = moonaltitude
@@ -55,7 +55,7 @@ class Meteo:
         self.cloudscheck = cloudscheck
         self.cloudmap = None
         if cloudscheck:
-            self.allsky = clouds.Clouds(location=name, fimage=fimage, debugmode=debugmode)
+            self.allsky = clouds.Clouds(name=name, fimage=fimage, debugmode=debugmode)
 
         self.update()
         
@@ -126,79 +126,14 @@ class Meteo:
 
     def updateweather(self):
     
-        #todo: add a "no connection" message if page is not reachable instead of an error
-        WS=[]
-        WD=[]
-        RH = None
-        Temps = []
+        self.winddirection, self.windspeed, self.temperature, self.humidity = self.weatherReport.get(debugmode=self.debugmode)
         
-        if self.debugmode:
-            fname = "config/meteoDebugMode.last"
-            fi = open(fname, mode='r')
-            data = ""
-            with fi:
-                line = fi.read()
-                data += line
-        else:
-            try:
-                #data=urllib.request.urlopen(self.location.get("weather", "url")).read()
-                data = requests.get(self.location.get("weather", "url")).content
-            #except urllib.error.URLError:
-            except requests.ConnectionError:
-                logger.warning("Cannot download weather data. Either you or the weather server is offline!")
-                return np.nan, np.nan
-            data = data.decode("utf-8")
-        data=data.split("\n") # then split it into lines
-        for line in data:
-            if re.match( r'WD', line, re.M|re.I):
-                WD.append(int(line[20:25])) # AVG
-            if re.match( r'WS', line, re.M|re.I):
-                WS.append(float(line[20:25])) # AVG
-            if re.match( r'RH', line, re.M|re.I):
-                RH = float(line[20:25]) # AVG
-            if re.match( r'T ', line, re.M|re.I):
-                Temps.append(float(line[20:25])) # AVG
-    
-        # Remove out-of-band readings
-        # WD is chosen between station 1 or 2 in EDP pour la Silla.
-        # We take average
-        Temps = np.asarray(Temps, dtype=np.float)
-        Temps = Temps[Temps < 100]
-        Temps = np.mean(Temps)
-    
-        # Remove out-of-band readings
-        # WD is chosen between station 1 or 2 in EDP pour la Silla.
-        # We take average
-        WD = np.asarray(WD, dtype=np.float)
-        WD = WD[WD < 360]
-        WD = WD[WD > 0]
-        WD = np.mean(WD)
-        
-        # WS should be either WS next to 3.6m or max
-        # Remove WS > 99 m/s
-        WS = np.asarray(WS, dtype=np.float)
-        if WS[2] < 99:
-            WS = WS[2]
-        else:
-            logger.warning("Wind speed from 3.6m unavailable, using other readings in LaSilla")
-            WS = np.asarray(WS, dtype=np.float)
-            WS = WS[WS > 0]
-            WS = WS[WS < 99]
-            WS = np.mean(WS)
-
-        for var in [WD, WS, Temps, RH]:
-            if not np.isnan(var):
-                var = -9999
-        FLAG = -9999
-        WD = util.check_value(WD, FLAG)
-        WS = util.check_value(WS, FLAG)
-        Temps = util.check_value(Temps, FLAG)
-        RH = util.check_value(RH, FLAG)
-        
+        """
         self.winddirection = WD
         self.windspeed = WS
         self.temperature = Temps 
         self.humidity = RH
+        """
         self.lastest_weatherupdate_time = Time.now()
     
     
