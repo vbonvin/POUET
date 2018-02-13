@@ -272,12 +272,12 @@ class Observable:
 
 		# check the wind:
 		self.obs_wind = True
-		if self.angletowind.degree < 90 and meteo.windspeed > 15:
+		if self.angletowind.degree < 90 and meteo.windspeed >= float(meteo.location.get("weather", "windWarnLevel")):
 			self.obs_wind = False
 			observability = 0
 			msg += '\nWA:%0.1f/WS:%0.1f' % (self.angletowind.degree, meteo.windspeed)
 
-		if meteo.windspeed > 20:
+		if meteo.windspeed >= float(meteo.location.get("weather", "windLimitLevel")):
 			self.obs_wind = False
 			observability = 0
 			msg += '\nWS:%s' % meteo.windspeed
@@ -294,6 +294,11 @@ class Observable:
 			else:
 				self.obs_clouds_info = False
 				warnings += '\nNo cloud info'
+		else:
+			self.obs_clouds_info = False
+			warnings += '\nNo cloud info'
+		
+		
 
 		# check the internal observability flag
 		self.obs_internal = True

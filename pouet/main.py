@@ -209,7 +209,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         wind = QtGui.QStandardItem()
         wind.setData(str("%.2f" % o.angletowind.degree), role=QtCore.Qt.DisplayRole)
-        if o.obs_airmass:
+        if o.obs_wind:
             wind.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
         else:
             wind.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
@@ -223,7 +223,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             else:
                 clouds.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
         else:
-            clouds.setData(str("?"), role=QtCore.Qt.DisplayRole)
+            clouds.setData(str("---"), role=QtCore.Qt.DisplayRole)
             clouds.setData(QtGui.QBrush(QtCore.Qt.yellow), role=QtCore.Qt.BackgroundRole)
 
         return moondist, airmass, wind, clouds
@@ -322,13 +322,15 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
             for o in self.observables:
                 logging.debug("entering compute observability")
-                o.compute_observability(self.currentmeteo, cloudscheck=False, verbose=False)
+                
 
                 name = QtGui.QStandardItem(o.name)
                 alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
                 delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
+                
+                o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False)
                 observability = QtGui.QStandardItem(str(o.observability))
-
+                
                 if "WFI2033" in o.name:
                     pass
                 moondist, airmass, wind, clouds = self.get_weather_items(o)
