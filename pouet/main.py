@@ -200,12 +200,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         airmass = QtGui.QStandardItem()
         airmass.setData(str("%.2f" % o.airmass), role=QtCore.Qt.DisplayRole)
         if o.obs_airmass:
-            airmass.setData(QtGui.QBrush(QtCore.Qt.darkGreen), role=QtCore.Qt.BackgroundRole)
+            airmass.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
         else:
             if o.obs_highairmass:
-                airmass.setData(QtGui.QBrush(QtCore.Qt.darkYellow), role=QtCore.Qt.BackgroundRole)
+                airmass.setData(QtGui.QBrush(QtCore.Qt.yellow), role=QtCore.Qt.BackgroundRole)
             else:
-                airmass.setData(QtGui.QBrush(QtCore.Qt.darkRed), role=QtCore.Qt.BackgroundRole)
+                airmass.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
 
         wind = QtGui.QStandardItem()
         wind.setData(str("%.2f" % o.angletowind.degree), role=QtCore.Qt.DisplayRole)
