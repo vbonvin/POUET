@@ -179,6 +179,8 @@ class AllSky():
         """
         Returns the mask to apply on the AllSky hide unwanted features in the image.
         In the LaSilla case, to remove the danish and the text in the corners.
+        
+        :param ar: original image (or at least an array with the same size). Used to get the image size.
         """
         s=np.shape(ar)
         #xxa, xxb = s[0]/2, s[1]/2

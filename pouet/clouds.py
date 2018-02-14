@@ -6,7 +6,7 @@ import scipy.ndimage as ndimage
 from scipy.spatial import cKDTree
 import copy
 #todo: there seem to be a problem with urllib.request which does not exists anymore...?
-#import urllib.request, urllib.parse, urllib.error
+#import urllib.request, urllib.parse, urllib.error        
 import requests
 import astropy.time
 from astropy import units as u
@@ -35,6 +35,7 @@ class Clouds():
         :param fimage: (default is None) filename of the all sky image to analyse
         :type: string
         :param name: (default is "LaSilla") name of the location to load the right config file
+        :param debugmode: whether or not POUET is in debugmode. If true, it ought to return some static and dummy data
         """
         
         self.location = name
@@ -50,14 +51,13 @@ class Clouds():
                 fimage = "config/AllSkyDebugMode.JPG" # To be used for debug purposes
                 logger.warning("Cloud analysis is working in debug mode (not using the real current image)")
             self.fimage = fimage
-            #self.retrieve_image()
 
         self.observability_map = None
     
     def retrieve_image(self):
         """
         Downloads the current all sky from the server and saves it to disk.
-        The url of the image is retrived from the configuration file at that location
+        The url of the image is retrived from the corresponding configuration file.
         """
 
         if not self.debugmode:
@@ -74,13 +74,18 @@ class Clouds():
         self.im_masked, self.im_original = loadallsky(self.fimage, station=self.station, return_complete=True)
         self.last_im_refresh = astropy.time.Time.now()
         
-    def update(self):
+    def update(self, donotdownloadtime=1.5):
         """
         Downloads the image, detects the stars and returns the observability map
+        
+        :param donotdownloadtime: minimum elapsed time before re-downloading an image, default: 1.5 min.
+        
+        :return: an observability map with the same dimension as the input image. Then, use all sky get image coordinate method to retrieve
+        observability for a given target.
         """
 
-        if not self.last_im_refresh is None and (astropy.time.Time.now() - self.last_im_refresh).to(u.s).value / 60. < 1.5:
-            logger.info("Last image was downloaded more recently than 1.5 minutes ago, I don't download it again")
+        if not self.last_im_refresh is None and (astropy.time.Time.now() - self.last_im_refresh).to(u.s).value / 60. < donotdownloadtime:
+            logger.info("Last image was downloaded more recently than {} minutes ago, I don't download it again".format(donotdownloadtime))
             #Seems to be okay#logger.critical("TODO: make sure that this map is correct and there's no .T missing (see get_observability_map)")
             return self.observability_map
         
@@ -97,7 +102,7 @@ class Clouds():
         """
         Analyses the images to find the stars. 
 
-        :todo: describe algo in more details
+        .. todo:: describe algo in more details
         
         :param sigma_blur: Sigma of the Gaussian kernel (in px)
         :param threshold: threshold of detection
@@ -152,13 +157,16 @@ class Clouds():
         else:
             return resx, resy
         
-    def get_observability_map(self, x, y, threshold=50):
+    def get_observability_map(self, x, y, threshold=50, filter_sigma=2):
         """
         Returns an observability map (an image of the sky)
         
         :param x: x coordinates of detected stars
         :param y: y coordinates of detected stars
         :param threshold: distance threshold in px of stars such that we have observations
+        :param filter_sigma: sigma of the Gaussian kernel, default=2 
+        
+        :return: an observability map with the same dimension as the input image.
         """
         
         observability = copy.copy(self.im_masked) * 0.
@@ -170,33 +178,8 @@ class Clouds():
             for nx, ny in notnans:
                 obs = len(tree.query_ball_point((ny,nx), threshold))
                 if obs > 2 : observability[nx,ny] = 1. 
-                elif obs > 1 : observability[nx,ny] = 0.5#0.5
-                #elif obs == 1 : observability[nx,ny] = 0.3
-            #res = tree.count_neighbors(pixels, 10)
-            #print res
-            observability = filters.gaussian_filter(observability, 2)
-        """
-        #print np.size(np.where(observability > 0.5)[0])
-        if np.size(np.where(observability > 0.5)[0]) < 100000:
-            obsmap = np.ones_like(observability)
-            hstep = 30
-            medim = np.nanmedian(self.im_masked)
-            #print medim 
-            #medim = 150
-            for ix in range(hstep,np.shape(self.im_masked)[0],5):#range(hstep,np.shape(self.im_masked)[0],hstep*2):
-                for iy in range(hstep,np.shape(self.im_masked)[1],5):
-                    if not np.isnan(np.nanmedian(self.im_masked[ix-hstep:ix+hstep,iy-hstep:iy+hstep])):
-                        mar = self.im_masked[ix-hstep:ix+hstep,iy-hstep:iy+hstep]
-                        res = np.nanmedian(mar) < 0.9*medim
-                        obsmap[ix-hstep:ix+hstep,iy-hstep:iy+hstep] = res
-                        #= np.ones_like(mar) * res
-            obsmap[np.isnan(self.im_masked)] = np.nan
-            #print np.nanmedian(self.im_masked)
-            #exit()
-    
-
-            observability = np.logical_and(observability, obsmap)
-        """
+                elif obs > 1 : observability[nx,ny] = 0.5
+            observability = filters.gaussian_filter(observability, filter_sigma)
         
         self.observability_map = observability.T
         
@@ -208,7 +191,9 @@ class Clouds():
 
 def rgb2gray(arr):
     """
-    The all sky in LaSilla is not RGB, but JPG is is 3D...
+    Converts from RGB to gray.
+    
+    .. note:: The all sky in LaSilla is not RGB, but JPG is is 3D...
     """
     red = arr[:,:,0]
     green = arr[:,:,1]
@@ -218,13 +203,23 @@ def rgb2gray(arr):
 
 def loadallsky(fnimg, station, return_complete=False):
     """
-    Loads the image
+    Loads the all sky image
+    
     :param return_complete: returns the masked image and the unmasked image
+    
+    :return: Masked image or masked image and original image. Note that if cannot download, returns `None` or `None, None`. 
     """
     
     logger.debug("Loading image {}...".format(fnimg))
     im = scipy.ndimage.imread(fnimg)
     ar = np.array(im)
+    if len(np.shape(ar)) != 3:
+        logging.warning("Something went wrong during the AllSky download, skipping this")
+        if return_complete:
+            return None, None
+        else:
+            return None
+    
     ar = rgb2gray(ar)
     rest = copy.copy(ar)
     
@@ -236,24 +231,30 @@ def loadallsky(fnimg, station, return_complete=False):
     else:
         return ar
     
-def gaussian(params,stamp,stampsize):
+def gaussian(params, stamp, stampsize):
     """
     Returns a 2D gaussian profile
+    
+    :param params: a list of the Gaussian profile: centroid (`x` and `y`), sigma (`std`), intensity (`i0`) and constant background (`sky`)
+    :param stamp: the original imagette
+    :param stampsize: the size of the stamp to draw the Gaussian in.
+    
+    :return: residues of the gaussian - `stamp`
     """
     
-    xc,yc,std,i0,sky=params
+    xc, yc, std, i0, sky = params
 
-    x=np.arange(stampsize)
-    x=x.astype(np.float64)
-    std=std.astype(np.float64)
-    i0=i0.astype(np.float64)
-    x,y=np.meshgrid(x,x)
-    x-=xc
-    y-=yc
-    r=np.hypot(x,y)
+    x = np.arange(stampsize)
+    x = x.astype(np.float64)
+    std = std.astype(np.float64)
+    i0 = i0.astype(np.float64)
+    x, y = np.meshgrid(x,x)
+    x -= xc
+    y -= yc
+    r = np.hypot(x,y)
 
-    g=i0 * np.exp (-0.5 * (r / std)**2.) / std / np.sqrt(2.*np.pi) + sky
-    g-=stamp
+    g = i0 * np.exp (-0.5 * (r / std)**2.) / std / np.sqrt(2.*np.pi) + sky
+    g -= stamp
 
     return np.ravel(g)
     
@@ -267,6 +268,8 @@ def fwhm(data,xc,yc,stampsize,show=False, verbose=False):
     :param stampsize: size of nominal square stampe
     :param show: shows a diagnostic plot of the fit
     :param verbose: should I speak? 
+    
+    :return: fwhm in px
     """
 
     #TODO: remove verbose since I use loggger?
