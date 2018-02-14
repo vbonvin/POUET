@@ -27,6 +27,11 @@ class WeatherReport():
         self.config = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
         
     def get(self, debugmode, FLAG = -9999):
+        """"
+        Get method that reads the weather reports off the web. In the LaSilla case, it download a `meteo.last` and interprets the data.
+        
+        :warning: Such a method _must_ return the 
+        """
         #todo: add a "no connection" message if page is not reachable instead of an error
         WS=[]
         WD=[]

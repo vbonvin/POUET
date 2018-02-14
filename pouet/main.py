@@ -399,12 +399,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         for ind, o in enumerate(self.observables):
             o.compute_observability(self.currentmeteo, cloudscheck=True, verbose=False)
 
-            moondist, airmass, wind, clouds = self.get_weather_items(o)
+            moondist, sundist, airmass, wind, clouds = self.get_weather_items(o)
 
             # make sur we update the correct observable in the model...
             obs_index = model_names.index(o.name)
             obs_model.setItem(obs_index, observability_index, QtGui.QStandardItem(str(o.observability)))
             obs_model.setItem(obs_index, moondist_index, moondist)
+            obs_model.setItem(obs_index, sundist_index, sundist)
             obs_model.setItem(obs_index, airmass_index, airmass)
             obs_model.setItem(obs_index, wind_index, wind)
             obs_model.setItem(obs_index, clouds_index, clouds)
