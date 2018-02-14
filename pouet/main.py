@@ -32,6 +32,7 @@ COLORWARN = "orange"
 COLORLIMIT = "red"
 COLORNOMINAL = 'black'
 COLORSUCCESS = "green"
+COLORNAN = "yellow"
 
 
 
@@ -102,8 +103,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # testing stuff at startup...
 
         self.load_obs(filepath='../cats/2m2lenses_withobsprogram.pouet')
-
         
+    def changeTabColor(self, color, tab=None):
+        
+        if tab is None:
+            tab = self.weather
+            
+        self.tabWidget.tabBar().setTabTextColor(self.tabWidget.indexOf(tab), QtGui.QColor(color))
 
     def on_visibilitytoolmotion(self, event):
         
@@ -193,9 +199,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         moondist = QtGui.QStandardItem()
         moondist.setData(str(int(o.angletomoon.degree)), role=QtCore.Qt.DisplayRole)
         if o.obs_moondist:
-            moondist.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+            moondist.setData(QtGui.QBrush(QtGui.QColor(COLORSUCCESS)), role=QtCore.Qt.BackgroundRole)
         else:
-            moondist.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+            moondist.setData(QtGui.QBrush(QtGui.QColor(COLORLIMIT)), role=QtCore.Qt.BackgroundRole)
         
         # Angle to the Sun, TODO: What default requirements?   
         sundist = QtGui.QStandardItem()
@@ -204,35 +210,35 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         airmass = QtGui.QStandardItem()
         airmass.setData(str("%.2f" % o.airmass), role=QtCore.Qt.DisplayRole)
         if o.obs_airmass:
-            airmass.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+            airmass.setData(QtGui.QBrush(QtGui.QColor(COLORSUCCESS)), role=QtCore.Qt.BackgroundRole)
         else:
             if o.obs_highairmass:
-                airmass.setData(QtGui.QBrush(QtCore.Qt.yellow), role=QtCore.Qt.BackgroundRole)
+                airmass.setData(QtGui.QBrush(QtGui.QColor(COLORWARN)), role=QtCore.Qt.BackgroundRole)
             else:
-                airmass.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+                airmass.setData(QtGui.QBrush(QtGui.QColor(COLORLIMIT)), role=QtCore.Qt.BackgroundRole)
 
         wind = QtGui.QStandardItem()
         if o.obs_wind_info:
             wind.setData(str("%.2f" % o.angletowind.degree), role=QtCore.Qt.DisplayRole)
             if o.obs_wind:
-                wind.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+                wind.setData(QtGui.QBrush(QtGui.QColor(COLORSUCCESS)), role=QtCore.Qt.BackgroundRole)
             else:
-                wind.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+                wind.setData(QtGui.QBrush(QtGui.QColor(COLORLIMIT)), role=QtCore.Qt.BackgroundRole)
         else:
             wind.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
-            wind.setData(QtGui.QBrush(QtCore.Qt.yellow), role=QtCore.Qt.BackgroundRole)
+            wind.setData(QtGui.QBrush(QtGui.QColor(COLORWARN)), role=QtCore.Qt.BackgroundRole)
 
         clouds = QtGui.QStandardItem()
 
         if o.obs_clouds_info:
             clouds.setData(str(o.cloudfree), role=QtCore.Qt.DisplayRole)
             if o.obs_clouds:
-                clouds.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)
+                clouds.setData(QtGui.QBrush(QtGui.QColor(COLORSUCCESS)), role=QtCore.Qt.BackgroundRole)
             else:
-                clouds.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
+                clouds.setData(QtGui.QBrush(QtGui.QColor(COLORLIMIT)), role=QtCore.Qt.BackgroundRole)
         else:
             clouds.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
-            clouds.setData(QtGui.QBrush(QtCore.Qt.yellow), role=QtCore.Qt.BackgroundRole)
+            clouds.setData(QtGui.QBrush(QtGui.QColor(COLORNAN)), role=QtCore.Qt.BackgroundRole)
 
         return moondist, sundist, airmass, wind, clouds
 
@@ -534,11 +540,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.currentmeteo.updateweather()
             draw_wind = True
         
+        reached_limit = False
+        reached_warn = False
+        
         self.weatherWindSpeedValue.setText(str('{:2.1f}'.format(self.currentmeteo.windspeed)))
         if float(self.currentmeteo.location.get("weather", "windLimitLevel")) <= self.currentmeteo.windspeed:
             self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
+            reached_limit = True
         elif float(self.currentmeteo.location.get("weather", "windWarnLevel")) <= self.currentmeteo.windspeed:
             self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+            reached_warn = True
         else:
             self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
         
@@ -549,8 +560,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.weatherHumidityValue.setText(str('{:3d}'.format(int(self.currentmeteo.humidity))))
         if float(self.currentmeteo.location.get("weather", "humidityLimitLevel")) <= self.currentmeteo.humidity:
             self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
+            reached_limit = True
         elif float(self.currentmeteo.location.get("weather", "humidityWarnLevel")) <= self.currentmeteo.humidity:
             self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+            reached_warn = True
         else:
             self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
         
@@ -558,6 +571,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.allsky_redisplay()
         
         self.weatherLastUpdateValue.setText(str(self.currentmeteo.lastest_weatherupdate_time).split('.')[0])
+        
+        if reached_limit:
+            self.changeTabColor(color=COLORLIMIT)
+        elif reached_warn:
+            self.changeTabColor(color=COLORWARN)
+        else:
+            self.changeTabColor(color=COLORNOMINAL)
 
 
     def site_display(self):

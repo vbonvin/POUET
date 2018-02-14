@@ -61,10 +61,10 @@ class WeatherReport():
                 logger.warning(error_msg)
                 return FLAG, FLAG, FLAG, FLAG
             
-        data = data.decode("utf-8")
-        if "404 Not Found" in data:
-            logger.warning(error_msg)
-            return FLAG, FLAG, FLAG, FLAG
+            data = data.decode("utf-8")
+            if "404 Not Found" in data:
+                logger.warning(error_msg)
+                return FLAG, FLAG, FLAG, FLAG
             
         data=data.split("\n") # then split it into lines
         for line in data:
