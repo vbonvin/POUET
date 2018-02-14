@@ -7,6 +7,7 @@ import numpy as np
 import os, sys
 import copy as pythoncopy
 from astropy.time import Time
+from astropy import units as u
 from astropy.coordinates import angles, angle_utilities
 import matplotlib.pyplot as plt
 import importlib
@@ -228,7 +229,7 @@ class Observable:
 		self.compute_angletosun(meteo)
 
 
-	def compute_observability(self, meteo, displayall=True, cloudscheck=True, verbose=True):
+	def compute_observability(self, meteo, displayall=True, cloudscheck=True, verbose=True, future=False):
 		"""
 		Update the status using :meth:`~obs.Observable.update`. Compute the observability, a value between 0 and 1 that tells if the target can be observed at a given time. Also define flags for each parameter (moon, wind, etc...)
 
@@ -241,11 +242,12 @@ class Observable:
 
 		"""
 
-
-
 		logger.info("current time is %s"  % meteo.time)
 		self.update(meteo=meteo)
 		observability = 1  # by default, we can observe
+
+		if np.abs(meteo.time - Time.now()).to(u.s).value / 60. > 30: future=True
+
 
 		# Let's start with a simple yes/no version
 		# We add a small message to display if it's impossible to observe:
@@ -278,38 +280,45 @@ class Observable:
 			observability = 0
 			msg += '\nAirmass:%0.2f' % self.airmass
 
+
 		# check the wind:
 		self.obs_wind, self.obs_wind_info = True, True
-		if meteo.windspeed > 0. and meteo.windspeed < 100. and self.angletowind is not None:
-			if self.angletowind.degree < 90 and meteo.windspeed >= float(meteo.location.get("weather", "windWarnLevel")):
-				self.obs_wind = False
-				observability = 0
-				msg += '\nWA:%0.1f/WS:%0.1f' % (self.angletowind.degree, meteo.windspeed)
-	
-			if meteo.windspeed >= float(meteo.location.get("weather", "windLimitLevel")):
-				self.obs_wind = False
-				observability = 0
-				msg += '\nWS:%s' % meteo.windspeed
+		if not future:
+			if meteo.windspeed > 0. and meteo.windspeed < 100. and self.angletowind is not None:
+				if self.angletowind.degree < 90 and meteo.windspeed >= float(meteo.location.get("weather", "windWarnLevel")):
+					self.obs_wind = False
+					observability = 0
+					msg += '\nWA:%0.1f/WS:%0.1f' % (self.angletowind.degree, meteo.windspeed)
+
+				if meteo.windspeed >= float(meteo.location.get("weather", "windLimitLevel")):
+					self.obs_wind = False
+					observability = 0
+					msg += '\nWS:%s' % meteo.windspeed
+			else:
+				self.obs_wind_info = False
+				warnings += '\nNo wind info'
 		else:
 			self.obs_wind_info = False
-			warnings += '\nNo wind info'
+
 
 		# check the clouds
 		self.obs_clouds, self.obs_clouds_info = True, True
-		if cloudscheck and observability > 0:
-			self.is_cloudfree(meteo)
-			if self.cloudfree < 0.5 :
-				self.obs_clouds = False
-				warnings += '\nWarning ! It might be cloudy'
-			elif self.cloudfree <= 1.:
-				msg += '\nSeems to be cloud-free'
+		if not future:
+			if cloudscheck and observability > 0:
+				self.is_cloudfree(meteo)
+				if self.cloudfree < 0.5 :
+					self.obs_clouds = False
+					warnings += '\nWarning ! It might be cloudy'
+				elif self.cloudfree <= 1.:
+					msg += '\nSeems to be cloud-free'
+				else:
+					self.obs_clouds_info = False
+					warnings += '\nNo cloud info'
 			else:
 				self.obs_clouds_info = False
 				warnings += '\nNo cloud info'
 		else:
 			self.obs_clouds_info = False
-			warnings += '\nNo cloud info'
-		
 		
 
 		# check the internal observability flag
