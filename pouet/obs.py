@@ -87,14 +87,19 @@ class Observable:
 
 
 	def copy(self):
+		"""
+		:return: Observable: a python deep copy of the current observable
+		"""
+
 		return pythoncopy.deepcopy(self)
+
 
 	def compute_angletomoon(self, meteo):
 		"""
-		Compute the distance to the moon
+		Computes the distance to the moon
 
-		:param meteo:
-		:return:
+		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
+		:return: None
 		"""
 
 		moonalt, moonaz = meteo.moonalt, meteo.moonaz
@@ -107,10 +112,10 @@ class Observable:
 
 	def compute_angletosun(self, meteo):
 		"""
-		compute distance to the Sun
+		Computes distance to the Sun
 
-		:param meteo:
-		:return:
+		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
+		:return: None
 		"""
 
 		sunalt, sunaz = meteo.sunalt, meteo.sunaz
@@ -123,15 +128,11 @@ class Observable:
 
 	def compute_angletowind(self, meteo):
 		"""
-		Actualize the angle to wind, from the most recent meteo update and altitude and azimuth computed
+		Computes the angle to wind
 
-		WARNING : you need to actualize the meteo and altaz by yourself before calling this function !
+		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
 
-		TODO: implement a warning flag when the wind is above pointing limit...? or do it somewhere else ?
-
-		:param meteo: a Meteo object, from where I get the wind
-
-		:return: actualize angle to wind and return it
+		:return: None
 		"""
 
 		winddirection = meteo.winddirection
@@ -145,48 +146,43 @@ class Observable:
 		except AttributeError:
 			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
 
-	def compute_altaz(self, meteo, obs_time=Time.now()):
+	def compute_altaz(self, meteo):
 		"""
-		Actualize altitude and azimuth of the observable at the given observation time.
+		Computes altitude and azimuth of the observable.
 
-		:param obs_time: time of observation. Default = current execution time
-		:return: actualise altitude and azimuth for obs_time, and return them
+		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
+
+		:return: None
 		"""
-		azimuth, altitude = meteo.get_AzAlt(self.alpha, self.delta, obs_time=obs_time)
+		azimuth, altitude = meteo.get_AzAlt(self.alpha, self.delta, obs_time=meteo.time)
 		self.altitude = altitude
 		self.azimuth = azimuth
 
 
 	def compute_airmass(self, meteo):
-
 		"""
-		Compute the airmass using the altitude. We cap the maximum value at 10.
+		Computes altitude and azimuth of the observable.
 
-		:return: actualize airmass and return it
+		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
+
+		:return: None
 		"""
 
-		try:
-			self.airmass = util.elev2airmass(self.altitude.radian, meteo.elev)
+		self.airmass = util.elev2airmass(self.altitude.radian, meteo.elev)
 
 
-			"""	
-			zenith = angles.Angle(90-self.altitude.degree, unit="degree")
-			airmass = 1.0/cos(zenith.radian)
-			if airmass < 0 or airmass > 10:
-				airmass = 10
-			self.airmass = airmass
-			"""
 
-		except AttributeError:
-			raise AttributeError("%s has no altitude! \n Compute its altutide first !")
-		
 	def is_cloudfree(self, meteo):
 		"""
-		Computes whether the pointing direction is cloudy according to the altaz coordinates in memeory
+		Computes whether the pointing direction is cloudy according to the altaz coordinates in memory
+
+		:param meteo: a Meteo object, whose cloudmap attribute has been actualized beforehand
+
+		todo: instead of taking altaz coordinates in memory, shouldn't we use meteo.time to recompute altaz on the fly?
 		
-		:return: actualize is_cloudfree (1: no cloud, 0: cloudy)
+		:return: None
 		
-		:note: if unavailable, returns 2: connection error, if error during computation of observability from map: 3
+		:note: is_cloudfree is actualized with 0: cloudy or 1: no clouds. If unavailable, returns 2: connection error, if error during computation of observability from map: 3
 		"""
 
 		ERROR_CONN = 2.
@@ -218,8 +214,14 @@ class Observable:
 
 
 	def update(self, meteo):
+		"""
+		Update the observable parameters according to the meteo object passed: altitude, azimuth, angle to wind, airmass, angle to moon and angle to sun.
 
-		self.compute_altaz(meteo, obs_time=meteo.time)
+		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
+		:return: None
+		"""
+
+		self.compute_altaz(meteo)
 		self.compute_angletowind(meteo)
 		self.compute_airmass(meteo)
 		self.compute_angletomoon(meteo)
@@ -228,10 +230,14 @@ class Observable:
 
 	def compute_observability(self, meteo, displayall=True, cloudscheck=True, verbose=True):
 		"""
-		Compute the observability, a value between 0 and 1 that tells if the target can be observed at a given time. Also define flags for each situation (moon, wind, etc...)
+		Update the status using :meth:`~obs.Observable.update`. Compute the observability, a value between 0 and 1 that tells if the target can be observed at a given time. Also define flags for each parameter (moon, wind, etc...)
 
 		The closer to 1 the better
 		0 is impossible to observe
+
+		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
+
+		:param displayall: boolean
 
 		"""
 

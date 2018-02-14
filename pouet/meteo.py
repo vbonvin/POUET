@@ -176,7 +176,7 @@ class Meteo:
         # return Az, Alt as Angle object
         return self.get_AzAlt(alpha, delta, obs_time)
     
-    def get_AzAlt(self, alpha, delta, obs_time=Time.now(), ref_dir=0):
+    def get_AzAlt(self, alpha, delta, obs_time=None, ref_dir=0):
     
         """
         idea from http://aa.usno.navy.mil/faq/docs/Alt_Az.php
@@ -185,7 +185,10 @@ class Meteo:
         execution), given its alpha and delta coordinates.
     
         """
-    
+
+        if not obs_time:
+            obs_time = self.time
+
         lat, lon, elev = self.lat, self.lon, self.elev
     
         # Untouched code from Azimuth.py
