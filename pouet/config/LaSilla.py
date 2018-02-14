@@ -11,8 +11,18 @@ import logging
 logger = logging.getLogger(__name__)
 
 class WeatherReport():
+    """
+    This class is dedicated to recovering the weather report at the La Silla site and feeding the
+    wind direction, wind speed, temperature and humidity back to pouet.
+    It must contain at least a `get` method that returns the above variable.
+    """
     
     def __init__(self, name='LaSilla'):
+        """
+        Class constructor. Loads the LaSilla.cfg configuration file and saves it as attribute.
+        
+        :param name: name of the cfg file, only included for completeness.
+        """
         
         self.config = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
         
