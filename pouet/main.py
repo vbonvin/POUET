@@ -32,7 +32,6 @@ COLORWARN = "orange"
 COLORLIMIT = "red"
 COLORNOMINAL = 'black'
 COLORSUCCESS = "green"
-COLORNAN = "yellow"
 
 
 
@@ -239,7 +238,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 clouds.setData(QtGui.QBrush(QtGui.QColor(COLORLIMIT)), role=QtCore.Qt.BackgroundRole)
         else:
             clouds.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
-            clouds.setData(QtGui.QBrush(QtGui.QColor(COLORNAN)), role=QtCore.Qt.BackgroundRole)
+            clouds.setData(QtGui.QBrush(QtGui.QColor(COLORWARN)), role=QtCore.Qt.BackgroundRole)
 
         return moondist, sundist, airmass, wind, clouds
 
