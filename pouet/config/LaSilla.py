@@ -27,10 +27,16 @@ class WeatherReport():
         self.config = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
         
     def get(self, debugmode, FLAG = -9999):
-        """"
+        """
         Get method that reads the weather reports off the web. In the LaSilla case, it download a `meteo.last` and interprets the data.
         
-        :warning: Such a method _must_ return the 
+        :param debugmode: whether or not POUET is in debugmode. If true, it ought to return some static and dummy data
+        :param FLAG: what to return in case the weather report cannot be downloaded or treated. Currently, POUET expect -9999 as a placeholder.
+    
+        :return: Wind direction, speed, temperature and humidity
+        
+        .. warning:: Such a method *must* return the following variables in that precise order: wind direction, wind speed, temperature and humidity
+        
         """
         #todo: add a "no connection" message if page is not reachable instead of an error
         WS=[]
@@ -103,7 +109,14 @@ class WeatherReport():
         return WD, WS, Temps, RH
     
 class AllSky():
+    """
+    Station-specific class that handles the all sky image and its transformation of the sky.
+    """
+    
     def __init__(self):
+        """
+        Class constructor that saves some important all sky parameters as a class attribute.
+        """
         cx = 279
         cy = 230
         prefered_direction = {'dir':194.3, 'posx':297, 'posy':336}
@@ -125,9 +138,24 @@ class AllSky():
                 }
         
     def get_radius(self, elev):
+        """
+        Method that computes the radius of a given elevation on the sky, in pixel.
+        
+        :param elev: elevation (in radians) 
+        
+        :return: Radius, in px
+        """
         return self.params["ff"] * self.params["k1"] * np.tan(self.params["k2"] * elev / 2.) * self.params["r0"]
     
     def get_image_coordinates(self, az, elev):
+        """
+        Converts the azimuth and elevation of a target in pixel coordinates
+        
+        :param az: azimuth (in rad)
+        :param elev: elevation (in rad)
+        
+        :return: x and y position 
+        """
         
         north = self.params['north']
         cx = self.params['cx']
@@ -149,7 +177,8 @@ class AllSky():
     
     def get_mask(self, ar):
         """
-        Returns the mask to apply on the AllSky to remove the image of the danish...
+        Returns the mask to apply on the AllSky hide unwanted features in the image.
+        In the LaSilla case, to remove the danish and the text in the corners.
         """
         s=np.shape(ar)
         #xxa, xxb = s[0]/2, s[1]/2
