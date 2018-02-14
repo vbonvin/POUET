@@ -141,7 +141,6 @@ class Meteo:
         if not len(li) == len(checkvals):
             self.lastest_weatherupdate_time = Time.now()
     
-    
     def get_moon(self, obs_time=Time.now()):
 
         observer = ephem.Observer()

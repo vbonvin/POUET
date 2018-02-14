@@ -212,7 +212,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 airmass.setData(QtGui.QBrush(QtCore.Qt.red), role=QtCore.Qt.BackgroundRole)
 
         wind = QtGui.QStandardItem()
-        if o.obs_clouds_info:
+        if o.obs_wind_info:
             wind.setData(str("%.2f" % o.angletowind.degree), role=QtCore.Qt.DisplayRole)
             if o.obs_wind:
                 wind.setData(QtGui.QBrush(QtCore.Qt.green), role=QtCore.Qt.BackgroundRole)

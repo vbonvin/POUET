@@ -80,8 +80,7 @@ class Clouds():
         
         :param donotdownloadtime: minimum elapsed time before re-downloading an image, default: 1.5 min.
         
-        :return: an observability map with the same dimension as the input image. Then, use all sky get image coordinate method to retrieve
-        observability for a given target.
+        :return: an observability map with the same dimension as the input image. Then, use all sky get image coordinate method to retrieve observability for a given target.
         """
 
         if not self.last_im_refresh is None and (astropy.time.Time.now() - self.last_im_refresh).to(u.s).value / 60. < donotdownloadtime:

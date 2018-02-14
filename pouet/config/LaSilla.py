@@ -44,6 +44,8 @@ class WeatherReport():
         RH = None
         Temps = []
         
+        error_msg = "Cannot download weather data. Either you or the weather server is offline!"
+        
         if debugmode:
             fname = "config/meteoDebugMode.last"
             fi = open(fname, mode='r')
@@ -56,9 +58,14 @@ class WeatherReport():
                 #data=urllib.request.urlopen(self.location.get("weather", "url")).read()
                 data = requests.get(self.config.get("weather", "url")).content
             except requests.ConnectionError:
-                logger.warning("Cannot download weather data. Either you or the weather server is offline!")
+                logger.warning(error_msg)
                 return FLAG, FLAG, FLAG, FLAG
-            data = data.decode("utf-8")
+            
+        data = data.decode("utf-8")
+        if "404 Not Found" in data:
+            logger.warning(error_msg)
+            return FLAG, FLAG, FLAG, FLAG
+            
         data=data.split("\n") # then split it into lines
         for line in data:
             if re.match( r'WD', line, re.M|re.I):

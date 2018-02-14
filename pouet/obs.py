@@ -145,7 +145,7 @@ class Observable:
 			self.angletowind = angles.Angle(angletowind, unit='degree')
 		except AttributeError:
 			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
-
+		
 	def compute_altaz(self, meteo):
 		"""
 		Computes altitude and azimuth of the observable.
@@ -291,7 +291,7 @@ class Observable:
 				observability = 0
 				msg += '\nWS:%s' % meteo.windspeed
 		else:
-			self.obs_clouds_info = False
+			self.obs_wind_info = False
 			warnings += '\nNo wind info'
 
 		# check the clouds
