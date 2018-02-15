@@ -254,6 +254,9 @@
        <height>861</height>
       </rect>
      </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
      <property name="dragEnabled">
       <bool>true</bool>
      </property>

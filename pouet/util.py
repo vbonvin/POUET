@@ -334,4 +334,8 @@ def load_station(name):
 	module_name = "config.{}".format(name)
 	station = importlib.import_module(module_name, package=None)
 	return station
+
+def time2hhmm(obstime):
+	return (str(obstime).split(" ")[1]).split(".")[0][:-3]
+	
 	

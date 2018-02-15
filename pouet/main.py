@@ -5,7 +5,7 @@ Launch the application, link POUET functions to the design
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os, sys
-import obs, run, util
+import obs, run, util, plots
 import meteo as meteomodule
 import design
 from astropy import units as u
@@ -21,6 +21,8 @@ import pylab as plt
 from matplotlib.patches import Wedge
 from matplotlib import gridspec
 from matplotlib.colors import LinearSegmentedColormap
+
+import threading
 
 import numpy as np
 
@@ -70,8 +72,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.visibilitytool = VisibilityView(parent=self.visibilityView)
         self.visibilitytool_draw()
         
-        self.site_display()
+        self.init_warn_station()
         self.weather_display()
+        self.site_display()
         
         # signal and slots init...
         self.loadObs.clicked.connect(self.load_obs)
@@ -87,6 +90,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.updatePlotObs.clicked.connect(self.listObs_plot_targets)
         self.updateSelectall.clicked.connect(self.listObs_selectall)
         self.visibilitytool.figure.canvas.mpl_connect('motion_notify_event', self.on_visibilitytoolmotion)
+        self.listObs.doubleClicked.connect(self.show_airmass)
 
         # Stating timer
         self.timer = QtCore.QTimer()
@@ -102,6 +106,26 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # testing stuff at startup...
 
         self.load_obs(filepath='../cats/2m2lenses_withobsprogram.pouet')
+        
+    def init_warn_station(self):
+        
+        self.station_reached_limit = False
+        self.station_reached_warn = False
+        self.weather_reached_limit = False
+        self.weather_reached_warn = False
+        
+    def does_warn_station(self):
+        
+        if self.station_reached_limit or self.weather_reached_limit:
+            self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station (!)"))
+            self.changeTabColor(color=COLORLIMIT)
+        elif self.station_reached_warn or self.weather_reached_warn:
+            self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station (!)"))
+            self.changeTabColor(color=COLORWARN)
+        else:
+            self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station"))
+            self.changeTabColor(color=COLORNOMINAL)
+
         
     def changeTabColor(self, color, tab=None):
         
@@ -123,6 +147,30 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         azimuth, altitude = self.currentmeteo.get_AzAlt(ra, dec, obs_time=self.currentmeteo.time)
         xpix, ypix = self.currentmeteo.allsky.station.get_image_coordinates(azimuth.value, altitude.value)
         self.allskylayer.show_coordinates(xpix, ypix)
+        
+    def show_airmass(self, mi):
+        
+        obs_model = self.listObs.model()
+
+        targetname = obs_model.item(mi.row(), 0).data(0)
+        
+        # Do we have something better than this search?
+        for target in self.observables:
+            
+            if not target.name == targetname:
+                continue
+            
+            #plots.plot_airmass_on_sky(target, self.currentmeteo)
+            
+            self.plot_show = uic.loadUi("dialogPlots.ui")
+            
+            
+            self.plot_show.setWindowTitle("Airmass for {}".format(target.name))
+            
+            amv = AirmassView(parent=self.plot_show.widget)
+            amv.show(target, self.currentmeteo)
+            
+            self.plot_show.open()
 
     def print_status(self, msg, colour=COLORNOMINAL):
         self.statusLabel.setText(msg)
@@ -540,16 +588,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             self.currentmeteo.updateweather()
             draw_wind = True
         
-        reached_limit = False
-        reached_warn = False
+        self.weather_reached_limit = False
+        self.weather_reached_warn = False
         
         self.weatherWindSpeedValue.setText(str('{:2.1f}'.format(self.currentmeteo.windspeed)))
         if float(self.currentmeteo.location.get("weather", "windLimitLevel")) <= self.currentmeteo.windspeed:
             self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
-            reached_limit = True
+            self.weather_reached_limit = True
         elif float(self.currentmeteo.location.get("weather", "windWarnLevel")) <= self.currentmeteo.windspeed:
             self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
-            reached_warn = True
+            self.weather_reached_warn = True
         else:
             self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
         
@@ -560,10 +608,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.weatherHumidityValue.setText(str('{:3d}'.format(int(self.currentmeteo.humidity))))
         if float(self.currentmeteo.location.get("weather", "humidityLimitLevel")) <= self.currentmeteo.humidity:
             self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
-            reached_limit = True
+            self.weather_reached_limit = True
         elif float(self.currentmeteo.location.get("weather", "humidityWarnLevel")) <= self.currentmeteo.humidity:
             self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
-            reached_warn = True
+            self.weather_reached_warn = True
         else:
             self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
         
@@ -572,13 +620,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         self.weatherLastUpdateValue.setText(str(self.currentmeteo.lastest_weatherupdate_time).split('.')[0])
         
-        if reached_limit:
-            self.changeTabColor(color=COLORLIMIT)
-        elif reached_warn:
-            self.changeTabColor(color=COLORWARN)
-        else:
-            self.changeTabColor(color=COLORNOMINAL)
-
+        self.does_warn_station()
 
     def site_display(self):
         
@@ -595,6 +637,18 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.sunCoordinatesValues.setText(str('RA={:s}  DEC={:s}'.format(self.currentmeteo.sun.ra.__str__(), self.currentmeteo.sun.dec.__str__())))
         self.sunAltazValue.setText(str('{:2.1f}°\t{:2.1f}°'.format(sunAlt, sunAz)))
         
+        self.station_reached_limit = False
+        self.station_reached_warn = False
+        
+        if sunAlt > -6:
+            self.sunAltazValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
+            self.station_reached_limit = True
+        elif sunAlt > -12:
+            self.sunAltazValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+            self.station_reached_warn = True
+        else:
+            self.sunAltazValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
+        
         moonAz, moonAlt = self.currentmeteo.get_moon(obs_time)
         moonAlt = moonAlt.to(u.degree).value
         moonAz = moonAz.to(u.degree).value
@@ -603,6 +657,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.moonAltazValue.setText(str('{:2.1f}°\t{:2.1f}°'.format(moonAlt, moonAz)))
         
         self.brightLastUpdateValue.setText(str(obs_time).split('.')[0])
+        
+        self.does_warn_station()
+
         
         #-------------------------------------------------------- Night here only (we change the obs_time so this must the last things to run!)
         
@@ -918,6 +975,42 @@ class AllSkyView(FigureCanvas):
 
         self.draw()
 
+class AirmassView(FigureCanvas):
+
+    def __init__(self, parent=None, width=6, height=5):
+
+        self.figure = Figure(figsize=(width, height))
+        self.figure.patch.set_facecolor("None")
+
+        self.figure.subplots_adjust(wspace=0.)
+        self.figure.subplots_adjust(bottom=0.02)
+        self.figure.subplots_adjust(top=0.98)
+        #self.figure.subplots_adjust(right=0.9)
+        #self.figure.subplots_adjust(left=0.13)
+
+        #gs = gridspec.GridSpec(1, 2, width_ratios=[20, 1])
+        self.axis = self.figure.add_subplot(111, projection="polar")
+        #self.cax = self.figure.add_subplot(gs[1])
+
+        FigureCanvas.__init__(self, self.figure)
+        self.parent = parent
+
+        self.setParent(parent)
+        
+        self.axis.patch.set_facecolor("None")
+        FigureCanvas.setStyleSheet(self, "background-color:transparent;")
+        
+        FigureCanvas.setSizePolicy(self,
+                                   QtWidgets.QSizePolicy.Expanding,
+                                   QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        
+    def show(self, target, meteo):
+        
+        self.axis.clear()
+        plots.plot_airmass_on_sky(target, meteo, ax=self.axis)
+        
+        self.draw()
 
 class VisibilityView(FigureCanvas):
 

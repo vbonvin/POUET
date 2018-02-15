@@ -89,6 +89,7 @@ class Ui_POUET(object):
         self.loadObs.setObjectName("loadObs")
         self.listObs = QtWidgets.QTableView(self.obs)
         self.listObs.setGeometry(QtCore.QRect(10, 50, 841, 861))
+        self.listObs.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.listObs.setDragEnabled(True)
         self.listObs.setAlternatingRowColors(True)
         self.listObs.setShowGrid(True)
