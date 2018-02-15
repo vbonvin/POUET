@@ -82,19 +82,26 @@ def plot_airmass_on_sky(target, meteo, ax=None):
     
     degree_sign = u'\N{DEGREE SIGN}'
 
-    # For positively-increasing range (e.g., range(1, 90, 15)),
-    # labels go from middle to outside.
-    r_labels = [
-        '',
-        '75' + degree_sign,
-        '60' + degree_sign ,
-        '45' + degree_sign,
-        '30' + degree_sign,
-        '15' + degree_sign,
-        '0' + degree_sign + ' Alt.',
-    ]
-
-    ax.set_rgrids(range(1, 106, 15), r_labels, angle=-22.5,fmt='%s\u00b0', color="grey")
+    r_labels = [ '', '', '', '', '', '', '',]
+    ax.set_rgrids(range(1, 106, 15), r_labels)
+    
+    for ele in [15, 30, 45, 60, 75]:
+        if ele < 40:
+            fmt = "{:1.2f}"
+        else:
+            fmt = "{:1.1f}"
+            
+        ax.annotate('{:d}{:s}'.format(ele, degree_sign), xy=(np.deg2rad(-23), ele), fontsize=8, color="grey", ha='center', va='bottom', rotation=-25)
+        ax.annotate(fmt.format(util.elev2airmass(np.deg2rad(90.-ele), meteo.elev)), xy=(np.deg2rad(23), ele), fontsize=8, color="grey", ha='center', va='bottom', rotation=25)
+        
+    ax.annotate("Airmass", xy=(np.deg2rad(23), 88), fontsize=8, color="grey", ha='center', va='bottom', rotation=25)
+    ax.annotate('0' + degree_sign + ' Alt', xy=(np.deg2rad(-23), 89), fontsize=8, color="grey", ha='center', va='bottom', rotation=-23)
+    
+    #for tick in ax.get_yticklabels():
+    #    tick.set_rotation(70)#print(tick)
+    # TODO: Find the right keyword
+    #for tick in ax.get_rgridsticks():
+    #    tick.set_rotation(70)
 
     # Redraw the figure for interactive sessions.
     ax.figure.canvas.draw()
@@ -108,9 +115,12 @@ if __name__ == "__main__":
     import obs
     
     currentmeteo = meteomodule.Meteo(name="LaSilla", cloudscheck=False, debugmode=True)
+    currentmeteo.time = Time("2018-02-15 07:00:00.0")
     target = obs.Observable(name="2M1134-2103", obsprogram="lens",alpha="11:34:40.5", delta="-21:03:23")
     
     plot_airmass_on_sky(target=target, meteo=currentmeteo)
     
     plt.show()
+    
+    
     

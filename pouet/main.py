@@ -1181,6 +1181,170 @@ class VisibilityView(FigureCanvas):
         self.axis.invert_xaxis()
 
         self.draw()
+        
+class VisibilityView(FigureCanvas):
+
+    def __init__(self, parent=None, width=4.5, height=4):
+
+        self.figure = Figure(figsize=(width, height))
+        self.figure.patch.set_facecolor("None")
+
+        self.figure.subplots_adjust(wspace=0.)
+        self.figure.subplots_adjust(bottom=0.23)
+        self.figure.subplots_adjust(top=0.95)
+        self.figure.subplots_adjust(right=0.9)
+        self.figure.subplots_adjust(left=0.13)
+
+        gs = gridspec.GridSpec(1, 2, width_ratios=[20, 1])
+        self.axis = self.figure.add_subplot(gs[0])
+        self.cax = self.figure.add_subplot(gs[1])
+
+        FigureCanvas.__init__(self, self.figure)
+        self.parent = parent
+
+        self.setParent(parent)
+        
+        self.axis.patch.set_facecolor("None")
+        
+        FigureCanvas.setStyleSheet(self, "background-color:transparent;")
+
+        FigureCanvas.setSizePolicy(self,
+                                   QtWidgets.QSizePolicy.Expanding,
+                                   QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        
+        
+    def show_targets(self, xs, ys, names, meteo):
+        
+        self.axis.scatter(xs, ys, color='k', s=2)
+        for x, y, name in zip(xs, ys, names):
+            self.axis.annotate('{}'.format(name), xy=(x-0.2, y), color='k',
+                               horizontalalignment='left', verticalalignment='center', size=7)
+            
+            
+        tel_lat, _, _ = meteo.get_telescope_params()
+        
+        #self.finish_plot(tel_lat)
+        self.draw()
+        
+    def visbility_draw(self, obs_time, meteo, airmass, anglemoon, check_wind=True):
+
+        self.axis.clear()
+        self.cax.clear()
+
+        ras, decs = util.grid_points()
+        ra_g, dec_g = np.meshgrid(ras, decs)
+        sep = np.zeros_like(ra_g)
+        vis = np.zeros_like(ra_g)
+        wind = np.zeros_like(ra_g) * np.nan
+
+        tel_lat, tel_lon, tel_elev = meteo.get_telescope_params()
+
+        observer = ephem.Observer()
+        observer.date = obs_time.iso
+        observer.lat = tel_lat.to_string(unit=u.degree, decimal=True)
+        observer.lon = tel_lon.to_string(unit=u.degree, decimal=True)
+
+        observer.elevation = tel_elev
+
+        moon = ephem.Moon()
+        moon.compute(observer)
+
+        wpl = float(meteo.location.get("weather", "windWarnLevel"))
+        wsl = float(meteo.location.get("weather", "windLimitLevel"))
+        WD = meteo.winddirection
+        WS = meteo.windspeed
+
+        do_plot_contour = False
+        for i, ra in enumerate(ras):
+            for j, dec in enumerate(decs):
+                star = ephem.FixedBody()
+                star._ra = ra
+                star._dec = dec
+                star.compute(observer)
+
+                if util.elev2airmass(el=star.alt + 0, alt=observer.elevation) < airmass:
+                    vis[j, i] = 1
+                    s = ephem.separation((moon.ra, moon.dec), (ra, dec)) + 0.
+
+                    if np.rad2deg(s) - 0.5 > anglemoon:  # Don't forget that the angular diam of the Moon is ~0.5 deg
+                        sep[j, i] = np.rad2deg(s)
+                        do_plot_contour = True
+
+                    else:
+                        sep[j, i] = np.nan
+
+                    if check_wind and WS >= wsl:
+                        wind[j, i] = 1.
+                        cw = COLORLIMIT
+                        #ct = 'WIND LIMIT REACHED'
+                        #cts = 35
+                    elif check_wind and WS >= wpl:
+                        cw = COLORWARN
+                        #ct = 'Pointing limit!'
+                        #cts = 20
+                        ws = ephem.separation((star.alt, np.deg2rad(WD)), (star.alt, star.az))
+                        if ws < np.pi / 2.:
+                            wind[j, i] = 1.
+                else:
+                    sep[j, i] = np.nan
+                    vis[j, i] = np.nan
+
+            del star
+
+        #########################################################
+
+        ra_g = ra_g / 2 / np.pi * 24
+        dec_g = dec_g / np.pi * 180
+        v = np.linspace(anglemoon, 180, 100, endpoint=True)
+        self.axis.contourf(ra_g, dec_g, vis, cmap=plt.get_cmap("Greys"))
+
+        if do_plot_contour:
+            CS = self.axis.contour(ra_g, dec_g, sep, levels=[50, 70, 90], colors=['yellow', 'red', 'k'], inline=1)
+            self.axis.clabel(CS, fontsize=9, fmt='%d°')
+            CS = self.axis.contourf(ra_g, dec_g, sep, v, )
+
+            t = np.arange(anglemoon, 190, 10)
+            tl = ["{:d}°".format(int(tt)) for tt in t]
+            cbar = self.figure.colorbar(CS, ax=self.axis, cax=self.cax, ticks=t)
+            cbar.ax.set_yticklabels(tl, fontsize=9)
+
+        if check_wind and WS > wpl:
+            cmap = LinearSegmentedColormap.from_list('mycmap', [(0., 'red'),
+                                                                (1, cw)]
+                                                     )
+
+            cs = self.axis.contourf(ra_g, dec_g, wind, hatches=['//'],
+                                    cmap=cmap, alpha=0.5)
+            #self.axis.annotate(ct, xy=(12, 75), rotation=0,
+            #                   horizontalalignment='center', verticalalignment='center', color=cw, fontsize=cts)
+
+        for tick in self.axis.get_xticklabels():
+            tick.set_rotation(70)
+        self.axis.set_xlabel('Right ascension', fontsize=9, )
+        self.axis.set_ylabel('Declination', fontsize=9, )
+        
+        
+        self.axis.set_title("%s - Moon sep %d deg - max airmass %1.1f" % (str(obs_time).split('.')[0], \
+                                                                          anglemoon, airmass), fontsize=9)
+        
+        self.axis.set_xticks(np.linspace(0, 24, 25))
+        self.axis.set_yticks(np.linspace(-90, 90, 19))
+        
+
+        
+        self.finish_plot(tel_lat)
+        
+    def finish_plot(self, tel_lat):
+
+        self.axis.set_xlim([0, 24])
+        lat = float(tel_lat.to_string(unit=u.degree, decimal=True))
+        self.axis.set_ylim([np.max([lat - 90, -90]), np.min([lat + 90, 90])])
+
+        self.axis.grid()
+        self.axis.invert_xaxis()
+
+        self.draw()
 
 class ObsModel(QtCore.QAbstractTableModel):
     
