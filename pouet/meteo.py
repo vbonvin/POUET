@@ -247,6 +247,8 @@ class Meteo:
     def get_twilights(self, obs_night, twilight="nautical"):
         """
         return a list of astropy Time objects: twilight in, twilight out
+        
+        .. warning:: The twilight times in PyEphem don't take into account the altitude ! See `https://github.com/brandon-rhodes/pyephem/issues/102`
         """
     
         lat, lon, elev = self.lat, self.lon, self.elev
@@ -258,7 +260,11 @@ class Meteo:
         observer = ephem.Observer()
         observer.pressure = 0
         observer.date = obs_time.iso
-        observer.lat, observer.lon, observer.elevation = str(lat.degree), str(lon.degree), elev
+        observer.lat = str(lat.degree)
+        observer.lon = str(lon.degree)
+        observer.elevation = elev
+        
+        print (observer)
     
         if twilight == "civil":
             observer.horizon = '-6.'
