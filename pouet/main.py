@@ -91,6 +91,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.updateSelectall.clicked.connect(self.listObs_selectall)
         self.visibilitytool.figure.canvas.mpl_connect('motion_notify_event', self.on_visibilitytoolmotion)
         self.listObs.doubleClicked.connect(self.show_airmass)
+        self.listObs.verticalHeader().sectionDoubleClicked.connect(self.show_airmass)
 
         # Stating timer
         self.timer = QtCore.QTimer()
@@ -151,8 +152,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def show_airmass(self, mi):
         
         obs_model = self.listObs.model()
-
-        targetname = obs_model.item(mi.row(), 0).data(0)
+        
+        try:
+            row_id = mi.row()
+        except AttributeError:
+            row_id = mi
+        
+        targetname = obs_model.item(row_id, 0).data(0)
         
         # Do we have something better than this search?
         for target in self.observables:
