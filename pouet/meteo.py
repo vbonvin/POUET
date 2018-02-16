@@ -264,8 +264,7 @@ class Meteo:
         observer.lon = str(lon.degree)
         observer.elevation = elev
         
-        print (observer)
-    
+        # TODO: could compensate the altitude by changing the horzion altitude, but seems hard from my current pt of view
         if twilight == "civil":
             observer.horizon = '-6.'
         elif twilight == "nautical":

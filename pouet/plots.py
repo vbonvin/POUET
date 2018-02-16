@@ -7,6 +7,13 @@ import numpy as np
 import util
 
 def plot_airmass_on_sky(target, meteo, ax=None):
+    """
+    Plots the airmass evolution on the sky of a given target at a given time.
+    
+    :param target: a `pouet.obs.Observable` class instance
+    :param meteo: a `pouet.meteo.Meteo` class instance
+    :param ax: the matplotlib axis to plot on. If None, then plot on a new figure
+    """
     
     delta_ts = np.linspace(-5, 5, 101)
     assert 0 in delta_ts
@@ -21,10 +28,6 @@ def plot_airmass_on_sky(target, meteo, ax=None):
     
     plt.subplots_adjust(right=0.98)
     plt.subplots_adjust(left=0.02)
-    #plt.subplots_adjust(bottom=0.02)
-    
-    #altitude = (91 * u.deg - observer.altaz(obs_times, target).alt) * (1/u.deg)
-    #azimuth = meteo.get_AzAlt(self, alpha, delta
     
     airmasses = []
     azimuths = []
@@ -59,31 +62,17 @@ def plot_airmass_on_sky(target, meteo, ax=None):
     sp = ax.scatter(azimuths, altitudes, c=airmasses, s=10, vmin=1, vmax=4, cmap=plt.get_cmap("YlGn_r"))#, alpha=0.7)
     
     # Airmass colobar
-    cbar = plt.colorbar(sp, pad=.1, ax=ax, shrink=0.9)#, norm=mpl.colors.Normalize(vmin=-0.1, vmax=0.75))
+    cbar = plt.colorbar(sp, pad=.1, ax=ax, shrink=0.9)
     cbar.set_label("Airmass")
     
     ax.set_title("Airmass between {} and {} for {}".format(util.time2hhmm(obs_times[0]), util.time2hhmm(obs_times[-1]), target.name), \
                fontsize=10, y=1.08)
     
     # Now plot for obs_time, and add some time ticks
+    degree_sign = u'\N{DEGREE SIGN}'
     ax.scatter(azimuths[index_zero], altitudes[index_zero], marker="+", c='r')
     str_time = util.time2hhmm(obs_times[index_zero])
     ax.annotate(str_time, xy=(azimuths[index_zero], altitudes[index_zero]), fontsize=8, ha="left", va="baseline", color="r")
-    
-    for ii in range(np.size(airmasses)):
-        
-        if not ii % 20 == 0:
-            continue
-        
-        str_time = util.time2hhmm(obs_times[ii])
-        ax.annotate(str_time, xy=(azimuths[ii], altitudes[ii]), fontsize=8, ha="left", va="baseline", color="k")
-        ax.scatter(azimuths[ii], altitudes[ii], marker=".", c='white', s=2)
-    
-    
-    degree_sign = u'\N{DEGREE SIGN}'
-
-    r_labels = [ '', '', '', '', '', '', '',]
-    ax.set_rgrids(range(1, 106, 15), r_labels)
     
     for ele in [15, 30, 45, 60, 75]:
         if ele < 40:
@@ -97,12 +86,22 @@ def plot_airmass_on_sky(target, meteo, ax=None):
     ax.annotate("Airmass", xy=(np.deg2rad(23), 88), fontsize=8, color="grey", ha='center', va='bottom', rotation=25)
     ax.annotate('0' + degree_sign + ' Alt', xy=(np.deg2rad(-23), 89), fontsize=8, color="grey", ha='center', va='bottom', rotation=-23)
     
-    #for tick in ax.get_yticklabels():
-    #    tick.set_rotation(70)#print(tick)
-    # TODO: Find the right keyword
-    #for tick in ax.get_rgridsticks():
-    #    tick.set_rotation(70)
+    for ii in range(np.size(airmasses)):
+        
+        if not ii % 20 == 0:
+            continue
+        
+        str_time = util.time2hhmm(obs_times[ii])
+        ax.annotate(str_time, xy=(azimuths[ii], altitudes[ii]), fontsize=8, ha="left", va="baseline", color="k")
+        ax.scatter(azimuths[ii], altitudes[ii], marker=".", c='white', s=2)
+    ax.set_rlim(1, 90)
+    
+    
 
+    r_labels = [ '', '', '', '', '', '', '',]
+    ax.set_rgrids(range(0, 105, 15), r_labels)
+    
+    
     # Redraw the figure for interactive sessions.
     ax.figure.canvas.draw()
     

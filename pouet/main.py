@@ -15,14 +15,11 @@ import copy
 import ephem
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import pylab as plt
 from matplotlib.patches import Wedge
 from matplotlib import gridspec
 from matplotlib.colors import LinearSegmentedColormap
-
-import threading
 
 import numpy as np
 
