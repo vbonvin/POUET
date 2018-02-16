@@ -59,7 +59,7 @@ def plot_airmass_on_sky(target, meteo, ax=None):
         ax.set_theta_direction(-1)
     
     # Plot target coordinates.
-    sp = ax.scatter(azimuths, altitudes, c=airmasses, s=10, vmin=1, vmax=4, cmap=plt.get_cmap("YlGn_r"))#, alpha=0.7)
+    sp = ax.scatter(azimuths, altitudes, c=airmasses, s=50, vmin=1, vmax=2.0, cmap=plt.get_cmap("coolwarm"))#, alpha=0.7) # previous cmap: YlGn_r
     
     # Airmass colobar
     cbar = plt.colorbar(sp, pad=.1, ax=ax, shrink=0.9)
@@ -92,7 +92,7 @@ def plot_airmass_on_sky(target, meteo, ax=None):
             continue
         
         str_time = util.time2hhmm(obs_times[ii])
-        ax.annotate(str_time, xy=(azimuths[ii], altitudes[ii]), fontsize=8, ha="left", va="baseline", color="k")
+        ax.annotate(str_time, xy=(azimuths[ii], altitudes[ii]), fontsize=12, ha="left", va="baseline", color="k")
         ax.scatter(azimuths[ii], altitudes[ii], marker=".", c='white', s=2)
     ax.set_rlim(1, 90)
     
