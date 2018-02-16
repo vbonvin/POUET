@@ -63,4 +63,12 @@ pouet\.util module
     :undoc-members:
     :show-inheritance:
 
+pouet\.plots module
+------------------
+
+.. automodule:: plots
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 

@@ -637,8 +637,17 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         sunAlt = sunAlt.to(u.degree).value
         sunAz = sunAz.to(u.degree).value
         
+        _, sunAltp1 = self.currentmeteo.get_sun(obs_time + TimeDelta(10.0*60., format='sec'))
+        sunAltp1 = sunAltp1.to(u.degree).value
+        sundAlt = sunAltp1 - sunAlt
+        
+        if sundAlt > 0:
+            sunState = "rising"
+        else:
+            sunState = "declining"
+        
         self.sunCoordinatesValues.setText(str('RA={:s}  DEC={:s}'.format(self.currentmeteo.sun.ra.__str__(), self.currentmeteo.sun.dec.__str__())))
-        self.sunAltazValue.setText(str('{:2.1f}°\t{:2.1f}°'.format(sunAlt, sunAz)))
+        self.sunAltazValue.setText(str('{:2.1f}° ({:s})\t{:2.1f}°'.format(sunAlt, sunState, sunAz)))
         
         self.station_reached_limit = False
         self.station_reached_warn = False
@@ -656,8 +665,17 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         moonAlt = moonAlt.to(u.degree).value
         moonAz = moonAz.to(u.degree).value
         
+        _, moonAltp1 = self.currentmeteo.get_moon(obs_time + TimeDelta(10.0*60., format='sec'))
+        moonAltp1 = moonAltp1.to(u.degree).value
+        moondAlt = moonAltp1 - moonAlt
+        
+        if moondAlt > 0:
+            moonState = "rising"
+        else:
+            moonState = "declining"
+        
         self.moonCoordinatesValues.setText(str('RA={:s}  DEC={:s}'.format(self.currentmeteo.moon.ra.__str__(), self.currentmeteo.moon.dec.__str__())))
-        self.moonAltazValue.setText(str('{:2.1f}°\t{:2.1f}°'.format(moonAlt, moonAz)))
+        self.moonAltazValue.setText(str('{:2.1f}° ({:s})\t{:2.1f}°'.format(moonAlt, moonState, moonAz)))
         
         self.brightLastUpdateValue.setText(str(obs_time).split('.')[0])
         
