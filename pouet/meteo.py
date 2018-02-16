@@ -232,7 +232,6 @@ class Meteo:
     
         sunrise, sunset = self.get_twilights(obs_night, twilight)
         
-        # these fuckers are in YYYY/M(M)/D(D) HH:MM:SS format... 'murica !
         sunrise = sunrise.tuple()
         sunset = sunset.tuple()
     
@@ -255,7 +254,7 @@ class Meteo:
     
         obs_time = Time('%s 05:00:00' % obs_night, format='iso', scale='utc') #5h UT is approx. the middle of the night
     
-        obs_time = Time(obs_time.mjd + 1, format='mjd', scale='utc') # That corresponds to the next middle of the observing night
+        obs_time = Time(obs_time.mjd + 1, format='mjd', scale='utc') # That corresponds to the next middle of the observing night.
     
         observer = ephem.Observer()
         observer.pressure = 0
@@ -275,8 +274,7 @@ class Meteo:
             raise RuntimeError("Unknown twilight definition")
     
         sun = ephem.Sun()
-    
-        # these fuckers are in YYYY/M(M)/D(D) HH:MM:SS format... 'murica !
+
         sunset = observer.previous_setting(sun)
         sunrise = observer.next_rising(sun)
     
