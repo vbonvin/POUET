@@ -27,12 +27,6 @@ import logging
 #logging.basicConfig(format='%(asctime)s | %(name)s(%(funcName)s): %(message)s', level=logging.DEBUG)
 #logger = logging.getLogger(__name__)
 
-COLORWARN = "orange"
-COLORLIMIT = "red"
-COLORNOMINAL = 'black'
-COLORSUCCESS = "green"
-
-
 
 class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def __init__(self, parent=None):
@@ -116,13 +110,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         if self.station_reached_limit or self.weather_reached_limit:
             self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station (!)"))
-            self.changeTabColor(color=COLORLIMIT)
+            self.changeTabColor(color=SETTINGS['color']['limit'])
         elif self.station_reached_warn or self.weather_reached_warn:
             self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station (!)"))
-            self.changeTabColor(color=COLORWARN)
+            self.changeTabColor(color=SETTINGS['color']['warn'])
         else:
             self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station"))
-            self.changeTabColor(color=COLORNOMINAL)
+            self.changeTabColor(color=SETTINGS['color']['nominal'])
 
         
     def changeTabColor(self, color, tab=None):
@@ -136,7 +130,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         if event.inaxes != self.visibilitytool.axis: return
         
-        if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.currentmeteo.time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
+        if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.currentmeteo.time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > float(SETTINGS['validity']['showallskycoordinates'])):
             #logging.debug("Not showing coordinates on All Sky, delta time too large")
             return
         
@@ -175,9 +169,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             
             self.plot_show.open()
 
-    def print_status(self, msg, colour=COLORNOMINAL):
+    def print_status(self, msg, color=None):
+        
+        if color is None:
+            color = SETTINGS['color']['nominal']
+            
         self.statusLabel.setText(msg)
-        self.statusLabel.setStyleSheet('color: {}'.format(colour))
+        self.statusLabel.setStyleSheet('color: {}'.format(color))
         QtWidgets.QApplication.processEvents()
         
     def set_timer_interval(self):
@@ -213,7 +211,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             else:
                 mode="production"
             
-            self.print_status("Changing to {} mode...".format(mode), colour=COLORWARN)
+            self.print_status("Changing to {} mode...".format(mode), color=SETTINGS['color']['warn'])
             
             self.allsky_debugmode = goto_mode  
             self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
@@ -249,9 +247,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         moondist = QtGui.QStandardItem()
         moondist.setData(str(int(o.angletomoon.degree)), role=QtCore.Qt.DisplayRole)
         if o.obs_moondist:
-            moondist.setData(QtGui.QBrush(QtGui.QColor(COLORSUCCESS)), role=QtCore.Qt.BackgroundRole)
+            moondist.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['success'])), role=QtCore.Qt.BackgroundRole)
         else:
-            moondist.setData(QtGui.QBrush(QtGui.QColor(COLORLIMIT)), role=QtCore.Qt.BackgroundRole)
+            moondist.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['limit'])), role=QtCore.Qt.BackgroundRole)
         
         # Angle to the Sun, TODO: What default requirements?   
         sundist = QtGui.QStandardItem()
@@ -260,36 +258,36 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         airmass = QtGui.QStandardItem()
         airmass.setData(str("%.2f" % o.airmass), role=QtCore.Qt.DisplayRole)
         if o.obs_airmass:
-            airmass.setData(QtGui.QBrush(QtGui.QColor(COLORSUCCESS)), role=QtCore.Qt.BackgroundRole)
+            airmass.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['success'])), role=QtCore.Qt.BackgroundRole)
         else:
             if o.obs_highairmass:
-                airmass.setData(QtGui.QBrush(QtGui.QColor(COLORWARN)), role=QtCore.Qt.BackgroundRole)
+                airmass.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['warn'])), role=QtCore.Qt.BackgroundRole)
             else:
-                airmass.setData(QtGui.QBrush(QtGui.QColor(COLORLIMIT)), role=QtCore.Qt.BackgroundRole)
+                airmass.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['limit'])), role=QtCore.Qt.BackgroundRole)
 
         wind = QtGui.QStandardItem()
 
         if o.obs_wind_info:
             wind.setData(str("%.2f" % o.angletowind.degree), role=QtCore.Qt.DisplayRole)
             if o.obs_wind:
-                wind.setData(QtGui.QBrush(QtGui.QColor(COLORSUCCESS)), role=QtCore.Qt.BackgroundRole)
+                wind.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['success'])), role=QtCore.Qt.BackgroundRole)
             else:
-                wind.setData(QtGui.QBrush(QtGui.QColor(COLORLIMIT)), role=QtCore.Qt.BackgroundRole)
+                wind.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['limit'])), role=QtCore.Qt.BackgroundRole)
         else:
             wind.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
-            wind.setData(QtGui.QBrush(QtGui.QColor(COLORWARN)), role=QtCore.Qt.BackgroundRole)
+            wind.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['warn'])), role=QtCore.Qt.BackgroundRole)
 
         clouds = QtGui.QStandardItem()
 
         if o.obs_clouds_info:
             clouds.setData(str(o.cloudfree), role=QtCore.Qt.DisplayRole)
             if o.obs_clouds:
-                clouds.setData(QtGui.QBrush(QtGui.QColor(COLORSUCCESS)), role=QtCore.Qt.BackgroundRole)
+                clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['success'])), role=QtCore.Qt.BackgroundRole)
             else:
-                clouds.setData(QtGui.QBrush(QtGui.QColor(COLORLIMIT)), role=QtCore.Qt.BackgroundRole)
+                clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['limit'])), role=QtCore.Qt.BackgroundRole)
         else:
             clouds.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
-            clouds.setData(QtGui.QBrush(QtGui.QColor(COLORWARN)), role=QtCore.Qt.BackgroundRole)
+            clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['warn'])), role=QtCore.Qt.BackgroundRole)
 
         return moondist, sundist, airmass, wind, clouds
 
@@ -393,7 +391,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
                 delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
                 
-                o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False)
+                o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
                 observability = QtGui.QStandardItem(str(o.observability))
                 
                 moondist, sundist, airmass, wind, clouds = self.get_weather_items(o)
@@ -411,13 +409,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
             logmsg += 'successfully loaded'
             logging.info(logmsg)
-            self.print_status("%s \n Sucessfully loaded" % filepath, COLORSUCCESS)
+            self.print_status("%s \n Sucessfully loaded" % filepath, SETTINGS['color']['success'])
 
         if False:
             logmsg += ' not loaded - format unknown'
             logging.error(logmsg)
 
-            self.print_status("%s \n Format unknown" % filepath, COLORWARN)
+            self.print_status("%s \n Format unknown" % filepath, SETTINGS['color']['warn'])
 
 
     def update_obs(self):
@@ -473,7 +471,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         msg = "Observability refreshed"
         logging.info(msg)
-        self.print_status(msg, colour=COLORSUCCESS)
+        self.print_status(msg, color=SETTINGS['color']['success'])
 
 
     def check_obs_status(self):
@@ -573,7 +571,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.allskylayerTargets.erase()
         if self.configShowTargetsAllSkyValue.checkState() == 2:
             
-            if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.currentmeteo.time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 60):
+            if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.currentmeteo.time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > float(SETTINGS['validity']['showallskytargets'])):
                 logging.debug("Not showing targets on All Sky, delta time too large")
                 return
             
@@ -584,8 +582,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
     def weather_display(self):
         
-        if not self.currentmeteo.lastest_weatherupdate_time is None and (Time.now() - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value < 30:
-            logging.info("Last weather report was downloaded more recently than 30 seconds ago, I don't download it again")
+        if not self.currentmeteo.lastest_weatherupdate_time is None and (Time.now() - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value < float(SETTINGS['validity']['weatherreportfrequency']):
+            logging.info("Last weather report was downloaded more recently than {} seconds ago, I don't download it again".format(SETTINGS['validity']['weatherreportfrequency']))
             draw_wind = False
         else:
             self.currentmeteo.updateweather()
@@ -596,13 +594,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         self.weatherWindSpeedValue.setText(str('{:2.1f}'.format(self.currentmeteo.windspeed)))
         if float(self.currentmeteo.location.get("weather", "windLimitLevel")) <= self.currentmeteo.windspeed:
-            self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
+            self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['limit']))
             self.weather_reached_limit = True
         elif float(self.currentmeteo.location.get("weather", "windWarnLevel")) <= self.currentmeteo.windspeed:
-            self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+            self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['warn']))
             self.weather_reached_warn = True
         else:
-            self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
+            self.weatherWindSpeedValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
         
         self.weatherWindDirectionValue.setText(str('{:3d}'.format(int(self.currentmeteo.winddirection))))
         
@@ -610,13 +608,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         self.weatherHumidityValue.setText(str('{:3d}'.format(int(self.currentmeteo.humidity))))
         if float(self.currentmeteo.location.get("weather", "humidityLimitLevel")) <= self.currentmeteo.humidity:
-            self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
+            self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['limit']))
             self.weather_reached_limit = True
         elif float(self.currentmeteo.location.get("weather", "humidityWarnLevel")) <= self.currentmeteo.humidity:
-            self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+            self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['warn']))
             self.weather_reached_warn = True
         else:
-            self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
+            self.weatherHumidityValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
         
         if draw_wind:
             self.allsky_redisplay()
@@ -653,13 +651,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.station_reached_warn = False
         
         if sunAlt > -6:
-            self.sunAltazValue.setStyleSheet("QLabel { color : %s; }" % format(COLORLIMIT))
+            self.sunAltazValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['limit']))
             self.station_reached_limit = True
         elif sunAlt > -12:
-            self.sunAltazValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+            self.sunAltazValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['warn']))
             self.station_reached_warn = True
         else:
-            self.sunAltazValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
+            self.sunAltazValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
         
         moonAz, moonAlt = self.currentmeteo.get_moon(obs_time)
         moonAlt = moonAlt.to(u.degree).value
@@ -719,11 +717,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
     def allsky_refresh(self):
         
-        self.print_status("Refreshing All Sky...", COLORWARN)
+        self.print_status("Refreshing All Sky...", SETTINGS['color']['warn'])
         
         self.allskylayer.erase()
 
-        self.currentmeteo.allsky.update()
+        self.currentmeteo.allsky.update(float(SETTINGS['validity']['allskyfrequency']))
         
         logging.info("Updated All Sky")
         
@@ -731,7 +729,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         
         
-        self.print_status("All Sky refresh done.", COLORNOMINAL)
+        self.print_status("All Sky refresh done.", SETTINGS['color']['nominal'])
         
     def allsky_redisplay(self):
         
@@ -754,7 +752,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         airmass = self.visibilityAirmassValue.value()
         anglemoon = self.visibilityMoonAngleValue.value()
         
-        if self.currentmeteo.lastest_weatherupdate_time is None or np.abs((self.currentmeteo.time - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value / 60.) > 10:
+        if self.currentmeteo.lastest_weatherupdate_time is None or np.abs((self.currentmeteo.time - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value / 60.) > float(SETTINGS['validity']['weatherreport']):
             check_wind = False
             logging.info("Visibility is not considering the wind, too much difference between date weather report and obs time")
         else:
@@ -772,7 +770,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def auto_refresh(self):
         
         logging.info("Auto-refresh")
-        self.print_status("Auto-refresh started...", COLORWARN)
+        self.print_status("Auto-refresh started...", SETTINGS['color']['warn'])
         
         if self.configCloudsAutoRefreshValue.checkState() == 2:
             self.allsky_refresh()
@@ -781,20 +779,20 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         if self.configWindAutoRefreshValue.checkState() == 2 and self.configCloudsAutoRefreshValue.checkState() == 0:
             self.allsky_redisplay()
         
-        if self.currentmeteo.lastest_weatherupdate_time is None or (Time.now() - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value / 60. > 10:
-            self.allSkyUpdateWindValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
-            self.weatherLastUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+        if self.currentmeteo.lastest_weatherupdate_time is None or (Time.now() - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value / 60. > float(SETTINGS['validity']['weatherreport']):
+            self.allSkyUpdateWindValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['warn']))
+            self.weatherLastUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['warn']))
         else:
-            self.allSkyUpdateWindValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
-            self.weatherLastUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
+            self.allSkyUpdateWindValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
+            self.weatherLastUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
             
         
-        if self.currentmeteo.allsky.last_im_refresh is None or (Time.now() - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > 10:
-            self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORWARN))
+        if self.currentmeteo.allsky.last_im_refresh is None or (Time.now() - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > float(SETTINGS['validity']['allsky']):
+            self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['warn']))
         else:
-            self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(COLORNOMINAL))
+            self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
 
-        self.print_status("Auto-refresh done.", COLORNOMINAL)
+        self.print_status("Auto-refresh done.", SETTINGS['color']['nominal'])
 
 
 class MyLogger(logging.Handler):
@@ -876,24 +874,25 @@ class AllSkyView(FigureCanvas):
         
         self.draw()
             
-            
+    def error_image(self):
+        self.axis.clear()
+        self.axis.plot([-1,1],[-1,1], lw=4, c=SETTINGS['color']['nominal'])
+        self.axis.plot([-1,1],[1,-1], lw=4, c=SETTINGS['color']['nominal'])
+        
+        self.axis.annotate('No connection to All Sky Server', xy=(0, -0.8), rotation=0,
+                               horizontalalignment='center', verticalalignment='center', color=SETTINGS['color']['nominal'], fontsize=10)
+        
+        self.axis.set_axis_off()
+        self.draw()
 
     def display(self, meteo, plot_analysis=True):
 
         self.axis.clear()
 
-        location = meteo.name
         allsky = meteo.allsky
 
-        if meteo.allsky.last_im_refresh is None or (Time.now() - meteo.allsky.last_im_refresh).to(u.s).value / 60. > 10:
-            self.axis.plot([-1,1],[-1,1], lw=4, c=COLORNOMINAL)
-            self.axis.plot([-1,1],[1,-1], lw=4, c=COLORNOMINAL)
-            
-            self.axis.annotate('No connection to All Sky Server', xy=(0, -0.8), rotation=0,
-                                   horizontalalignment='center', verticalalignment='center', color=COLORNOMINAL, fontsize=10)
-            
-            self.axis.set_axis_off()
-            self.draw()
+        if meteo.allsky.last_im_refresh is None or (Time.now() - meteo.allsky.last_im_refresh).to(u.s).value / 60. > float(SETTINGS['validity']['allsky']):
+            self.error_image()
             logging.warning("No All Sky image, by-passing")
             return
 
@@ -907,8 +906,13 @@ class AllSkyView(FigureCanvas):
             self.draw()
             return
 
-        self.axis.imshow(rest, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
-        self.axis.imshow(allsky.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
+        try:
+            self.axis.imshow(rest, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
+            self.axis.imshow(allsky.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
+        except:
+            self.error_image()
+            logging.error("Something went wrong with the All Sky image, try again...")
+            return
         # self.draw()
 
         theta_coordinates = np.deg2rad(np.arange(0, 360, 15))
@@ -978,12 +982,12 @@ class AllSkyView(FigureCanvas):
             Nd = np.rad2deg(north)  # + 90.
 
             if WS > wsl:
-                cw = COLORLIMIT
+                cw = SETTINGS['color']['limit']
                 self.axis.add_patch(Wedge([cx, cy], r0, Nd - WDd, Nd - WDd + 360, fill=False, hatch='//', edgecolor=cw))
                 self.axis.annotate('WIND LIMIT\nREACHED', xy=(cx, cy), rotation=0,
                                    horizontalalignment='center', verticalalignment='center', color=cw, fontsize=35)
             elif WS > wpl:
-                cw = COLORWARN
+                cw = SETTINGS['color']['warn']
                 wtcoordinatesx = np.cos(north - WD) * r0 / 2. + cx
                 wtcoordinatesy = np.sin(north - WD) * r0 / 2. + cy
 
@@ -1127,11 +1131,11 @@ class VisibilityView(FigureCanvas):
 
                     if check_wind and WS >= wsl:
                         wind[j, i] = 1.
-                        cw = COLORLIMIT
+                        cw = SETTINGS['color']['limit']
                         #ct = 'WIND LIMIT REACHED'
                         #cts = 35
                     elif check_wind and WS >= wpl:
-                        cw = COLORWARN
+                        cw = SETTINGS['color']['warn']
                         #ct = 'Pointing limit!'
                         #cts = 20
                         ws = ephem.separation((star.alt, np.deg2rad(WD)), (star.alt, star.az))
@@ -1197,170 +1201,6 @@ class VisibilityView(FigureCanvas):
 
         self.draw()
         
-class VisibilityView(FigureCanvas):
-
-    def __init__(self, parent=None, width=4.5, height=4):
-
-        self.figure = Figure(figsize=(width, height))
-        self.figure.patch.set_facecolor("None")
-
-        self.figure.subplots_adjust(wspace=0.)
-        self.figure.subplots_adjust(bottom=0.23)
-        self.figure.subplots_adjust(top=0.95)
-        self.figure.subplots_adjust(right=0.9)
-        self.figure.subplots_adjust(left=0.13)
-
-        gs = gridspec.GridSpec(1, 2, width_ratios=[20, 1])
-        self.axis = self.figure.add_subplot(gs[0])
-        self.cax = self.figure.add_subplot(gs[1])
-
-        FigureCanvas.__init__(self, self.figure)
-        self.parent = parent
-
-        self.setParent(parent)
-        
-        self.axis.patch.set_facecolor("None")
-        
-        FigureCanvas.setStyleSheet(self, "background-color:transparent;")
-
-        FigureCanvas.setSizePolicy(self,
-                                   QtWidgets.QSizePolicy.Expanding,
-                                   QtWidgets.QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
-        
-        
-    def show_targets(self, xs, ys, names, meteo):
-        
-        self.axis.scatter(xs, ys, color='k', s=2)
-        for x, y, name in zip(xs, ys, names):
-            self.axis.annotate('{}'.format(name), xy=(x-0.2, y), color='k',
-                               horizontalalignment='left', verticalalignment='center', size=7)
-            
-            
-        tel_lat, _, _ = meteo.get_telescope_params()
-        
-        #self.finish_plot(tel_lat)
-        self.draw()
-        
-    def visbility_draw(self, obs_time, meteo, airmass, anglemoon, check_wind=True):
-
-        self.axis.clear()
-        self.cax.clear()
-
-        ras, decs = util.grid_points()
-        ra_g, dec_g = np.meshgrid(ras, decs)
-        sep = np.zeros_like(ra_g)
-        vis = np.zeros_like(ra_g)
-        wind = np.zeros_like(ra_g) * np.nan
-
-        tel_lat, tel_lon, tel_elev = meteo.get_telescope_params()
-
-        observer = ephem.Observer()
-        observer.date = obs_time.iso
-        observer.lat = tel_lat.to_string(unit=u.degree, decimal=True)
-        observer.lon = tel_lon.to_string(unit=u.degree, decimal=True)
-
-        observer.elevation = tel_elev
-
-        moon = ephem.Moon()
-        moon.compute(observer)
-
-        wpl = float(meteo.location.get("weather", "windWarnLevel"))
-        wsl = float(meteo.location.get("weather", "windLimitLevel"))
-        WD = meteo.winddirection
-        WS = meteo.windspeed
-
-        do_plot_contour = False
-        for i, ra in enumerate(ras):
-            for j, dec in enumerate(decs):
-                star = ephem.FixedBody()
-                star._ra = ra
-                star._dec = dec
-                star.compute(observer)
-
-                if util.elev2airmass(el=star.alt + 0, alt=observer.elevation) < airmass:
-                    vis[j, i] = 1
-                    s = ephem.separation((moon.ra, moon.dec), (ra, dec)) + 0.
-
-                    if np.rad2deg(s) - 0.5 > anglemoon:  # Don't forget that the angular diam of the Moon is ~0.5 deg
-                        sep[j, i] = np.rad2deg(s)
-                        do_plot_contour = True
-
-                    else:
-                        sep[j, i] = np.nan
-
-                    if check_wind and WS >= wsl:
-                        wind[j, i] = 1.
-                        cw = COLORLIMIT
-                        #ct = 'WIND LIMIT REACHED'
-                        #cts = 35
-                    elif check_wind and WS >= wpl:
-                        cw = COLORWARN
-                        #ct = 'Pointing limit!'
-                        #cts = 20
-                        ws = ephem.separation((star.alt, np.deg2rad(WD)), (star.alt, star.az))
-                        if ws < np.pi / 2.:
-                            wind[j, i] = 1.
-                else:
-                    sep[j, i] = np.nan
-                    vis[j, i] = np.nan
-
-            del star
-
-        #########################################################
-
-        ra_g = ra_g / 2 / np.pi * 24
-        dec_g = dec_g / np.pi * 180
-        v = np.linspace(anglemoon, 180, 100, endpoint=True)
-        self.axis.contourf(ra_g, dec_g, vis, cmap=plt.get_cmap("Greys"))
-
-        if do_plot_contour:
-            CS = self.axis.contour(ra_g, dec_g, sep, levels=[50, 70, 90], colors=['yellow', 'red', 'k'], inline=1)
-            self.axis.clabel(CS, fontsize=9, fmt='%d°')
-            CS = self.axis.contourf(ra_g, dec_g, sep, v, )
-
-            t = np.arange(anglemoon, 190, 10)
-            tl = ["{:d}°".format(int(tt)) for tt in t]
-            cbar = self.figure.colorbar(CS, ax=self.axis, cax=self.cax, ticks=t)
-            cbar.ax.set_yticklabels(tl, fontsize=9)
-
-        if check_wind and WS > wpl:
-            cmap = LinearSegmentedColormap.from_list('mycmap', [(0., 'red'),
-                                                                (1, cw)]
-                                                     )
-
-            cs = self.axis.contourf(ra_g, dec_g, wind, hatches=['//'],
-                                    cmap=cmap, alpha=0.5)
-            #self.axis.annotate(ct, xy=(12, 75), rotation=0,
-            #                   horizontalalignment='center', verticalalignment='center', color=cw, fontsize=cts)
-
-        for tick in self.axis.get_xticklabels():
-            tick.set_rotation(70)
-        self.axis.set_xlabel('Right ascension', fontsize=9, )
-        self.axis.set_ylabel('Declination', fontsize=9, )
-        
-        
-        self.axis.set_title("%s - Moon sep %d deg - max airmass %1.1f" % (str(obs_time).split('.')[0], \
-                                                                          anglemoon, airmass), fontsize=9)
-        
-        self.axis.set_xticks(np.linspace(0, 24, 25))
-        self.axis.set_yticks(np.linspace(-90, 90, 19))
-        
-
-        
-        self.finish_plot(tel_lat)
-        
-    def finish_plot(self, tel_lat):
-
-        self.axis.set_xlim([0, 24])
-        lat = float(tel_lat.to_string(unit=u.degree, decimal=True))
-        self.axis.set_ylim([np.max([lat - 90, -90]), np.min([lat + 90, 90])])
-
-        self.axis.grid()
-        self.axis.invert_xaxis()
-
-        self.draw()
-
 class ObsModel(QtCore.QAbstractTableModel):
     
     def __init__(self, parent, *args):
@@ -1372,6 +1212,8 @@ class ObsModel(QtCore.QAbstractTableModel):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication
+    global SETTINGS
+    SETTINGS = util.readconfig("config/settings.cfg")
     form = POUET()                 # We set the form to be our ExampleApp (design)
     form.show()                         # Show the form
     app.exec_()                         # and execute the app

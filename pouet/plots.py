@@ -101,7 +101,6 @@ def plot_airmass_on_sky(target, meteo, ax=None):
     r_labels = [ '', '', '', '', '', '', '',]
     ax.set_rgrids(range(0, 105, 15), r_labels)
     
-    
     # Redraw the figure for interactive sessions.
     ax.figure.canvas.draw()
     
