@@ -229,7 +229,7 @@ class Observable:
 		self.compute_angletosun(meteo)
 
 
-	def compute_observability(self, meteo, displayall=True, cloudscheck=True, verbose=True, future=False):
+	def compute_observability(self, meteo, cwvalidity=30, displayall=True, cloudscheck=True, verbose=True, future=False):
 		"""
 		Update the status using :meth:`~obs.Observable.update`. Compute the observability, a value between 0 and 1 that tells if the target can be observed at a given time. Also define flags for each parameter (moon, wind, etc...)
 
@@ -246,7 +246,7 @@ class Observable:
 		self.update(meteo=meteo)
 		observability = 1  # by default, we can observe
 
-		if np.abs(meteo.time - Time.now()).to(u.s).value / 60. > 30: future=True
+		if np.abs(meteo.time - Time.now()).to(u.s).value / 60. > cwvalidity: future=True
 
 
 		# Let's start with a simple yes/no version
