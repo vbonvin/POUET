@@ -270,8 +270,6 @@ if __name__ == "__main__":
 	currentmeteo.time = Time("2018-02-15 07:00:00.0")
 	target = obs.Observable(name="2M1134-2103", obsprogram="lens",alpha="11:34:40.5", delta="-21:03:23")
 
-
-
 	plot_airmass_on_sky(target=target, meteo=currentmeteo)
 	shownightobs(target, currentmeteo)
 
