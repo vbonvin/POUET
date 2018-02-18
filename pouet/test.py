@@ -4,14 +4,17 @@ Testing script, v1
 
 import os, sys, logging
 from astropy.time import Time
-
 import obs, meteo, plots
+
+
 
 logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',
                     level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 logger.critical("This should say Python >= 3.0: {}".format(sys.version))
+
+logger.warning(os.getcwd())
 
 # initialize meteo
 currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=False, debugmode=False)
