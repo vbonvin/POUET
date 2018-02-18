@@ -319,6 +319,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 self.headerPopup = uic.loadUi("headerdialog.ui")
 
                 # split by tabs/spaces
+                #todo: if columns are empty, the reader misses that. Either correct or print a warning, e.g. assert len(headers) == len(lines[0]) ??
                 headers_input = open(filepath, 'r').readlines()[0].split('\n')[0].split()
 
                 for i, cb in enumerate([self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]):
@@ -363,9 +364,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 pass
 
 
-            try:  #todo: replace that by a try/except when the loader is fully debugged...
+            try:
                 if ext != '.pouet':
-
+                    self.print_status("Loading catalogue...", color=SETTINGS["color"]["warn"])
                     self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
 
                     # check that names are unique
