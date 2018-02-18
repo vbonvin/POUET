@@ -19,3 +19,7 @@ Designed by observers for observers. With lots of love and hopefully bug-free.
 .. image:: https://readthedocs.org/projects/pouet/badge/?version=latest
     :target: http://pouet.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
+
+.. image:: https://coveralls.io/repos/github/vbonvin/POUET/badge.svg?branch=master
+    :target: https://coveralls.io/github/vbonvin/POUET?branch=master
+    :alt: Coverage Status

@@ -6,4 +6,4 @@ install:
   - pip install -r docs/requirements.txt
 
 script:
-  -
+  - coverage run pouet/test.py

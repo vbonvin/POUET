@@ -5,7 +5,7 @@ Running the script should provide a minimal text output
 
 import os, sys
 from astropy.time import Time
-import obs, meteo
+import obs, meteo, plots
 import importlib
 
 import logging
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     observables = [o for o in observables if o.name == "PSJ1606-2333"]
 
     obs_night = Time("2018-02-12 01:00:00", format='iso', scale='utc')
-    obs.shownightobs(observable=observables[0], meteo=currentmeteo, obs_night="2018-02-12", savefig=False, verbose=True)
+    #plots.shownightobs(observable=observables[0], meteo=currentmeteo, obs_night="2018-02-12", savefig=False, verbose=True)
 
 
     # show current status of all observables
