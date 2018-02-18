@@ -309,114 +309,119 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         ext = os.path.splitext(filepath)[1]
 
-        if ext != '.pouet':  # then it's a first load:
+        try:
+            if ext != '.pouet':  # then it's a first load:
 
-            obsprogramlist = run.retrieve_obsprogramlist()
-            obsprogramnames = (o["name"] for o in obsprogramlist)
+                obsprogramlist = run.retrieve_obsprogramlist()
+                obsprogramnames = (o["name"] for o in obsprogramlist)
 
-            # header popup
-            self.headerPopup = uic.loadUi("headerdialog.ui")
+                # header popup
+                self.headerPopup = uic.loadUi("headerdialog.ui")
 
-            # split by tabs/spaces
-            headers_input = open(filepath, 'r').readlines()[0].split('\n')[0].split()
+                # split by tabs/spaces
+                headers_input = open(filepath, 'r').readlines()[0].split('\n')[0].split()
 
-            for i, cb in enumerate([self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]):
-                for h in headers_input:
-                    cb.addItem(h)
-                cb.setCurrentIndex(i)
+                for i, cb in enumerate([self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]):
+                    for h in headers_input:
+                        cb.addItem(h)
+                    cb.setCurrentIndex(i)
 
-            self.headerPopup.headerObsprogramValue.addItem("None")
-            self.headerPopup.headerObsprogramValue.setCurrentIndex(self.headerPopup.headerObsprogramValue.findText("None"))
+                self.headerPopup.headerObsprogramValue.addItem("None")
+                self.headerPopup.headerObsprogramValue.setCurrentIndex(self.headerPopup.headerObsprogramValue.findText("None"))
 
-            # ok is 0 if rejected, 1 if accepted
-            ok = self.headerPopup.exec()
-            if ok:
+                # ok is 0 if rejected, 1 if accepted
+                ok = self.headerPopup.exec()
+                if ok:
 
-                namecol = int(self.headerPopup.headerNameValue.currentIndex())+1
-                alphacol = int(self.headerPopup.headerRAValue.currentIndex())+1
-                deltacol = int(self.headerPopup.headerDecValue.currentIndex())+1
+                    namecol = int(self.headerPopup.headerNameValue.currentIndex())+1
+                    alphacol = int(self.headerPopup.headerRAValue.currentIndex())+1
+                    deltacol = int(self.headerPopup.headerDecValue.currentIndex())+1
 
-                if self.headerPopup.headerObsprogramValue.currentText() == "None":
-                    obsprogramcol = None
+                    if self.headerPopup.headerObsprogramValue.currentText() == "None":
+                        obsprogramcol = None
+                    else:
+                        obsprogramcol = int(self.headerPopup.headerObsprogramValue.currentIndex())+1
+
+                    # obsprogram popup
+                    self.popup = QtWidgets.QInputDialog()
+                    #todo rename Cancel button as default if possible
+                    obsprogram, okop = self.popup.getItem(self, "Select an observing program", " - Existing programs -\nSelect Cancel to use the default configuration.\nThis setting applies only to the observables\nthat do not already have an obsprogram defined in the input file", obsprogramnames, 1, False)
+
+                    if okop:
+                        logmsg += 'as %s ' % obsprogram
+                    else:
+                        obsprogram = None
+                        logmsg += 'as default '
+
                 else:
-                    obsprogramcol = int(self.headerPopup.headerObsprogramValue.currentIndex())+1
-
-                # obsprogram popup
-                self.popup = QtWidgets.QInputDialog()
-                #todo rename Cancel button as default if possible
-                obsprogram, okop = self.popup.getItem(self, "Select an observing program", " - Existing programs -\nSelect Cancel to use the default configuration.\nThis setting applies only to the observables\nthat do not already have an obsprogram defined in the input file", obsprogramnames, 1, False)
-
-                if okop:
-                    logmsg += 'as %s ' % obsprogram
-                else:
-                    obsprogram = None
-                    logmsg += 'as default '
-
-            else:
-                # we exit the load function
-                logging.info("Load of % aborted by user" % filepath)
-                return
-
-        else:  # then it's a pouet file. We assume it follows our own convention for the rdbimport
-            # col#1 = name, col#2 = alpha, col#3 = dec, col#4 = obsprogram
-            pass
-
-
-        if True:  #todo: replace that by a try/except when the loader is fully debugged...
-            if ext != '.pouet':
-
-                self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
-
-                # check that names are unique
-                try:
-                    names = [o.name for o in self.observables]
-                    assert(len(names) == len(set(names)))
-                except:
-                    logging.error("Names in your catalog are not unique!")
+                    # we exit the load function
+                    logging.info("Load of % aborted by user" % filepath)
                     return
 
-            else:
-
-                self.observables = obs.rdbimport(filepath, obsprogram=None)
-
-
-            run.refresh_status(self.currentmeteo, self.observables)
+            else:  # then it's a pouet file. We assume it follows our own convention for the rdbimport
+                # col#1 = name, col#2 = alpha, col#3 = dec, col#4 = obsprogram
+                pass
 
 
-            for o in self.observables:
-                logging.debug("entering compute observability")
-                
+            try:  #todo: replace that by a try/except when the loader is fully debugged...
+                if ext != '.pouet':
 
-                name = QtGui.QStandardItem(o.name)
-                alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
-                delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
-                
-                o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
-                observability = QtGui.QStandardItem(str(o.observability))
-                
-                moondist, sundist, airmass, wind, clouds = self.get_weather_items(o)
+                    self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
 
-                obsprogram = QtGui.QStandardItem(o.obsprogram)
+                    # check that names are unique
+                    try:
+                        names = [o.name for o in self.observables]
+                        assert(len(names) == len(set(names)))
+                    except:
+                        logging.error("Names in your catalog are not unique!")
+                        return
 
-                name.setCheckable(True)
-                model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
-                model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability', 'Program', "S", "M", "A", "W", "C"])
+                else:
 
-            logging.debug('exiting model update')
+                    self.observables = obs.rdbimport(filepath, obsprogram=None)
 
-            self.listObs.setModel(model)
-            self.listObs.resizeColumnsToContents()
 
-            logmsg += 'successfully loaded'
-            logging.info(logmsg)
-            self.print_status("%s \n Sucessfully loaded" % filepath, SETTINGS['color']['success'])
+                run.refresh_status(self.currentmeteo, self.observables)
 
-        if False:
+
+                for o in self.observables:
+                    logging.debug("entering compute observability")
+
+
+                    name = QtGui.QStandardItem(o.name)
+                    alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
+                    delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
+
+                    o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
+                    observability = QtGui.QStandardItem(str(o.observability))
+
+                    moondist, sundist, airmass, wind, clouds = self.get_weather_items(o)
+
+                    obsprogram = QtGui.QStandardItem(o.obsprogram)
+
+                    name.setCheckable(True)
+                    model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
+                    model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Observability', 'Program', "S", "M", "A", "W", "C"])
+
+                logging.debug('exiting model update')
+
+                self.listObs.setModel(model)
+                self.listObs.resizeColumnsToContents()
+
+                logmsg += 'successfully loaded'
+                logging.info(logmsg)
+                self.print_status("%s \n Sucessfully loaded" % filepath, SETTINGS['color']['success'])
+
+            except:
+                logmsg += ' not loaded - wrong formatting'
+                logging.error(logmsg)
+
+                self.print_status("%s \n Wrong formatting \n Are you sur the headers and columns match?" % filepath, SETTINGS['color']['warn'])
+        except:
             logmsg += ' not loaded - format unknown'
             logging.error(logmsg)
 
-            self.print_status("%s \n Format unknown" % filepath, SETTINGS['color']['warn'])
-
+            self.print_status("%s \n Format unknown \n This is not a catalog file..." % filepath, SETTINGS['color']['warn'])
 
     def update_obs(self):
         """

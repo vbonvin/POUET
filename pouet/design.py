@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'design.ui'
 #
-# Created by: PyQt5 UI code generator 5.10
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -88,7 +88,7 @@ class Ui_POUET(object):
         self.loadObs.setGeometry(QtCore.QRect(10, 13, 141, 23))
         self.loadObs.setObjectName("loadObs")
         self.listObs = QtWidgets.QTableView(self.obs)
-        self.listObs.setGeometry(QtCore.QRect(10, 50, 841, 861))
+        self.listObs.setGeometry(QtCore.QRect(8, 46, 851, 681))
         self.listObs.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.listObs.setDragEnabled(True)
         self.listObs.setAlternatingRowColors(True)

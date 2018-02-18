@@ -248,10 +248,10 @@
     <widget class="QTableView" name="listObs">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>50</y>
-       <width>841</width>
-       <height>861</height>
+       <x>8</x>
+       <y>46</y>
+       <width>851</width>
+       <height>681</height>
       </rect>
      </property>
      <property name="editTriggers">
