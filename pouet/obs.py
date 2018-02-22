@@ -56,6 +56,7 @@ class Observable:
 		self.cloudfree = None
 	
 		self.attributes = attributes
+		self.hidden = False  # a hidden observable should not be updated
 		#self.observability = observability
 
 

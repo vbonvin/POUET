@@ -249,9 +249,9 @@
      <property name="geometry">
       <rect>
        <x>8</x>
-       <y>46</y>
+       <y>86</y>
        <width>851</width>
-       <height>681</height>
+       <height>641</height>
       </rect>
      </property>
      <property name="editTriggers">
@@ -303,6 +303,52 @@
      </property>
      <property name="text">
       <string>(De)select all targets</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="hideUnselectedObs">
+     <property name="geometry">
+      <rect>
+       <x>700</x>
+       <y>40</y>
+       <width>151</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Hide unselected targets</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="toggleAirmassObs">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Airmass min/max</string>
+     </property>
+    </widget>
+    <widget class="QDoubleSpinBox" name="airmassMinObs">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>66</width>
+       <height>24</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QDoubleSpinBox" name="airmassMaxObs">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>60</y>
+       <width>66</width>
+       <height>24</height>
+      </rect>
      </property>
     </widget>
    </widget>
