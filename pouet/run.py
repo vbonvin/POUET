@@ -39,7 +39,7 @@ def refresh_status(meteo, observables=None, minimal=False, obs_time=None):
     meteo.update(obs_time, minimal=minimal)
 
     if observables:
-        [obs.update(meteo) for obs in observables]
+        [obs.update(meteo) for obs in observables if obs.hidden == False]
 
 
 def retrieve_obsprogramlist():
