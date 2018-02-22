@@ -328,7 +328,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Airmass min/max</string>
+      <string>Airmass &amp;min/max</string>
      </property>
     </widget>
     <widget class="QDoubleSpinBox" name="airmassMinObs">
@@ -1826,7 +1826,7 @@
      <x>540</x>
      <y>10</y>
      <width>341</width>
-     <height>61</height>
+     <height>51</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -1841,7 +1841,7 @@
       <x>6</x>
       <y>5</y>
       <width>331</width>
-      <height>51</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">

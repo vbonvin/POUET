@@ -263,7 +263,8 @@ class Observable:
 		# check the	moondistance:
 		self.obs_moondist = True
 		if self.angletomoon.degree < self.minangletomoon:
-			observability -= 0.2
+			#observability -= 0.2 #TODO: this seems a bit dangerous: observability could go below zero!
+			observability *= 0.75
 			self.obs_moondist = False
 			msg += '\nMoonDist:%0.1f' % self.angletomoon.degree
 
@@ -271,7 +272,8 @@ class Observable:
 		self.obs_highairmass = True
 		if self.airmass > 1.5:
 			self.obs_highairmass = False
-			observability -= 0.3
+			#observability -= 0.3 #TODO: this seems a bit dangerous: observability could go below zero!
+			observability *= 0.75
 			msg += '\nAirmass:%0.2f' % self.airmass
 
 		# check the airmass:
@@ -307,14 +309,20 @@ class Observable:
 		if not future:
 			if cloudscheck and observability > 0:
 				self.is_cloudfree(meteo)
-				if self.cloudfree < 0.5 :
+				if self.cloudfree <= 0.5 :
 					self.obs_clouds = False
 					warnings += '\nWarning ! It might be cloudy'
+					observability = 0
+				elif self.cloudfree <= 0.9:
+					self.obs_clouds = False
+					msg += '\nCould be cloud-free'
+					observability *= self.cloudfree
 				elif self.cloudfree <= 1.:
-					msg += '\nSeems to be cloud-free'
+					msg += '\nShould be cloud-free'
 				else:
 					self.obs_clouds_info = False
 					warnings += '\nNo cloud info'
+					print("no cloud info")
 			else:
 				self.obs_clouds_info = False
 				warnings += '\nNo cloud info'

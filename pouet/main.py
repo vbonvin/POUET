@@ -226,6 +226,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
     def do_update(self):
 
+        self.print_status("Updating observability...", SETTINGS['color']['warn'])
         self.save_Time2obstime()
         self.site_display()
         self.visibilitytool_draw()
@@ -233,7 +234,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         self.listObs_plot_targets()
         logging.info("General update performed")
-
+        self.print_status("Update done")
 
     def get_weather_items(self, o, FLAG='---'):
         """
@@ -247,7 +248,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
         moondist = QtGui.QStandardItem()
-        moondist.setData(str(int(o.angletomoon.degree)), role=QtCore.Qt.DisplayRole)
+        moondist.setData(str("{:03.0f}".format(o.angletomoon.degree)), role=QtCore.Qt.DisplayRole)
         if o.obs_moondist:
             moondist.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['success'])), role=QtCore.Qt.BackgroundRole)
         else:
@@ -255,7 +256,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         # Angle to the Sun, TODO: What default requirements?   
         sundist = QtGui.QStandardItem()
-        sundist.setData(str(int(o.angletosun.degree)), role=QtCore.Qt.DisplayRole)
+        sundist.setData(str("{:03.0f}".format(o.angletosun.degree)), role=QtCore.Qt.DisplayRole)
 
         airmass = QtGui.QStandardItem()
         airmass.setData(str("%.2f" % o.airmass), role=QtCore.Qt.DisplayRole)
@@ -270,7 +271,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         wind = QtGui.QStandardItem()
 
         if o.obs_wind_info:
-            wind.setData(str("%.2f" % o.angletowind.degree), role=QtCore.Qt.DisplayRole)
+            wind.setData(str("{:03.0f}".format(o.angletowind.degree)), role=QtCore.Qt.DisplayRole)
             if o.obs_wind:
                 wind.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['success'])), role=QtCore.Qt.BackgroundRole)
             else:
@@ -282,7 +283,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         clouds = QtGui.QStandardItem()
 
         if o.obs_clouds_info:
-            clouds.setData(str(o.cloudfree), role=QtCore.Qt.DisplayRole)
+            clouds.setData(str("{:1.1f}".format(o.cloudfree)), role=QtCore.Qt.DisplayRole)
             if o.obs_clouds:
                 clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['success'])), role=QtCore.Qt.BackgroundRole)
             else:
@@ -396,7 +397,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                     delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
 
                     o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
-                    observability = QtGui.QStandardItem(str(o.observability))
+                    observability = QtGui.QStandardItem(str("{:1.0f}".format(o.observability)))
 
                     moondist, sundist, airmass, wind, clouds = self.get_weather_items(o)
 
@@ -413,18 +414,20 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
                 logmsg += 'successfully loaded'
                 logging.info(logmsg)
-                self.print_status("%s \n Sucessfully loaded" % filepath, SETTINGS['color']['success'])
+                namecat = filepath.split("/")[-1]
+                self.print_status("%s \nSucessfully loaded" % namecat, SETTINGS['color']['success'])
 
             except:
                 logmsg += ' not loaded - wrong formatting'
                 logging.error(logmsg)
 
-                self.print_status("%s \n Wrong formatting \n Are you sur the headers and columns match?" % filepath, SETTINGS['color']['warn'])
+                namecat = filepath.split("/")[-1]
+                self.print_status("%s \nWrong formatting: headers and columns match?" % namecat, SETTINGS['color']['warn'])
         except:
             logmsg += ' not loaded - format unknown'
             logging.error(logmsg)
 
-            self.print_status("%s \n Format unknown \n This is not a catalog file..." % filepath, SETTINGS['color']['warn'])
+            self.print_status("%s \nFormat unknown: not a catalog file..." % filepath, SETTINGS['color']['warn'])
 
     def update_obs(self):
         """
@@ -915,13 +918,17 @@ class AllSkyView(FigureCanvas):
         
         self.draw()
             
-    def error_image(self):
+    def error_image(self, startup=False):
         self.axis.clear()
         self.axis.plot([-1,1],[-1,1], lw=4, c=SETTINGS['color']['nominal'])
         self.axis.plot([-1,1],[1,-1], lw=4, c=SETTINGS['color']['nominal'])
         
         self.axis.annotate('No connection to All Sky Server', xy=(0, -0.8), rotation=0,
                                horizontalalignment='center', verticalalignment='center', color=SETTINGS['color']['nominal'], fontsize=10)
+        
+        if startup:
+            self.axis.annotate('Looks like you should refresh manually.', xy=(0, -0.9), rotation=0,
+                               horizontalalignment='center', verticalalignment='center', color=SETTINGS['color']['nominal'], fontsize=8)
         
         self.axis.set_axis_off()
         self.draw()
@@ -951,7 +958,8 @@ class AllSkyView(FigureCanvas):
             self.axis.imshow(rest, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
             self.axis.imshow(allsky.observability_map.T, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
         except:
-            self.error_image()
+            meteo.allsky.last_im_refresh = None
+            self.error_image(startup=True)
             logging.error("Something went wrong with the All Sky image, try again...")
             return
         # self.draw()
