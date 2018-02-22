@@ -545,7 +545,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
     def update_obslist(self):
 
-
+        pass
 
     def listObs_selectall(self):
         
