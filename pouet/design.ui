@@ -305,7 +305,7 @@
       <string>(De)select all targets</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="hideSelectedObs">
+    <widget class="QPushButton" name="hideUnselectedObs">
      <property name="geometry">
       <rect>
        <x>700</x>
@@ -315,7 +315,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Hide selected targets</string>
+      <string>Hide unselected targets</string>
      </property>
     </widget>
     <widget class="QRadioButton" name="toggleAirmassObs">
