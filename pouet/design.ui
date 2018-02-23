@@ -236,7 +236,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>13</y>
+       <y>5</y>
        <width>141</width>
        <height>23</height>
       </rect>
@@ -283,7 +283,7 @@
      <property name="geometry">
       <rect>
        <x>320</x>
-       <y>14</y>
+       <y>5</y>
        <width>151</width>
        <height>23</height>
       </rect>
@@ -296,7 +296,7 @@
      <property name="geometry">
       <rect>
        <x>160</x>
-       <y>14</y>
+       <y>5</y>
        <width>151</width>
        <height>23</height>
       </rect>
@@ -305,17 +305,17 @@
       <string>(De)select all targets</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="hideUnselectedObs">
+    <widget class="QPushButton" name="displaySelectedObs">
      <property name="geometry">
       <rect>
-       <x>700</x>
-       <y>40</y>
+       <x>710</x>
+       <y>30</y>
        <width>151</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>Hide unselected targets</string>
+      <string>Display selected</string>
      </property>
     </widget>
     <widget class="QRadioButton" name="toggleAirmassObs">
@@ -328,7 +328,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Airmass &amp;min/max</string>
+      <string>Airmass min/max</string>
      </property>
     </widget>
     <widget class="QDoubleSpinBox" name="airmassMinObs">
@@ -349,6 +349,117 @@
        <width>66</width>
        <height>24</height>
       </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="displayAllObs">
+     <property name="geometry">
+      <rect>
+       <x>710</x>
+       <y>60</y>
+       <width>151</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Display all targets</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="toggleMoondistObs">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>40</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Moondist min</string>
+     </property>
+    </widget>
+    <widget class="QDoubleSpinBox" name="moondistMinObs">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>59</y>
+       <width>66</width>
+       <height>24</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QDoubleSpinBox" name="sundistMinObs">
+     <property name="geometry">
+      <rect>
+       <x>450</x>
+       <y>59</y>
+       <width>66</width>
+       <height>24</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="toggleSundistObs">
+     <property name="geometry">
+      <rect>
+       <x>450</x>
+       <y>40</y>
+       <width>101</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Sundist min</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="toggleUncheckedObs">
+     <property name="geometry">
+      <rect>
+       <x>560</x>
+       <y>20</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Unchecked</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="toggleObservabilityObs">
+     <property name="geometry">
+      <rect>
+       <x>560</x>
+       <y>40</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Observability &gt; 0</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="toggleCloudsObs">
+     <property name="geometry">
+      <rect>
+       <x>560</x>
+       <y>60</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Clouds &gt; 0</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="toggleCheckedObs">
+     <property name="geometry">
+      <rect>
+       <x>560</x>
+       <y>0</y>
+       <width>131</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Checked</string>
      </property>
     </widget>
    </widget>

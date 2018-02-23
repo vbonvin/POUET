@@ -49,7 +49,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.allsky_debugmode = False  
         self.name_location = 'LaSilla'
         self.cloudscheck = True
-        self.obs_model_memory = None
         self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
         self.set_configTimeNow()
         self.save_Time2obstime()
@@ -81,6 +80,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.updatePlotObs.clicked.connect(self.listObs_plot_targets)
         self.updateSelectall.clicked.connect(self.listObs_selectall)
         self.hideUnselectedObs.clicked.connect(self.hide_observables)
+        self.displayAllObs.clicked.connect(self.unhide_observables)
+
         #self.toggleAirmassObs.selfChecked.connect()
         self.visibilitytool.figure.canvas.mpl_connect('motion_notify_event', self.on_visibilitytoolmotion)
         self.listObs.doubleClicked.connect(self.show_airmass)
@@ -100,6 +101,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # testing stuff at startup...
 
         self.load_obs(filepath='../cats/2m2lenses_withobsprogram.pouet')
+
+        obs_model = self.listObs.model()
+        print(obs_model.rowCount())
+        #sys.exit()
+
         
     def init_warn_station(self):
         
@@ -236,9 +242,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         logging.info("General update performed")
         self.print_status("Update done")
 
-    def get_weather_items(self, o, FLAG='---'):
+
+
+    def get_standard_items(self, o, FLAG='---'):
         """
-        Create QStandardItem for various meteo parameters from an observable o
+        Create the default QStandardItem objects for an observable o
 
         Assumes the time has been refreshed
 
@@ -247,6 +255,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         """
 
 
+        # Initial params
+        name = QtGui.QStandardItem(o.name)
+        name.setCheckable(True)
+        alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
+        delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
+        observability = QtGui.QStandardItem(str("{:1.0f}".format(o.observability)))
+        obsprogram = QtGui.QStandardItem(o.obsprogram)
+
+
+        # Angle to the moon
         moondist = QtGui.QStandardItem()
         moondist.setData(str("{:03.0f}".format(o.angletomoon.degree)), role=QtCore.Qt.DisplayRole)
         if o.obs_moondist:
@@ -258,6 +276,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         sundist = QtGui.QStandardItem()
         sundist.setData(str("{:03.0f}".format(o.angletosun.degree)), role=QtCore.Qt.DisplayRole)
 
+        # Airmass
         airmass = QtGui.QStandardItem()
         airmass.setData(str("%.2f" % o.airmass), role=QtCore.Qt.DisplayRole)
         if o.obs_airmass:
@@ -268,8 +287,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             else:
                 airmass.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['limit'])), role=QtCore.Qt.BackgroundRole)
 
+        # Wind
         wind = QtGui.QStandardItem()
-
         if o.obs_wind_info:
             wind.setData(str("{:03.0f}".format(o.angletowind.degree)), role=QtCore.Qt.DisplayRole)
             if o.obs_wind:
@@ -280,8 +299,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             wind.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
             wind.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['warn'])), role=QtCore.Qt.BackgroundRole)
 
+        # Clouds
         clouds = QtGui.QStandardItem()
-
         if o.obs_clouds_info:
             clouds.setData(str("{:1.1f}".format(o.cloudfree)), role=QtCore.Qt.DisplayRole)
             if o.obs_clouds:
@@ -292,7 +311,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             clouds.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
             clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['warn'])), role=QtCore.Qt.BackgroundRole)
 
-        return moondist, sundist, airmass, wind, clouds
+
+
+        return name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds
+
 
 
 
@@ -300,7 +322,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         logmsg = ''
 
-        model = QtGui.QStandardItemModel(self.listObs)
+        # initialize a new obs_model
+        obs_model = QtGui.QStandardItemModel(self.listObs)
+        obs_model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Obs', 'Program', "S", "M", "A", "W", "C"])
+
 
         # we start from scratch
         # todo: add an update function to load many obs one after the other
@@ -384,32 +409,23 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
                     self.observables = obs.rdbimport(filepath, obsprogram=None)
 
-
                 run.refresh_status(self.currentmeteo, self.observables)
 
 
                 for o in self.observables:
                     logging.debug("entering compute observability")
-
-
-                    name = QtGui.QStandardItem(o.name)
-                    alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
-                    delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
-
                     o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
-                    observability = QtGui.QStandardItem(str("{:1.0f}".format(o.observability)))
 
-                    moondist, sundist, airmass, wind, clouds = self.get_weather_items(o)
+                    # create the QStandardItem objects
+                    name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
 
-                    obsprogram = QtGui.QStandardItem(o.obsprogram)
+                    # feed the model
+                    obs_model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
 
-                    name.setCheckable(True)
-                    model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
-                    model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Obs', 'Program', "S", "M", "A", "W", "C"])
 
                 logging.debug('exiting model update')
 
-                self.listObs.setModel(model)
+                self.listObs.setModel(obs_model)
                 self.listObs.resizeColumnsToContents()
 
                 logmsg += 'successfully loaded'
@@ -429,18 +445,24 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
             self.print_status("%s \nFormat unknown: not a catalog file..." % filepath, SETTINGS['color']['warn'])
 
+
+
     def update_obs(self):
         """
-        #todo: these should be two separate functions! Update the obs and update the model
         Update the observability of the observables, and update the display model
 
         Works only on the non hidden observables
 
+        Assumes all the hidden=False observables are in the model - no more, no less - but this should ALWAYS be the case
+
         :return: None
         """
 
-        # refresh the observables' constraints
+        # refresh the observables observability flags that have hidden == True
         run.refresh_status(self.currentmeteo, self.observables)
+        for o in self.observables:
+            if o.hidden == False:
+                o.compute_observability(self.currentmeteo, cloudscheck=True, verbose=False)
 
 
         # load the display model and the current header
@@ -463,14 +485,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
         # we use the obs name as a reference to update the model
-        model_names = [obs_model.item(i).data(0) for i in range(len(self.observables))]
+        model_names = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
 
-        # compute observability and refresh the model
+        # Refresh the model
         for ind, o in enumerate(self.observables):
             if o.hidden == False:
-                o.compute_observability(self.currentmeteo, cloudscheck=True, verbose=False)
 
-                moondist, sundist, airmass, wind, clouds = self.get_weather_items(o)
+                name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
 
                 # make sur we update the correct observable in the model...
                 obs_index = model_names.index(o.name)
@@ -493,9 +514,70 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.print_status(msg, color=SETTINGS['color']['success'])
 
 
+    def update_and_display_model(self):
+        """
+        Update the current model according to observables status and display it.
+
+        This function DOES NOT update the observability. To do this, use to update_obs()
+
+        :param obs_model: QStandardItemModel
+        :return:
+        """
+
+        # load the current display model
+        obs_model = self.listObs.model()
+
+        model_names = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
+
+        # these are the obs we want to display
+        obs_names = [o.name for o in self.observables if o.hidden == False]
+
+
+        """
+        3 cases:
+        
+        1) name is in obs_names and model_names --> we keep
+        2) name is in obs_names only --> we add to model using get_standard_items
+        3) name is in model_names only --> we remove from model
+        
+        """
+
+        toadd = [n for n in obs_names if not n in model_names]
+        toremove = [n for n in model_names if not n in obs_names]
+
+
+        # Adding missing obs:
+        for o in [o for o in self.observables if o.name in toadd]:
+            assert o.hidden is False
+
+            # create the QStandardItem objects
+            name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
+
+            obs_model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
+
+            logging.info("Added %s to the model" % o.name)
+
+        # Removing superfluous obs:
+        for o in [o for o in self.observables if o.name in toremove]:
+            assert o.hidden is True
+
+            # todo: stupid loop, optimize that
+            currentnames = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
+            toremoveindex = currentnames.index(o.name)
+            obs_model.removeRow(toremoveindex)
+
+
+        # refresh the display
+        self.listObs.setModel(obs_model)
+
+        msg = "Observability refreshed"
+        logging.info(msg)
+        self.print_status(msg, color=SETTINGS['color']['success'])
+
+
     def check_obs_status(self, obs_model):
         """
-        :return: states of observables
+        :return: states of model observables
         """
 
         #0 is not checked, 1 is partially checked, 2 is checked --> 0 or 2 for us
@@ -509,33 +591,37 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         return states, names
 
 
-
-
-
     def hide_observables(self):
         """
         Hide observables according to a given criterion.
-
-
+        #todo: this should go in run. Main should only read the parameters from the gui and send it to the run function
         :return: None
         """
 
-        checked = True
-        alpha = False
+        checked = False
+        airmass = True
 
         obs_model = self.listObs.model()
 
+
+        # todo: do we want this?
+        # reset hidden to False for all observables
+        self.unhide_observables()
+
         if checked:
             states, names = self.check_obs_status(obs_model)
-            for i, s in enumerate(states[::-1]):
-                if s:
-                    # todo: make sure that names match. Could use QIndex from item instead of calling check obs status
+            for i, s in enumerate(states):
+                if not s:
+                    # hide from self
+                    self.observables[[o.name for o in self.observables].index(names[i])].hidden = True
 
-                    obs_model.removeRow(len(states)-i-1)
+        if airmass:
+            airmassmin, airmassmax = self.airmassMinObs.value(), self.airmassMaxObs.value()
+            run.hide_observables(self.observables, [{"id": "airmass", "min": airmassmin, "max": airmassmax}])
 
 
-        self.listObs.setModel(obs_model)
-
+        # ALWAYS update the display after changing the hidden flag
+        self.update_and_display_model()
 
 
     def unhide_observables(self):
@@ -543,12 +629,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         for o in self.observables:
             o.hidden = False
 
+        # ALWAYS update the display after changing the hidden flag
+        self.update_and_display_model()
 
 
-
-    def update_obslist(self):
-
-        pass
 
     def listObs_selectall(self):
         
