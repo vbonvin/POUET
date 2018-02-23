@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'design.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -152,14 +152,14 @@ class Ui_POUET(object):
         self.toggleCheckedObs.setObjectName("toggleCheckedObs")
         self.alphaMinObs = QtWidgets.QTimeEdit(self.obs)
         self.alphaMinObs.setGeometry(QtCore.QRect(430, 35, 81, 24))
-        self.alphaMinObs.setDateTime(QtCore.QDateTime(QtCore.QDate(1999, 9, 30), QtCore.QTime(0, 0, 0)))
-        self.alphaMinObs.setMaximumTime(QtCore.QTime(22, 59, 59))
+        self.alphaMinObs.setDateTime(QtCore.QDateTime(QtCore.QDate(1999, 9, 29), QtCore.QTime(22, 0, 0)))
+        self.alphaMinObs.setMaximumTime(QtCore.QTime(23, 59, 59))
         self.alphaMinObs.setMinimumTime(QtCore.QTime(0, 0, 0))
         self.alphaMinObs.setTimeSpec(QtCore.Qt.UTC)
         self.alphaMinObs.setObjectName("alphaMinObs")
         self.alphaMaxObs = QtWidgets.QTimeEdit(self.obs)
         self.alphaMaxObs.setGeometry(QtCore.QRect(430, 60, 81, 24))
-        self.alphaMaxObs.setDateTime(QtCore.QDateTime(QtCore.QDate(1999, 8, 30), QtCore.QTime(23, 59, 59)))
+        self.alphaMaxObs.setDateTime(QtCore.QDateTime(QtCore.QDate(1999, 8, 30), QtCore.QTime(21, 59, 59)))
         self.alphaMaxObs.setTimeSpec(QtCore.Qt.UTC)
         self.alphaMaxObs.setObjectName("alphaMaxObs")
         self.toggleAlphaMinObs = QtWidgets.QCheckBox(self.obs)
@@ -667,6 +667,16 @@ class Ui_POUET(object):
         self.configCloudsShowLayersValue.setGeometry(QtCore.QRect(330, 120, 221, 22))
         self.configCloudsShowLayersValue.setChecked(True)
         self.configCloudsShowLayersValue.setObjectName("configCloudsShowLayersValue")
+        self.configDoubleClicAirmassValue = QtWidgets.QCheckBox(self.config)
+        self.configDoubleClicAirmassValue.setEnabled(True)
+        self.configDoubleClicAirmassValue.setGeometry(QtCore.QRect(330, 290, 271, 22))
+        self.configDoubleClicAirmassValue.setChecked(True)
+        self.configDoubleClicAirmassValue.setObjectName("configDoubleClicAirmassValue")
+        self.configDoubleClicSkyChartValue = QtWidgets.QCheckBox(self.config)
+        self.configDoubleClicSkyChartValue.setEnabled(True)
+        self.configDoubleClicSkyChartValue.setGeometry(QtCore.QRect(330, 320, 431, 22))
+        self.configDoubleClicSkyChartValue.setChecked(True)
+        self.configDoubleClicSkyChartValue.setObjectName("configDoubleClicSkyChartValue")
         self.tabWidget.addTab(self.config, "")
         self.log = QtWidgets.QWidget()
         self.log.setObjectName("log")
@@ -840,6 +850,8 @@ class Ui_POUET(object):
         self.label_26.setText(_translate("POUET", "https://github.com/vbonvin/POUET"))
         self.configDebugModeValue.setText(_translate("POUET", "Use local AllSky image and weather report [Debug mode]"))
         self.configCloudsShowLayersValue.setText(_translate("POUET", "Show clouds analysis layers"))
+        self.configDoubleClicAirmassValue.setText(_translate("POUET", "On double-clic, show airmass plot"))
+        self.configDoubleClicSkyChartValue.setText(_translate("POUET", "On double-clic, show Sky Chart (may require a connection)"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.config), _translate("POUET", "Configuration"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.log), _translate("POUET", "View logs"))
         self.configUpdate.setText(_translate("POUET", "Update"))

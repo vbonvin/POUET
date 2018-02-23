@@ -5,6 +5,10 @@ from astropy.time import Time
 from astropy.wcs import WCS
 import numpy as np
 import os, sys
+import urllib
+
+import logging
+logger = logging.getLogger(__name__)
 
 import util
 
@@ -276,18 +280,64 @@ def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, b
 	else: 
 		boxsize *= 1.*u.arcmin
 
-	hdu = SkyView.get_images(position=position, coordinates='icrs', survey=survey, radius=boxsize, grid=True)[0][0]
+
+	#hdu = SkyView.get_images(position=position, coordinates='icrs', survey=survey, radius=boxsize, grid=True)[0][0]
+	try:
+		hdu = SkyView.get_images(position=position, coordinates='icrs', survey=survey, radius=boxsize, grid=True)[0][0]
+	except urllib.error.HTTPError:
+		logger.warning("Looks like there is no coverage for survey {}. Either you or the server is offline!".format(survey))
+	
+		if figure is None:
+			ax = plt.gca()
+		else:
+			figure.clear()
+			ax = figure.gca()
+			
+		ax.clear()
+		
+		ax.plot([-1,1],[-1,1], lw=4, c='red')
+		ax.annotate('No image for {} in survey {}'.format(target.name, survey), xy=(0, -0.8), rotation=0,
+							   horizontalalignment='center', verticalalignment='center', fontsize=10)
+		
+		ax.patch.set_facecolor("None")
+		ax.axis('off')
+		ax.figure.canvas.draw()
+		return ax
+	
+	except:
+		logger.warning("Cannot download Sky Chart image from survey {}. Either you or the server is offline!".format(survey))
+		
+		
+		if figure is None:
+			ax = plt.gca()
+		else:
+			figure.clear()
+			ax = figure.gca()
+			
+		ax.clear()
+		ax.plot([-1,1],[-1,1], lw=4, c='k')
+		ax.plot([-1,1],[1,-1], lw=4, c='k')
+		
+		ax.annotate('No connection to GSFC NASA Server', xy=(0, -0.8), rotation=0,
+							   horizontalalignment='center', verticalalignment='center', fontsize=10)
+		
+		ax.patch.set_facecolor("None")
+		ax.axis('off')
+		ax.figure.canvas.draw()
+		return ax
+	
 	wcs = WCS(hdu.header)
 	
 	if figure is None:
 		ax = plt.gca(projection=wcs)
 	else:
+		figure.clear()
 		ax = figure.gca(projection=wcs)
 		
 	image_data = hdu.data
+	
 	ax.imshow(image_data, cmap=plt.get_cmap("Greys"))
-	
-	
+
 	imgsize = image_data.shape[0]
 	inner_boundary = 0.02
 	outer_boundary = 0.08
@@ -299,7 +349,7 @@ def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, b
 	ax.axvline(x=0.5*imgsize, ymin=0.5+inner_boundary, ymax=0.5+outer_boundary, lw=lwr, c=cr, alpha=alphar)
 	ax.axhline(y=0.5*imgsize, xmin=0.5+inner_boundary, xmax=0.5+outer_boundary, lw=lwr, c=cr, alpha=alphar)
 	
-	arrowkwargs = {'width':0.5, 'headwidth':4, 'shrink':0.05, 'facecolor':cr, 'color':cr, 'alpha':alphar}
+	arrowkwargs = {'width':0.5, 'headwidth':4, 'shrink':0.05, 'color':cr, 'alpha':alphar}
 	
 	if northisup:
 		ax.invert_yaxis()

@@ -196,28 +196,39 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             
             ####################################################
             
-            self.plot_show = uic.loadUi("dialogPlots.ui")
+            if self.configDoubleClicAirmassValue.checkState() == 2:
             
-            
-            self.plot_show.setWindowTitle("Airmass for {}".format(target.name))
-            
-            amv = AirmassView(parent=self.plot_show.widget)
-            amv.show(target, self.currentmeteo)
-            
-            self.plot_show.open()
+                self.plot_show = uic.loadUi("dialogPlots.ui")
+                
+                
+                self.plot_show.setWindowTitle("Airmass for {}".format(target.name))
+                
+                amv = AirmassView(parent=self.plot_show.widget)
+                amv.show(target, self.currentmeteo)
+                
+                self.plot_show.open()
             
             #####################################################
             
-            self.skychart_show = uic.loadUi("dialogSkyChart.ui")
+            if self.configDoubleClicSkyChartValue.checkState() == 2:
+                
+                self.print_status('Opening Sky Chart for {}...'.format(target.name), SETTINGS["color"]["warn"])
             
-            
-            self.skychart_show.setWindowTitle("Sky chart for {}".format(target.name))
-            
-            skychart = SkychartView(parent=self.skychart_show.widget)
-            skychart.show(target)
-            
-            self.skychart_show.open()
-
+                self.skychart_show = uic.loadUi("dialogSkyChart.ui")
+                self.skychart_show.setWindowTitle("Sky chart for {}".format(target.name))
+                
+                skychart = SkychartView(target=target, parent=self.skychart_show.widget)
+                skychart.show()
+                
+                self.skychart_show.flipNorth.clicked.connect(skychart.flipNorth)
+                self.skychart_show.flipEast.clicked.connect(skychart.flipEast)
+                self.skychart_show.SurveyBox.currentTextChanged.connect(skychart.changeSurvey)
+                self.skychart_show.sizeBox.currentTextChanged.connect(skychart.changeBoxSize)
+                
+                self.skychart_show.open()
+                
+                self.print_status('Sky chart opened.')
+    
     def print_status(self, msg, color=None):
         
         if color is None:
@@ -1259,7 +1270,7 @@ class AirmassView(FigureCanvas):
         
 class SkychartView(FigureCanvas):
 
-    def __init__(self, parent=None, width=6, height=5):
+    def __init__(self, target, parent=None, width=6, height=5):
 
         self.figure = Figure(figsize=(width, height))
         self.figure.patch.set_facecolor("None")
@@ -1284,13 +1295,67 @@ class SkychartView(FigureCanvas):
                                    QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         
-    def show(self, target):
+        self.northisup = True
+        self.eastisright = False
+        self.survey = 'DSS'
+        self.boxsize = 10 # arcmin (defined in plots.plot_target_on_sky)
         
-        #self.axis = self.figure.add_subplot(111)
-        #self.axis.clear()
+        self.target = target
+        
+    def flipNorth(self):
+        
+        logging.debug("Sky Chart: flipping North")
+        
+        if self.northisup:
+            self.northisup = False
+        else:
+            self.northisup = True
+            
+        self.show()
+        
+    def flipEast(self):
+        
+        logging.debug("Sky Chart: flipping East")
+                      
+        if self.eastisright:
+            self.eastisright = False
+        else:
+            self.eastisright = True
+            
+        self.show()
+        
+    def show_takeawhile(self):
+        self.axis.clear()
+        self.axis.annotate("This can take a moment...", xy=(0.5, 0.5), xycoords="axes fraction")
+        self.axis.patch.set_facecolor("None")
+        self.axis.axis('off')
+        self.axis.figure.canvas.draw()
+        QtWidgets.QApplication.processEvents()
 
-        ax = plots.plot_target_on_sky(target, figure=self.figure, northisup=True, eastisright=False, boxsize=None, survey='DSS')
-        #self.axis.plot([0,0],[1,1])
+    def changeSurvey(self, value):
+        
+        self.show_takeawhile()
+
+        logging.debug("Sky Chart: changing image from {} to {}".format(self.survey, value))
+        
+        self.survey = value
+
+        self.show()
+        
+        
+    def changeBoxSize(self, value):
+        
+        self.show_takeawhile()
+        
+        logging.debug("Sky Chart: changing size from {} to {}".format(self.boxsize, value))
+        
+        self.boxsize = value
+        
+        self.show()
+        
+    def show(self):
+        
+        ax = plots.plot_target_on_sky(self.target, figure=self.figure, northisup=self.northisup, eastisright=self.eastisright, boxsize=self.boxsize, survey=self.survey)
         self.axis = ax
         self.axis.patch.set_facecolor("None")
         self.axis.figure.canvas.draw()

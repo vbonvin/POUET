@@ -32,12 +32,32 @@
      <height>27</height>
     </rect>
    </property>
+   <item>
+    <property name="text">
+     <string>DSS</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>NEAT</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>2MASS-J</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>GOODS: HST ACS I</string>
+    </property>
+   </item>
   </widget>
   <widget class="QPushButton" name="flipNorth">
    <property name="geometry">
     <rect>
      <x>570</x>
-     <y>70</y>
+     <y>120</y>
      <width>99</width>
      <height>27</height>
     </rect>
@@ -50,7 +70,7 @@
    <property name="geometry">
     <rect>
      <x>570</x>
-     <y>110</y>
+     <y>160</y>
      <width>99</width>
      <height>27</height>
     </rect>
@@ -70,6 +90,60 @@
    </property>
    <property name="text">
     <string>Choose survey</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="sizeBox">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>80</y>
+     <width>101</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="currentText">
+    <string>10</string>
+   </property>
+   <property name="currentIndex">
+    <number>2</number>
+   </property>
+   <item>
+    <property name="text">
+     <string>2</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>5</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>10</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>20</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>50</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>60</y>
+     <width>111</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Size [arcmin]</string>
    </property>
   </widget>
  </widget>
