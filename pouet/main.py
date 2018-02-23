@@ -289,7 +289,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         name.setCheckable(True)
         alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
         delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
-        observability = QtGui.QStandardItem(str("{:1.0f}".format(o.observability)))
+        observability = QtGui.QStandardItem(str("{:1.1f}".format(o.observability)))
         obsprogram = QtGui.QStandardItem(o.obsprogram)
 
 
