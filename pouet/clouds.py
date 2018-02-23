@@ -46,9 +46,9 @@ class Clouds():
         self.failed_connection = False
         
         if fimage is None:
-            fimage = "current.JPG"
+            fimage = "current.jpg"
             if debugmode: 
-                fimage = "config/AllSkyDebugMode.JPG" # To be used for debug purposes
+                fimage = "config/AllSkyDebugMode.jpg" # To be used for debug purposes
                 logger.warning("Cloud analysis is working in debug mode (not using the real current image)")
             self.fimage = fimage
 
@@ -64,7 +64,7 @@ class Clouds():
             try:
                 logger.info("Loading all sky from {}...".format(self.station.params['url']))
                 #urllib.request.urlretrieve(self.params['url'], "current.JPG")
-                open("current.JPG", 'wb').write(requests.get(self.station.params['url']).content)
+                open("current.jpg", 'wb').write(requests.get(self.station.params['url']).content)
                 self.failed_connection = False
             except :
                 self.failed_connection = True

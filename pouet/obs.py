@@ -9,6 +9,7 @@ import copy as pythoncopy
 from astropy.time import Time
 from astropy import units as u
 from astropy.coordinates import angles, angle_utilities
+import astropy.table
 import matplotlib.pyplot as plt
 import importlib
 
@@ -212,7 +213,7 @@ class Observable:
 		if self.cloudfree == ERROR_COMPUTE: 
 			logger.warning("Computation error in clouds")
 			
-		self.cloudfree = float(self.cloudfree)
+		self.cloudfree = np.floor(float(self.cloudfree)*10.)/10.
 
 
 	def update(self, meteo):
@@ -392,29 +393,23 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, star
 	"""
 
 	logger.debug("Reading \"%s\"..." % (os.path.basename(filepath)))
-	rdbfile = open(filepath, "r")
-	rdbfilelines = rdbfile.readlines()[startline:] # we directly "skip" the first lines of eventual headers
-	rdbfile.close()
+
+	# data_start = 2 is to deal with the rdb file... (ascii.rdb doesn't work good)
+	rdbtable = astropy.table.Table.read(filepath, format="ascii", data_start=2)
+
+	colnames = rdbtable.colnames
 
 	observables = []
-	for ind, line in enumerate(rdbfilelines) :
+	for line in rdbtable :
 
-		if line[0] == "-" or line[0] == "#":
-			continue
+		name = str(line[colnames[namecol-1]])
+		alpha = str(line[colnames[alphacol-1]])
+		delta = str(line[colnames[deltacol-1]])
 
-		if len(line.strip()) < 5:
-			logger.debug("Skipping empty line %i : %s" % (ind+startline, repr(line)))
-			continue
-
-		elements = line.split()
-
-		name = str(elements[namecol-1])
-		alpha = str(elements[alphacol-1])
-		delta = str(elements[deltacol-1])
 		if obsprogramcol:
 			try:
-				obsprogram = str(elements[obsprogramcol-1])
-				assert(len(elements) > 0)
+				obsprogram = str(line[colnames[obsprogramcol-1]])
+				assert(len(obsprogram) > 0)
 				#todo: this is not robust against a column with incoherent obsprogram, or with a line without obsprogram. We do not want to load default config under the hood if an obsprogram is wrongly or not given. Maybe we could, but nevertheless warn the user about it in a dedicated popup ?
 			except:
 				logger.debug('nothing in obsprogramcol - using provided default instead')

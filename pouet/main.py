@@ -98,7 +98,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # Stating timer
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
-        self.timer.start(120000) #trigger every 2 minutes by default.
+        self.timer.start(30000) #trigger every 2 minutes by default.
         self.timer.timeout.connect(self.auto_refresh)
         
         # Some housekeeping stuff...
@@ -106,7 +106,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.listObs_check_state = 0
 
         # To handle the all sky in a thread...
-        self.threadAllskyUpdate = ThreadAllskyUpdate(allsky=self.currentmeteo.allsky, parent=self)
+        self.threadAllskyUpdate = ThreadAllskyUpdate(parent=self)
         self.threadAllskyUpdate.allskyUpdate.connect(self.on_threadAllskyUpdate)
         
         # testing stuff at startup...
@@ -128,6 +128,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def on_threadAllskyUpdate(self, sample):
         
         self.currentmeteo.allsky = sample[0]
+        
+        self.allskylayer.erase()
         
         self.allsky_redisplay()
         
@@ -287,7 +289,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         name.setCheckable(True)
         alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
         delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
-        observability = QtGui.QStandardItem(str("{:1.0f}".format(o.observability)))
+        observability = QtGui.QStandardItem(str("{:1.1f}".format(o.observability)))
         obsprogram = QtGui.QStandardItem(o.obsprogram)
 
 
@@ -1419,22 +1421,26 @@ class ObsModel(QtCore.QAbstractTableModel):
 class ThreadAllskyUpdate(QtCore.QThread):
     allskyUpdate = QtCore.pyqtSignal(list)
 
-    def __init__(self, allsky, parent=None):
+    def __init__(self, parent=None):
         super(ThreadAllskyUpdate, self).__init__(parent)
         self.parent = parent
-        self.allsky = allsky 
 
     def run(self):
+        """
+        We should not directly update the GUI allsky, so we get it from the parent (at its current state) and returns it by emitting a signal
+        """
         
         logging.debug("threadAllsky firing up.")
         
-        self.allsky.update(float(SETTINGS['validity']['allskyfrequency']))
+        allskycopy = copy.copy(self.parent.currentmeteo.allsky)
+        
+        allskycopy.update(float(SETTINGS['validity']['allskyfrequency']))
 
         logging.info("Updated All Sky")
         
         logging.debug("threadAllsky done.")
         
-        self.allskyUpdate.emit([self.allsky])
+        self.allskyUpdate.emit([allskycopy])
     
 
 def main():
