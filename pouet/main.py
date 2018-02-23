@@ -87,7 +87,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.configDebugModeValue.clicked.connect(self.set_debug_mode)
         self.updatePlotObs.clicked.connect(self.listObs_plot_targets)
         self.updateSelectall.clicked.connect(self.listObs_selectall)
-        self.hideUnselectedObs.clicked.connect(self.hide_observables)
+        self.displaySelectedObs.clicked.connect(self.hide_observables)
         self.displayAllObs.clicked.connect(self.unhide_observables)
 
         #self.toggleAirmassObs.selfChecked.connect()
@@ -622,31 +622,74 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def hide_observables(self):
         """
         Hide observables according to a given criterion.
-        #todo: this should go in run. Main should only read the parameters from the gui and send it to the run function
+
         :return: None
         """
 
-        checked = False
-        airmass = True
+        checked = self.toggleCheckedObs.isChecked()
+        unchecked = self.toggleUncheckedObs.isChecked()
+        airmass = self.toggleAirmassObs.isChecked()
+        moondist = self.toggleMoondistObs.isChecked()
+        sundist = self.toggleSundistObs.isChecked()
+        observability = self.toggleObservabilityObs.isChecked()
+        clouds = self.toggleCloudsObs.isChecked()
+        alphamin = self.toggleAlphaMinObs.isChecked()
+        alphamax = self.toggleAlphaMaxObs.isChecked()
+
 
         obs_model = self.listObs.model()
 
 
-        # todo: do we want this?
         # reset hidden to False for all observables
-        self.unhide_observables()
+        for o in self.observables:
+            o.hidden = False
 
+        # checked/unchecked
+        states, names = self.check_obs_status(obs_model)
         if checked:
-            states, names = self.check_obs_status(obs_model)
             for i, s in enumerate(states):
                 if not s:
                     # hide from self
                     self.observables[[o.name for o in self.observables].index(names[i])].hidden = True
 
+        if unchecked:
+            for i, s in enumerate(states):
+                if s:
+                    # hide from self
+                    self.observables[[o.name for o in self.observables].index(names[i])].hidden = True
+
+        # other criterias
+        criteria = []
+
         if airmass:
             airmassmin, airmassmax = self.airmassMinObs.value(), self.airmassMaxObs.value()
-            run.hide_observables(self.observables, [{"id": "airmass", "min": airmassmin, "max": airmassmax}])
+            criteria.append({"id": "airmass", "min": airmassmin, "max": airmassmax})
 
+        if moondist:
+            criteria.append({"id": "moondist", "min": self.moondistMinObs.value()})
+
+        if sundist:
+            criteria.append({"id": "sundist", "min": self.sundistMinObs.value()})
+
+        if observability:
+            criteria.append({"id": "obs", "min": 0})
+
+        if clouds:
+            criteria.append({"id": "clouds", "min": 0})
+
+        if alphamin and alphamax:
+            criteria.append({"id": "alphaboth", "min": self.alphaMinObs.value(), "max": self.alphaMaxObs.value()})
+
+        """
+        elif alphamin and not alphamax:
+            criteria.append({"id": "alphamin", "min": self.alphaMinObs.value()})
+        elif alphamax and not alphamin:
+            criteria.append({"id": "alphamax", "max": self.alphaMaxObs.value()})
+        """
+
+
+
+        run.hide_observables(self.observables, criteria)
 
         # ALWAYS update the display after changing the hidden flag
         self.update_and_display_model()

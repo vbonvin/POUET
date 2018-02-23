@@ -64,8 +64,17 @@ def hide_observables(observables, criteria):
             elif c["id"] == "moondist":
                 if o.angletomoon.degree < c["min"]:
                     o.hidden = True
-
-
+            elif c["id"] == "sundist":
+                if o.angletosun.degree < c["min"]:
+                    o.hidden = True
+            elif c["id"] == "observability":
+                if o.observability <= c["min"]:
+                    o.hidden = True
+            elif c["id"] == "clouds":
+                if o.cloudfree <= c["min"]:
+                    o.hidden = True
+            else:
+                pass
 
 
 if __name__ == "__main__":
