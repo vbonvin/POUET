@@ -308,8 +308,8 @@
     <widget class="QPushButton" name="displaySelectedObs">
      <property name="geometry">
       <rect>
-       <x>710</x>
-       <y>30</y>
+       <x>690</x>
+       <y>34</y>
        <width>151</width>
        <height>23</height>
       </rect>
@@ -318,43 +318,45 @@
       <string>Display selected</string>
      </property>
     </widget>
-    <widget class="QRadioButton" name="toggleAirmassObs">
+    <widget class="QCheckBox" name="toggleAirmassObs">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>40</y>
-       <width>131</width>
+       <y>36</y>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>Airmass min/max</string>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="airmassMinObs">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>66</width>
-       <height>24</height>
-      </rect>
+      <string>Airmass &lt;=</string>
      </property>
     </widget>
     <widget class="QDoubleSpinBox" name="airmassMaxObs">
      <property name="geometry">
       <rect>
-       <x>80</x>
-       <y>60</y>
+       <x>103</x>
+       <y>35</y>
        <width>66</width>
        <height>24</height>
       </rect>
+     </property>
+     <property name="minimum">
+      <double>1.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="singleStep">
+      <double>0.100000000000000</double>
+     </property>
+     <property name="value">
+      <double>2.000000000000000</double>
      </property>
     </widget>
     <widget class="QPushButton" name="displayAllObs">
      <property name="geometry">
       <rect>
-       <x>710</x>
+       <x>690</x>
        <y>60</y>
        <width>151</width>
        <height>23</height>
@@ -364,58 +366,76 @@
       <string>Display all targets</string>
      </property>
     </widget>
-    <widget class="QRadioButton" name="toggleMoondistObs">
+    <widget class="QCheckBox" name="toggleMoondistObs">
      <property name="geometry">
       <rect>
-       <x>170</x>
-       <y>40</y>
-       <width>131</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Moondist min</string>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="moondistMinObs">
-     <property name="geometry">
-      <rect>
-       <x>170</x>
-       <y>59</y>
-       <width>66</width>
-       <height>24</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="sundistMinObs">
-     <property name="geometry">
-      <rect>
-       <x>450</x>
-       <y>59</y>
-       <width>66</width>
-       <height>24</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="toggleSundistObs">
-     <property name="geometry">
-      <rect>
-       <x>450</x>
-       <y>40</y>
+       <x>180</x>
+       <y>36</y>
        <width>101</width>
        <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>Sundist min</string>
+      <string>Moon &gt;</string>
      </property>
     </widget>
-    <widget class="QRadioButton" name="toggleUncheckedObs">
+    <widget class="QDoubleSpinBox" name="moondistMinObs">
      <property name="geometry">
       <rect>
-       <x>560</x>
-       <y>20</y>
-       <width>131</width>
+       <x>260</x>
+       <y>35</y>
+       <width>66</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="decimals">
+      <number>0</number>
+     </property>
+     <property name="maximum">
+      <double>180.000000000000000</double>
+     </property>
+     <property name="value">
+      <double>30.000000000000000</double>
+     </property>
+    </widget>
+    <widget class="QDoubleSpinBox" name="sundistMinObs">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>60</y>
+       <width>66</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="decimals">
+      <number>0</number>
+     </property>
+     <property name="maximum">
+      <double>180.000000000000000</double>
+     </property>
+     <property name="value">
+      <double>90.000000000000000</double>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="toggleSundistObs">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>61</y>
+       <width>101</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Sun   &gt;</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="toggleUncheckedObs">
+     <property name="geometry">
+      <rect>
+       <x>680</x>
+       <y>0</y>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -423,25 +443,25 @@
       <string>Unchecked</string>
      </property>
     </widget>
-    <widget class="QRadioButton" name="toggleObservabilityObs">
+    <widget class="QCheckBox" name="toggleObservabilityObs">
      <property name="geometry">
       <rect>
-       <x>560</x>
-       <y>40</y>
-       <width>131</width>
+       <x>503</x>
+       <y>0</y>
+       <width>71</width>
        <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>Observability &gt; 0</string>
+      <string>Obs&gt; 0</string>
      </property>
     </widget>
-    <widget class="QRadioButton" name="toggleCloudsObs">
+    <widget class="QCheckBox" name="toggleCloudsObs">
      <property name="geometry">
       <rect>
-       <x>560</x>
-       <y>60</y>
-       <width>131</width>
+       <x>580</x>
+       <y>0</y>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -449,17 +469,109 @@
       <string>Clouds &gt; 0</string>
      </property>
     </widget>
-    <widget class="QRadioButton" name="toggleCheckedObs">
+    <widget class="QCheckBox" name="toggleCheckedObs">
      <property name="geometry">
       <rect>
-       <x>560</x>
+       <x>780</x>
        <y>0</y>
-       <width>131</width>
+       <width>81</width>
        <height>21</height>
       </rect>
      </property>
      <property name="text">
       <string>Checked</string>
+     </property>
+    </widget>
+    <widget class="QTimeEdit" name="alphaMinObs">
+     <property name="geometry">
+      <rect>
+       <x>430</x>
+       <y>35</y>
+       <width>81</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="dateTime">
+      <datetime>
+       <hour>0</hour>
+       <minute>0</minute>
+       <second>0</second>
+       <year>1999</year>
+       <month>9</month>
+       <day>30</day>
+      </datetime>
+     </property>
+     <property name="maximumTime">
+      <time>
+       <hour>22</hour>
+       <minute>59</minute>
+       <second>59</second>
+      </time>
+     </property>
+     <property name="minimumTime">
+      <time>
+       <hour>0</hour>
+       <minute>0</minute>
+       <second>0</second>
+      </time>
+     </property>
+     <property name="displayFormat">
+      <string>hh:mm:ss</string>
+     </property>
+     <property name="timeSpec">
+      <enum>Qt::UTC</enum>
+     </property>
+    </widget>
+    <widget class="QTimeEdit" name="alphaMaxObs">
+     <property name="geometry">
+      <rect>
+       <x>430</x>
+       <y>60</y>
+       <width>81</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="dateTime">
+      <datetime>
+       <hour>23</hour>
+       <minute>59</minute>
+       <second>59</second>
+       <year>1999</year>
+       <month>8</month>
+       <day>30</day>
+      </datetime>
+     </property>
+     <property name="displayFormat">
+      <string>hh:mm:ss</string>
+     </property>
+     <property name="timeSpec">
+      <enum>Qt::UTC</enum>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="toggleAlphaMinObs">
+     <property name="geometry">
+      <rect>
+       <x>357</x>
+       <y>37</y>
+       <width>71</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Alpha &gt;</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="toggleAlphaMaxObs">
+     <property name="geometry">
+      <rect>
+       <x>357</x>
+       <y>60</y>
+       <width>71</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Alpha &lt;</string>
      </property>
     </widget>
    </widget>
