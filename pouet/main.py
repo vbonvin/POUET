@@ -24,6 +24,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 
 import logging
+mutex = QtCore.QMutex()
 #logging.basicConfig(format='%(asctime)s | %(name)s(%(funcName)s): %(message)s', level=logging.DEBUG)
 #logger = logging.getLogger(__name__)
 
@@ -36,13 +37,20 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         print("Starting up... This can take a minute...")
 
         # logger startup...
-        logTextBox = MyLogger(self.verticalLayoutWidget)
-        logTextBox.setFormatter(logging.Formatter(fmt='%(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s', datefmt='%m-%d-%Y %H:%M:%S'))
-        #logger.addHandler(logTextBox)
+        self._logwriter = LogWriter()
+        self._logwriter.dataSent.connect(self.on_threadlog)
         
+        self.viewLogs = QtWidgets.QPlainTextEdit(self.verticalLayoutWidget)
+        self.viewLogs.setGeometry(self.verticalLayoutWidget.geometry())
+        self.viewLogs.setReadOnly(True)
+
+        logTextBox = MyLogger(self._logwriter)
+        logTextBox.setFormatter(logging.Formatter(fmt='%(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s', datefmt='%m-%d-%Y %H:%M:%S'))
         logging.getLogger().addHandler(logTextBox)
+
         # You can control the logging level
         logging.getLogger().setLevel(logging.DEBUG)
+
         
         logging.info('Startup...')
         
@@ -96,16 +104,35 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # Some housekeeping stuff...
         self.allskylayerTargets.show_coordinates(150, 150, color="None")
         self.listObs_check_state = 0
-        
+
+        # To handle the all sky in a thread...
+        self.threadAllskyUpdate = ThreadAllskyUpdate(allsky=self.currentmeteo.allsky, parent=self)
+        self.threadAllskyUpdate.allskyUpdate.connect(self.on_threadAllskyUpdate)
         
         # testing stuff at startup...
 
+        
         self.load_obs(filepath='../cats/2m2lenses_withobsprogram.pouet')
 
         obs_model = self.listObs.model()
         print(obs_model.rowCount())
         #sys.exit()
 
+        
+        
+    @QtCore.pyqtSlot(str)
+    def on_threadlog(self, msg):
+        self.viewLogs.appendPlainText(msg)
+        
+    @QtCore.pyqtSlot(list)
+    def on_threadAllskyUpdate(self, sample):
+        
+        self.currentmeteo.allsky = sample[0]
+        
+        self.allsky_redisplay()
+        
+        self.print_status("All Sky refresh done.")
+        
         
     def init_warn_station(self):
         
@@ -487,8 +514,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # we use the obs name as a reference to update the model
         model_names = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
 
-        # Refresh the model
-        for ind, o in enumerate(self.observables):
+
+        # compute observability and refresh the model
+        for  o in self.observables:
             if o.hidden == False:
 
                 name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
@@ -848,16 +876,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.print_status("Refreshing All Sky...", SETTINGS['color']['warn'])
         
         self.allskylayer.erase()
-
-        self.currentmeteo.allsky.update(float(SETTINGS['validity']['allskyfrequency']))
         
-        logging.info("Updated All Sky")
-        
-        self.allsky_redisplay()
-        
-        
-        
-        self.print_status("All Sky refresh done.", SETTINGS['color']['nominal'])
+        self.threadAllskyUpdate.start()
         
     def allsky_redisplay(self):
         
@@ -924,15 +944,25 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
 class MyLogger(logging.Handler):
-    def __init__(self, parent):
+    
+    def __init__(self, logWriter):
         super().__init__()
-        self.allskyWidget = QtWidgets.QPlainTextEdit(parent)
-        self.allskyWidget.setGeometry(parent.geometry())
-        self.allskyWidget.setReadOnly(True)
+        self.logWriter = logWriter
 
     def emit(self, record):
         msg = self.format(record)
-        self.allskyWidget.appendPlainText(msg)
+        self.logWriter.set_msg(msg)
+
+class LogWriter(QtCore.QThread):
+    dataSent = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(LogWriter, self).__init__(parent)
+        self.msg = None
+        
+    def set_msg(self, msg):
+        self.msg = msg
+        self.dataSent.emit(self.msg)
 
 
 class AllSkyView(FigureCanvas):
@@ -1210,7 +1240,7 @@ class VisibilityView(FigureCanvas):
                                horizontalalignment='left', verticalalignment='center', size=7)
             
             
-        tel_lat, _, _ = meteo.get_telescope_params()
+        #tel_lat, _, _ = meteo.get_telescope_params()
         
         #self.finish_plot(tel_lat)
         self.draw()
@@ -1342,6 +1372,27 @@ class ObsModel(QtCore.QAbstractTableModel):
         
     def rowCount(self, parent):
         return len(self.mylist)
+    
+class ThreadAllskyUpdate(QtCore.QThread):
+    allskyUpdate = QtCore.pyqtSignal(list)
+
+    def __init__(self, allsky, parent=None):
+        super(ThreadAllskyUpdate, self).__init__(parent)
+        self.parent = parent
+        self.allsky = allsky 
+
+    def run(self):
+        
+        logging.debug("threadAllsky firing up.")
+        
+        self.allsky.update(float(SETTINGS['validity']['allskyfrequency']))
+
+        logging.info("Updated All Sky")
+        
+        logging.debug("threadAllsky done.")
+        
+        self.allskyUpdate.emit([self.allsky])
+    
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication
