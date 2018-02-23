@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import astropy.units as u
 from astropy.time import Time
+from astropy.wcs import WCS
 import numpy as np
 import os, sys
 
@@ -256,6 +257,79 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 		print(("Plot saved on %s" % path))
 	else:
 		plt.show()
+		
+		
+def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, boxsize=None, survey='DSS'):
+	"""
+	Uses astroquery (hopefully soon accessible from `astropy.vo`) to plot an image of the target
+	"""
+	
+	from astroquery.skyview import SkyView
+	from astropy.coordinates import SkyCoord
+	
+	
+	skycoord = SkyCoord(target.alpha, target.delta)
+	position = skycoord.icrs
+	
+	if boxsize is None: 
+		boxsize = 10.*u.arcmin
+	else: 
+		boxsize *= 1.*u.arcmin
+
+	hdu = SkyView.get_images(position=position, coordinates='icrs', survey=survey, radius=boxsize, grid=True)[0][0]
+	wcs = WCS(hdu.header)
+	
+	if figure is None:
+		ax = plt.gca(projection=wcs)
+	else:
+		ax = figure.gca(projection=wcs)
+		
+	image_data = hdu.data
+	ax.imshow(image_data, cmap=plt.get_cmap("Greys"))
+	
+	
+	imgsize = image_data.shape[0]
+	inner_boundary = 0.02
+	outer_boundary = 0.08
+
+	lwr = 1.5
+	cr = 'firebrick'
+	alphar = 0.5
+
+	ax.axvline(x=0.5*imgsize, ymin=0.5+inner_boundary, ymax=0.5+outer_boundary, lw=lwr, c=cr, alpha=alphar)
+	ax.axhline(y=0.5*imgsize, xmin=0.5+inner_boundary, xmax=0.5+outer_boundary, lw=lwr, c=cr, alpha=alphar)
+	
+	arrowkwargs = {'width':0.5, 'headwidth':4, 'shrink':0.05, 'facecolor':cr, 'color':cr, 'alpha':alphar}
+	
+	if northisup:
+		ax.invert_yaxis()
+		ax.annotate('', xy=(0.85, 0.25), xytext=(0.85, 0.05), xycoords="axes fraction", textcoords="axes fraction",
+            arrowprops=arrowkwargs,
+            )
+		ax.annotate('N', xy=(0.835, 0.255), xycoords="axes fraction", color=cr)
+	else:
+		ax.annotate('', xy=(0.85, 0.05), xytext=(0.85, 0.25), xycoords="axes fraction", textcoords="axes fraction",
+            arrowprops=arrowkwargs,
+            )
+		ax.annotate('N', xy=(0.833, 0.02), xycoords="axes fraction", color=cr)
+		
+	if eastisright:
+		ax.invert_xaxis()
+		ax.annotate('', xy=(0.95, 0.15), xytext=(0.75, 0.15), xycoords="axes fraction", textcoords="axes fraction",
+            arrowprops=arrowkwargs,
+            )
+		ax.annotate('E', xy=(0.95, 0.137), xycoords="axes fraction", color=cr)
+	else:
+		ax.annotate('', xy=(0.75, 0.15), xytext=(0.95, 0.15), xycoords="axes fraction", textcoords="axes fraction",
+            arrowprops=arrowkwargs,
+            )
+		ax.annotate('E', xy=(0.72, 0.137), xycoords="axes fraction", color=cr)
+	
+	# Redraw the figure for interactive sessions.
+	ax.figure.canvas.draw()
+	
+	
+	return ax
 
 
 
@@ -269,6 +343,11 @@ if __name__ == "__main__":
 	currentmeteo = meteomodule.Meteo(name="LaSilla", cloudscheck=False, debugmode=True)
 	currentmeteo.time = Time("2018-02-15 07:00:00.0")
 	target = obs.Observable(name="2M1134-2103", obsprogram="lens",alpha="11:34:40.5", delta="-21:03:23")
+	#target = obs.Observable(name="HE0435-1223", obsprogram="lens",alpha="04:38:14.9", delta="-12:17:14.4")
+	
+	plot_target_on_sky(target=target)
+	plt.show()
+	exit()
 
 	plot_airmass_on_sky(target=target, meteo=currentmeteo)
 	shownightobs(target, currentmeteo)

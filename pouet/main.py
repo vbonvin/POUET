@@ -92,8 +92,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         #self.toggleAirmassObs.selfChecked.connect()
         self.visibilitytool.figure.canvas.mpl_connect('motion_notify_event', self.on_visibilitytoolmotion)
-        self.listObs.doubleClicked.connect(self.show_airmass)
-        self.listObs.verticalHeader().sectionDoubleClicked.connect(self.show_airmass)
+        self.listObs.doubleClicked.connect(self.doubleclik_list)
+        self.listObs.verticalHeader().sectionDoubleClicked.connect(self.doubleclik_list)
 
         # Stating timer
         self.timer = QtCore.QTimer()
@@ -177,7 +177,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         xpix, ypix = self.currentmeteo.allsky.station.get_image_coordinates(azimuth.value, altitude.value)
         self.allskylayer.show_coordinates(xpix, ypix)
         
-    def show_airmass(self, mi):
+    def doubleclik_list(self, mi):
         
         obs_model = self.listObs.model()
         
@@ -194,7 +194,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             if not target.name == targetname:
                 continue
             
-            #plots.plot_airmass_on_sky(target, self.currentmeteo)
+            ####################################################
             
             self.plot_show = uic.loadUi("dialogPlots.ui")
             
@@ -205,6 +205,18 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             amv.show(target, self.currentmeteo)
             
             self.plot_show.open()
+            
+            #####################################################
+            
+            self.skychart_show = uic.loadUi("dialogSkyChart.ui")
+            
+            
+            self.skychart_show.setWindowTitle("Sky chart for {}".format(target.name))
+            
+            skychart = SkychartView(parent=self.skychart_show.widget)
+            skychart.show(target)
+            
+            self.skychart_show.open()
 
     def print_status(self, msg, color=None):
         
@@ -1201,6 +1213,44 @@ class AirmassView(FigureCanvas):
         plots.plot_airmass_on_sky(target, meteo, ax=self.axis)
         
         self.draw()
+        
+class SkychartView(FigureCanvas):
+
+    def __init__(self, parent=None, width=6, height=5):
+
+        self.figure = Figure(figsize=(width, height))
+        self.figure.patch.set_facecolor("None")
+
+        self.figure.subplots_adjust(wspace=0.)
+        self.figure.subplots_adjust(bottom=0.02)
+        self.figure.subplots_adjust(top=0.98)
+
+        #self.axis = plt.gca()#projection=wcs)
+        #self.axis = self.figure.add_subplot(111)
+
+        FigureCanvas.__init__(self, self.figure)
+        self.parent = parent
+
+        self.setParent(parent)
+        
+        
+        FigureCanvas.setStyleSheet(self, "background-color:transparent;")
+        
+        FigureCanvas.setSizePolicy(self,
+                                   QtWidgets.QSizePolicy.Expanding,
+                                   QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        
+    def show(self, target):
+        
+        #self.axis = self.figure.add_subplot(111)
+        #self.axis.clear()
+
+        ax = plots.plot_target_on_sky(target, figure=self.figure, northisup=True, eastisright=False, boxsize=None, survey='DSS')
+        #self.axis.plot([0,0],[1,1])
+        self.axis = ax
+        self.axis.patch.set_facecolor("None")
+        self.axis.figure.canvas.draw()
 
 class VisibilityView(FigureCanvas):
 
