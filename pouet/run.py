@@ -54,6 +54,19 @@ def retrieve_obsprogramlist():
 
 
 
+def hide_observables(observables, criteria):
+
+    for c in criteria:
+        for o in observables:
+            if c["id"] == "airmass":
+                if o.airmass < c["min"] or o.airmass > c["max"]:
+                    o.hidden = True
+            elif c["id"] == "moondist":
+                if o.angletomoon.degree < c["min"]:
+                    o.hidden = True
+
+
+
 
 if __name__ == "__main__":
 

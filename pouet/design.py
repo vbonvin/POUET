@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'design.ui'
 #
-# Created by: PyQt5 UI code generator 5.10
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -105,7 +105,7 @@ class Ui_POUET(object):
         self.updateSelectall.setGeometry(QtCore.QRect(160, 14, 151, 23))
         self.updateSelectall.setObjectName("updateSelectall")
         self.hideUnselectedObs = QtWidgets.QPushButton(self.obs)
-        self.hideUnselectedObs.setGeometry(QtCore.QRect(700, 40, 151, 23))
+        self.hideUnselectedObs.setGeometry(QtCore.QRect(700, 30, 151, 23))
         self.hideUnselectedObs.setObjectName("hideUnselectedObs")
         self.toggleAirmassObs = QtWidgets.QRadioButton(self.obs)
         self.toggleAirmassObs.setGeometry(QtCore.QRect(10, 40, 131, 21))
@@ -116,6 +116,9 @@ class Ui_POUET(object):
         self.airmassMaxObs = QtWidgets.QDoubleSpinBox(self.obs)
         self.airmassMaxObs.setGeometry(QtCore.QRect(80, 60, 66, 24))
         self.airmassMaxObs.setObjectName("airmassMaxObs")
+        self.displayAllObs = QtWidgets.QPushButton(self.obs)
+        self.displayAllObs.setGeometry(QtCore.QRect(700, 60, 151, 23))
+        self.displayAllObs.setObjectName("displayAllObs")
         self.tabWidget.addTab(self.obs, "")
         self.weather = QtWidgets.QWidget()
         self.weather.setObjectName("weather")
@@ -714,6 +717,7 @@ class Ui_POUET(object):
         self.updateSelectall.setText(_translate("POUET", "(De)select all targets"))
         self.hideUnselectedObs.setText(_translate("POUET", "Hide unselected targets"))
         self.toggleAirmassObs.setText(_translate("POUET", "Airmass &min/max"))
+        self.displayAllObs.setText(_translate("POUET", "Display all targets"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.obs), _translate("POUET", "Observations"))
         self.weatherDisplayRefresh.setText(_translate("POUET", "Refresh now"))
         self.weatherHumidityValue.setText(_translate("POUET", "XX.X"))
