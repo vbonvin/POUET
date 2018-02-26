@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- 
+
 """
 Launch the application, link POUET functions to the design
 """
