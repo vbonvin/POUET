@@ -6,7 +6,7 @@ It is the only object that interact outside POUET, i.e. communicate with website
 
 Observables interact only with Meteo to get their constaints (position to the moon, angle to wind, ...)
 
-!!! DO NOT CALL THIS site.py OTHERWISE IT CLASHES WITH SOME WEIRD SYSTEM PACKAGE!!!!
+.. warning:: Do *NOT* call this `site.py` otherwise it clashes with some weird Python system package.
 """
 
 import astropy.coordinates.angles as angles

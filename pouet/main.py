@@ -254,6 +254,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 self.skychart_show.flipEast.clicked.connect(skychart.flipEast)
                 self.skychart_show.SurveyBox.currentTextChanged.connect(skychart.changeSurvey)
                 self.skychart_show.sizeBox.currentTextChanged.connect(skychart.changeBoxSize)
+                self.skychart_show.invertColors.clicked.connect(skychart.invertColors)
                 
                 self.skychart_show.open()
                 
@@ -1055,7 +1056,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         else:
             check_wind = True
         
-        self.visibilitytool.visbility_draw(obs_time=self.currentmeteo.time, meteo=self.currentmeteo, airmass=airmass, anglemoon=float(anglemoon), check_wind=check_wind)
+        self.visibilitytool.visbility_draw(meteo=self.currentmeteo, airmass=airmass, anglemoon=float(anglemoon), check_wind=check_wind)
         
         logging.debug("Drawn visibility with airmass={:1.1f}, anglemoon={:d}d".format(airmass, anglemoon))
         
@@ -1384,8 +1385,18 @@ class AllSkyView(FigureCanvas):
         self.draw()
 
 class AirmassView(FigureCanvas):
+    """
+    Classes to handle the display of the airmass view
+    """
 
     def __init__(self, parent=None, width=6, height=5):
+        """
+        Constructor
+        
+        :param parent: parent widget
+        :param width: width of the matplotlib figure
+        :param height: height of the matplotlib figure
+        """
 
         self.figure = Figure(figsize=(width, height))
         self.figure.patch.set_facecolor("None")
@@ -1393,12 +1404,8 @@ class AirmassView(FigureCanvas):
         self.figure.subplots_adjust(wspace=0.)
         self.figure.subplots_adjust(bottom=0.02)
         self.figure.subplots_adjust(top=0.98)
-        #self.figure.subplots_adjust(right=0.9)
-        #self.figure.subplots_adjust(left=0.13)
 
-        #gs = gridspec.GridSpec(1, 2, width_ratios=[20, 1])
         self.axis = self.figure.add_subplot(111, projection="polar")
-        #self.cax = self.figure.add_subplot(gs[1])
 
         FigureCanvas.__init__(self, self.figure)
         self.parent = parent
@@ -1414,6 +1421,12 @@ class AirmassView(FigureCanvas):
         FigureCanvas.updateGeometry(self)
         
     def show(self, target, meteo):
+        """
+        Draws the airmass by calling `plots.plot_airmass_on_sky()`
+        
+        :param target: an observable instance
+        :param meteo: the meteo instance (used for the obs_time)
+        """
         
         self.axis.clear()
         plots.plot_airmass_on_sky(target, meteo, ax=self.axis)
@@ -1421,8 +1434,27 @@ class AirmassView(FigureCanvas):
         self.draw()
         
 class SkychartView(FigureCanvas):
+    """
+    Handles the GUI of the Sky Chart (`plots.plot_target_on_sky()`)
+    """
 
     def __init__(self, target, parent=None, width=6, height=5):
+        """
+        Constructor
+        
+        :param parent: parent widget
+        :param width: width of the matplotlib figure
+        :param height: height of the matplotlib figure
+        
+        Note that we take by default the following values:
+        - `northisup = True`
+        - `eastisright = False`
+        - `survey = 'DSS'`
+        - `boxsize = 10` This is in arcmin, but give a float only, it is converted by `plots.plot_target_on_sky`
+        - `cmap = 'Greys'`
+        
+        .. warning:: the default values are hard-coded this could prove to be wrong in certain cases -> monitor!
+        """
 
         self.figure = Figure(figsize=(width, height))
         self.figure.patch.set_facecolor("None")
@@ -1431,14 +1463,10 @@ class SkychartView(FigureCanvas):
         self.figure.subplots_adjust(bottom=0.02)
         self.figure.subplots_adjust(top=0.98)
 
-        #self.axis = plt.gca()#projection=wcs)
-        #self.axis = self.figure.add_subplot(111)
-
         FigureCanvas.__init__(self, self.figure)
         self.parent = parent
 
         self.setParent(parent)
-        
         
         FigureCanvas.setStyleSheet(self, "background-color:transparent;")
         
@@ -1451,10 +1479,14 @@ class SkychartView(FigureCanvas):
         self.eastisright = False
         self.survey = 'DSS'
         self.boxsize = 10 # arcmin (defined in plots.plot_target_on_sky)
+        self.cmap = "Greys"
         
         self.target = target
         
     def flipNorth(self):
+        """
+        Flips the image vertically
+        """
         
         logging.debug("Sky Chart: flipping North")
         
@@ -1466,6 +1498,9 @@ class SkychartView(FigureCanvas):
         self.show()
         
     def flipEast(self):
+        """
+        Flips the image horizontally
+        """
         
         logging.debug("Sky Chart: flipping East")
                       
@@ -1476,7 +1511,25 @@ class SkychartView(FigureCanvas):
             
         self.show()
         
+    def invertColors(self):
+        """
+        Inverts the colormap
+        """
+        
+        logging.debug("Sky Chart: inverting cmap")
+        
+        if self.cmap == "Greys":
+            self.cmap = "Greys_r"
+        else:
+            self.cmap = "Greys"
+            
+        self.show()
+        
     def show_takeawhile(self):
+        """
+        Writes a text asking the user to be patient. Downloading can be slow, even with a fast connection
+        """
+        
         self.axis.clear()
         self.axis.annotate("This can take a while...", xy=(0.5, 0.5), xycoords="axes fraction", ha="center")
         self.axis.patch.set_facecolor("None")
@@ -1485,6 +1538,9 @@ class SkychartView(FigureCanvas):
         QtWidgets.QApplication.processEvents()
 
     def changeSurvey(self, value):
+        """
+        Change the images from one survey to another
+        """
         
         self.show_takeawhile()
 
@@ -1496,6 +1552,12 @@ class SkychartView(FigureCanvas):
         
         
     def changeBoxSize(self, value):
+        """
+        Change the size of the image
+        
+        .. todo:: This calls a new Skyview, maybe we can only change the size of the window and only download when necessary
+        """
+        #TODO: see todo in description. That is above. Learn to read. Damn!
         
         self.show_takeawhile()
         
@@ -1506,16 +1568,29 @@ class SkychartView(FigureCanvas):
         self.show()
         
     def show(self):
+        """
+        Draws the sky chart image
+        """
         
-        ax = plots.plot_target_on_sky(self.target, figure=self.figure, northisup=self.northisup, eastisright=self.eastisright, boxsize=self.boxsize, survey=self.survey)
+        ax = plots.plot_target_on_sky(self.target, figure=self.figure, northisup=self.northisup, eastisright=self.eastisright, boxsize=self.boxsize, survey=self.survey, cmap=self.cmap)
         self.axis = ax
         self.axis.patch.set_facecolor("None")
         self.axis.figure.canvas.draw()
 
 class VisibilityView(FigureCanvas):
+    """
+    Class to handle the visibility widget
+    """
 
     def __init__(self, parent=None, width=4.5, height=4):
-
+        """
+        Constructor
+        
+        :param parent: parent widget
+        :param width: width of the matplotlib figure
+        :param height: height of the matplotlib figure
+        """
+        
         self.figure = Figure(figsize=(width, height))
         self.figure.patch.set_facecolor("None")
 
@@ -1545,6 +1620,15 @@ class VisibilityView(FigureCanvas):
         
         
     def show_targets(self, xs, ys, names, meteo):
+        """
+        Displays targets in the all sky
+        
+        :param xs: list of allsky x image coordinate
+        :param ys: list of allsky y image coordinate
+        :param names: list of the names
+        
+        .. warning:: this is done in the same frame as the visibility plot, so each time the user clics on targets to display, the visibility should be re-drawn.
+        """
         
         self.axis.scatter(xs, ys, color='k', s=2)
         for x, y, name in zip(xs, ys, names):
@@ -1552,12 +1636,19 @@ class VisibilityView(FigureCanvas):
                                horizontalalignment='left', verticalalignment='center', size=7)
             
             
-        #tel_lat, _, _ = meteo.get_telescope_params()
-        
-        #self.finish_plot(tel_lat)
         self.draw()
         
-    def visbility_draw(self, obs_time, meteo, airmass, anglemoon, check_wind=True):
+    def visbility_draw(self, meteo, airmass, anglemoon, check_wind=True):
+        """
+        Draws the visibility plot
+        
+        :param meteo: to get the obs_time and the station params
+        :param airmass: airmass max criterion
+        :param anglemoon: min moon angle allowed
+        :param check_wind: checks in meteo the current wind and compare this to the value in the station setting?
+        
+        .. note:: if above wind warning: displays the region 90deg away from the wind in orange. If above limit whole plot in red
+        """
 
         self.axis.clear()
         self.cax.clear()
@@ -1571,6 +1662,7 @@ class VisibilityView(FigureCanvas):
         tel_lat, tel_lon, tel_elev = meteo.get_telescope_params()
 
         observer = ephem.Observer()
+        obs_time = self.currentmeteo.time
         observer.date = obs_time.iso
         observer.lat = tel_lat.to_string(unit=u.degree, decimal=True)
         observer.lon = tel_lon.to_string(unit=u.degree, decimal=True)
@@ -1661,11 +1753,12 @@ class VisibilityView(FigureCanvas):
         self.axis.set_xticks(np.linspace(0, 24, 25))
         self.axis.set_yticks(np.linspace(-90, 90, 19))
         
-
-        
         self.finish_plot(tel_lat)
         
     def finish_plot(self, tel_lat):
+        """
+        helper to finish the plot correctly. 
+        """
 
         self.axis.set_xlim([0, 24])
         lat = float(tel_lat.to_string(unit=u.degree, decimal=True))
@@ -1686,6 +1779,9 @@ class ObsModel(QtCore.QAbstractTableModel):
         return len(self.mylist)
     
 class ThreadAllskyUpdate(QtCore.QThread):
+    """
+    Class to handle the all sky update in a new thread
+    """
     allskyUpdate = QtCore.pyqtSignal(list)
 
     def __init__(self, parent=None):
@@ -1712,7 +1808,7 @@ class ThreadAllskyUpdate(QtCore.QThread):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication
-    global SETTINGS
+    global SETTINGS # TKU: I know I did it like this, how to do it better (and stay SIMPLE)
     SETTINGS = util.readconfig("config/settings.cfg")
     form = POUET()                 # We set the form to be our ExampleApp (design)
     form.show()                         # Show the form
