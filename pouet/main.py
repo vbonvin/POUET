@@ -468,7 +468,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 self.headerPopup.headerObsprogramValue.setCurrentIndex(self.headerPopup.headerObsprogramValue.findText("None"))
 
                 # ok is 0 if rejected, 1 if accepted
-                ok = self.headerPopup#.exec()
+                ok = self.headerPopup.exec()
                 if ok:
 
                     namecol = int(self.headerPopup.headerNameValue.currentIndex())+1
