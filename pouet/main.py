@@ -10,7 +10,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os, sys
 import obs, run, util, plots
 import meteo as meteomodule
-import design
 from astropy import units as u
 from astropy.time import Time, TimeDelta
 import astropy.coordinates.angles as angles
@@ -28,8 +27,22 @@ import numpy as np
 
 import logging
 mutex = QtCore.QMutex()
-#logging.basicConfig(format='%(asctime)s | %(name)s(%(funcName)s): %(message)s', level=logging.DEBUG)
-#logger = logging.getLogger(__name__)
+
+
+# define a bunch of hardcoded global variables (bad!) depending on user config
+
+global SETTINGS  # TKU: I know I did it like this, how to do it better (and stay SIMPLE)
+SETTINGS = util.readconfig("config/settings.cfg")
+
+if SETTINGS["display"]["windowsize"] == "regular":
+    import design
+    visibility_height = 4.0
+elif SETTINGS["display"]["windowsize"] == "small":
+    import design_small as design
+    visibility_height = 2.78
+else:
+    logging.critical("Windowsize keyword not recognized in settings.cfg. Exiting...")
+    sys.exit()
 
 
 class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
@@ -1686,12 +1699,15 @@ class SkychartView(FigureCanvas):
         self.axis.patch.set_facecolor("None")
         self.axis.figure.canvas.draw()
 
+
+
 class VisibilityView(FigureCanvas):
     """
     Class to handle the visibility widget
     """
 
-    def __init__(self, parent=None, width=4.5, height=4):
+
+    def __init__(self, parent=None, width=4.5, height=visibility_height):
         """
         Constructor
         
@@ -1704,8 +1720,8 @@ class VisibilityView(FigureCanvas):
         self.figure.patch.set_facecolor("None")
 
         self.figure.subplots_adjust(wspace=0.)
-        self.figure.subplots_adjust(bottom=0.23)
-        self.figure.subplots_adjust(top=0.95)
+        self.figure.subplots_adjust(bottom=0.24)
+        self.figure.subplots_adjust(top=0.93)
         self.figure.subplots_adjust(right=0.9)
         self.figure.subplots_adjust(left=0.13)
 
@@ -1917,8 +1933,6 @@ class ThreadAllskyUpdate(QtCore.QThread):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication
-    global SETTINGS # TKU: I know I did it like this, how to do it better (and stay SIMPLE)
-    SETTINGS = util.readconfig("config/settings.cfg")
     form = POUET()                 # We set the form to be our ExampleApp (design)
     form.show()                         # Show the form
     app.exec_()                         # and execute the app
