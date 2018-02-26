@@ -122,10 +122,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
     @QtCore.pyqtSlot(str)
     def on_threadlog(self, msg):
+        """
+        Helpers that writes a message to the log box when prompted from a `logging` call. (Don't ask...)
+        """
         self.viewLogs.appendPlainText(msg)
         
     @QtCore.pyqtSlot(list)
     def on_threadAllskyUpdate(self, sample):
+        """
+        When an AllSky update is finished, this method is being called. It gets the image from the thread (element 0 in the list `sample`) and displays it.
+        """
         
         self.currentmeteo.allsky = sample[0]
         
@@ -137,6 +143,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         
         
     def init_warn_station(self):
+        """
+        Initialises the weather warning flags for the current observing station
+        """
         
         self.station_reached_limit = False
         self.station_reached_warn = False
@@ -144,6 +153,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.weather_reached_warn = False
         
     def does_warn_station(self):
+        """
+        Rings the (weather) alarm if there are warning flags by changing the color of the `Station` tab.
+        """
         
         if self.station_reached_limit or self.weather_reached_limit:
             self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station (!)"))
@@ -157,6 +169,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         
     def changeTabColor(self, color, tab=None):
+        """
+        Helper to change the font color of a tab.
+        
+        :param color: a pyqt recognised color
+        :param tab: the tab for which to change the color (default: station). Note that you should give the tab widget variable here.
+        """
         
         if tab is None:
             tab = self.weather
@@ -164,6 +182,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.tabWidget.tabBar().setTabTextColor(self.tabWidget.indexOf(tab), QtGui.QColor(color))
 
     def on_visibilitytoolmotion(self, event):
+        """
+        When the mouse is hovering over the visibility plot, this shows the same coordinates in the all sky window.
+        
+        :param event: given by pyqt, contains the coordinates in the visibility window.
+        
+        .. note:: this is only active if All Sky has an image and difference between obs_time and last all sky refresh is smaller than value defined in settings under `showallskycoordinates` - OR in debug mode.
+        """
         
         if event.inaxes != self.visibilitytool.axis: return
         
@@ -178,6 +203,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.allskylayer.show_coordinates(xpix, ypix)
         
     def doubleclik_list(self, mi):
+        """
+        Method that defines what to do when the user double-clics on a observable
+        
+        :param mi: given by pyqt, represent the list item in focus.
+        """
         
         obs_model = self.listObs.model()
         
@@ -230,6 +260,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
                 self.print_status('Sky chart opened.')
     
     def print_status(self, msg, color=None):
+        """
+        Helper that prints a status in the status box
+        
+        :param msg: text to display
+        :param color: pyqt recognised named color
+        """
         
         if color is None:
             color = SETTINGS['color']['nominal']
@@ -239,12 +275,18 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         QtWidgets.QApplication.processEvents()
         
     def set_timer_interval(self):
+        """
+        Helper that sets the auto-refresh frequency when the corresponding field in the `configuration` tab is changed
+        """
 
         interval = self.configAutoupdateFreqValue.value() * 1000 * 60
         self.timer.setInterval(interval)
         logging.debug("Set auto-refresh to {} min".format(self.configAutoupdateFreqValue.value()))
         
     def set_configTimeNow(self):
+        """
+        Helper that sets the date/time Edit widget to current time when prompted by the `Set to now` button
+        """
         
         #get current date and time
         now = QtCore.QDateTime.currentDateTimeUtc()
@@ -253,11 +295,17 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.configTime.setDateTime(now)
         
     def save_Time2obstime(self):
+        """
+        Sets the meteo time object to what the date/time edit widget shows
+        """
         
         self.currentmeteo.time = Time(self.configTime.dateTime().toPyDateTime(), scale="utc")
         logging.debug("obs_time is now set to {:s}".format(str(self.currentmeteo.time)))
         
     def set_debug_mode(self):
+        """
+        Changes the mode to either `debug` or `production`. When in debug, local AllSky and the WeatherReport archive files are used (for the LaSilla station)
+        """ 
         
         if self.configDebugModeValue.checkState() == 0:
             goto_mode = False
@@ -283,6 +331,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         
     def do_update(self):
+        """
+        Method to perform a complete update of the observability for the date/time set in the obs_time widget
+        """
 
         self.print_status("Updating observability...", SETTINGS['color']['warn'])
         self.save_Time2obstime()
@@ -371,6 +422,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
     def load_obs(self, filepath=None):
+        """
+        Loads a catalogue given a filepath or a user-chosen file (this prompts a choose file... pop-up)
+        
+        :param filepath: optional argument to bypass the Select a file dialogue (but not the choose your column pop-up)
+        """
 
         logmsg = ''
 
@@ -731,6 +787,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
     def listObs_selectall(self):
+        """
+        When prompted, this method either select all observable or deselect them
+        """
         
         obs_model = self.listObs.model()
                 
@@ -745,6 +804,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.listObs_check_state = out_state
     
     def listObs_plot_targets(self):
+        """
+        Plots the selected targets in the visbility and all sky.
+        The user can select in which plot they want to see the target (2 checkboxes in the config tab).
+        
+        .. Note:: displayed in all sky only if delta time between obs_time and all sky last refresh is smaller than `showallskytargets` (in global settings) - OR if debug mode.
+        """
         
         obs_model = self.listObs.model()
         
@@ -805,6 +870,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
     def weather_display(self):
+        """
+        Prompts a weather report update and displays the results in the `station` tab.
+        """
         
         if not self.currentmeteo.lastest_weatherupdate_time is None and (Time.now() - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value < float(SETTINGS['validity']['weatherreportfrequency']):
             logging.info("Last weather report was downloaded more recently than {} seconds ago, I don't download it again".format(SETTINGS['validity']['weatherreportfrequency']))
@@ -843,11 +911,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         if draw_wind:
             self.allsky_redisplay()
         
-        self.weatherLastUpdateValue.setText(str(self.currentmeteo.lastest_weatherupdate_time).split('.')[0])
+        self.weatherLastUpdateValue.setText("Last update: {}".format(str(self.currentmeteo.lastest_weatherupdate_time).split('.')[0]))
         
         self.does_warn_station()
 
     def site_display(self):
+        """
+        Computes and displays information about the site and the position of the bright objects in the `station` tab.
+        """
         
         self.siteLocationValue.setText(str('Lat={:s}\tLon={:s}\tElev={:s} m'.format(self.currentmeteo.location.get("location", "longitude"), self.currentmeteo.location.get("location", "latitude"), self.currentmeteo.location.get("location", "elevation"))))
         
@@ -899,7 +970,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.moonCoordinatesValues.setText(str('RA={:s}  DEC={:s}'.format(self.currentmeteo.moon.ra.__str__(), self.currentmeteo.moon.dec.__str__())))
         self.moonAltazValue.setText(str('{:2.1f}° ({:s})\t{:2.1f}°'.format(moonAlt, moonState, moonAz)))
         
-        self.brightLastUpdateValue.setText(str(obs_time).split('.')[0])
+        self.brightLastUpdateValue.setText("computed for {}".format(str(obs_time).split('.')[0]))
         
         self.does_warn_station()
 
@@ -936,10 +1007,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.nightStartAstroValue.setText(str('{:s}'.format(str(sunset))))
         self.nightEndAstroValue.setText(str('{:s}'.format(str(sunrise))))
         
-        self.nightLastUpdateValueBefore.setText(str(day_before).split('.')[0])
-        self.nightLastUpdateValueAfter.setText(str(day_after).split('.')[0])
+        self.nightLastUpdateValue.setText("for night {} to {}".format(str(day_before).split('.')[0], str(day_after).split('.')[0]))
 
     def allsky_refresh(self):
+        """
+        Starts a refresh of the all sky by erasing the image and starting a new thread to get the new image and analyse it.
+        """
         
         self.print_status("Refreshing All Sky...", SETTINGS['color']['warn'])
         
@@ -948,6 +1021,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.threadAllskyUpdate.start()
         
     def allsky_redisplay(self):
+        """
+        Calls the drawing of the all sky in the widget. (including the wind)
+        """
         
         if self.configCloudsShowLayersValue.checkState() == 0:
             plot_analysis = False
@@ -955,7 +1031,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
             plot_analysis = True
         
         self.allsky.display(self.currentmeteo, plot_analysis=plot_analysis)
-        self.allSkyUpdateValue.setText(str(self.currentmeteo.allsky.last_im_refresh).split('.')[0])
+        self.allSkyUpdateValue.setText("Image update: {}".format(str(self.currentmeteo.allsky.last_im_refresh).split('.')[0]))
         
         self.allsky.display_wind_limits(self.currentmeteo)
         self.allSkyUpdateWindValue.setText("Wind update: {}".format(str(self.currentmeteo.lastest_weatherupdate_time).split('.')[0]))
@@ -964,6 +1040,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         logging.debug(msg)
         
     def visibilitytool_draw_exec(self):
+        """
+        Actually calls to draw the visibility. (and does not handle the target plot) 
+        
+        .. Note:: if there is a too large delta time between weather report and obs_time, does not display weather info (threshold defined in global settings, `validity`/`weatherreport`)
+        """
         
         airmass = self.visibilityAirmassValue.value()
         anglemoon = self.visibilityMoonAngleValue.value()
@@ -979,11 +1060,19 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         logging.debug("Drawn visibility with airmass={:1.1f}, anglemoon={:d}d".format(airmass, anglemoon))
         
     def visibilitytool_draw(self):
+        """
+        Method to prompt the drawing of the visibility and plots the selected targets in the visibility tool.
+        """
     
         self.visibilitytool_draw_exec()
         self.listObs_plot_targets()
         
     def auto_refresh(self):
+        """
+        Auto-refresh of the weather report and the all sky.
+        
+        .. note:: the user can choose in the config tab the frequency of the update and if to update the all sky and the weather report 
+        """
         
         logging.info("Auto-refresh")
         self.print_status("Auto-refresh started...", SETTINGS['color']['warn'])
@@ -1012,34 +1101,60 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
 class MyLogger(logging.Handler):
+    """
+    Class that inherits from `logging.Handler` to overload the `emit` method, just to handle better (i.e. not crash) when logging in a text box from multiple threads.
+    """
     
     def __init__(self, logWriter):
+        """
+        Constructor.
+        
+        :param logWriter: an instance of the logWriter class
+        """
         super().__init__()
         self.logWriter = logWriter
 
     def emit(self, record):
+        """
+        This is called each time there is a new logging record. Basically reads the record, formats it and sends it to the logWritter for display.
+        """
         msg = self.format(record)
         self.logWriter.set_msg(msg)
 
 class LogWriter(QtCore.QThread):
+    """
+    A class in a different thread to handle the logging events correctly. Otherwise (and because we display the log in a textbox), pouet crashes.
+    """
+    
     dataSent = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(LogWriter, self).__init__(parent)
-        self.msg = None
         
     def set_msg(self, msg):
-        self.msg = msg
-        self.dataSent.emit(self.msg)
+        """
+        records a message and sends it to the GUI for display.
+        """
+        self.dataSent.emit(msg)
 
 
 class AllSkyView(FigureCanvas):
+    """
+    Class to draw data in the AllSkyView widget, including the analysed image, the selected targets and the mouse-over-visibility position.
+    """
 
     def __init__(self, meteo, parent=None, width=4.66, height=3.5):
+        """
+        Constructor.
+        
+        :param meteo: a meteo instance, needed to get the default size of the all sky image
+        :param parent: the parent widget
+        :param width: width of the figure
+        :param height: height of the figure
+        """
 
         self.figure = Figure(figsize=(width, height))
         self.figure.patch.set_facecolor("None")
-        #self.figure.patch.set_facecolor((0.95, 0.94, 0.94, 1.))
         
         self.figure.subplots_adjust(wspace=0.)
         self.figure.subplots_adjust(bottom=0.)
@@ -1067,6 +1182,10 @@ class AllSkyView(FigureCanvas):
         self.imy = meteo.allsky.station.params['image_y_size']
         
     def erase(self):
+        """
+        Erases everything in the axis. To be called often, before every redraw or if a failure is detected, before showing error message
+        """
+        
         self.axis.clear()
         
         self.axis.scatter([0,self.imy],[0,self.imx], c='None', s=1)
@@ -1080,6 +1199,13 @@ class AllSkyView(FigureCanvas):
         self.draw()
         
     def show_coordinates(self, x, y, color='k'):
+        """
+        When called, this highlights the a position in the all sky by displaying a reticule.
+        
+        :param x: allsky image x coordinate
+        :param y: allsky image y coordinate
+        :param color: color of the reticule
+        """
         
         self.erase()
         
@@ -1089,6 +1215,13 @@ class AllSkyView(FigureCanvas):
         self.draw()
         
     def show_targets(self, xs, ys, names):
+        """
+        Displays targets in the all sky
+        
+        :param xs: list of allsky x image coordinate
+        :param ys: list of allsky y image coordinate
+        :param names: list of the names
+        """
         
         self.erase()
         
@@ -1101,6 +1234,12 @@ class AllSkyView(FigureCanvas):
         self.draw()
             
     def error_image(self, startup=False):
+        """
+        Error image to display if there's an error while loading or processing the image
+        
+        :param startup: if `True` shows a message saying that the user should try to reload manually
+        """
+        
         self.axis.clear()
         self.axis.plot([-1,1],[-1,1], lw=4, c=SETTINGS['color']['nominal'])
         self.axis.plot([-1,1],[1,-1], lw=4, c=SETTINGS['color']['nominal'])
@@ -1116,6 +1255,15 @@ class AllSkyView(FigureCanvas):
         self.draw()
 
     def display(self, meteo, plot_analysis=True):
+        """
+        ZE method to draw the all sky and its analysis.
+        
+        :param meteo: the meteo instance to get the last refresh of the image (and if couldn't download for a while [in global settings/`validity`/`allsky`] displays an error message)
+        :param plot_analysis: if `True` shows the analysis layer, if `False` only the orginal all sky image
+        
+        .. note:: if there is a processing error of the image and the method cannot plot it, it will call `AllSkyView.error_image()` with `startup=True`, i.e. for the user to manually refresh
+        
+        """
 
         self.axis.clear()
 
@@ -1190,7 +1338,11 @@ class AllSkyView(FigureCanvas):
 
     def display_wind_limits(self, meteo):
         """
-        Should this call some other function elsewhere? Maybe
+        Displays the wind limit if needed (according to the setting in config/{name}.cfg / weather / wind*Level)
+        
+        :param meteo: to get the weather and the parameters of the allsky
+        
+        If the wind is below the warn limit, does nothing, if above hatches in orange the region 90deg away from the wind and if above limit hatches all the image in red.
         """
 
         params = meteo.allsky.station.params
@@ -1326,7 +1478,7 @@ class SkychartView(FigureCanvas):
         
     def show_takeawhile(self):
         self.axis.clear()
-        self.axis.annotate("This can take a moment...", xy=(0.5, 0.5), xycoords="axes fraction")
+        self.axis.annotate("This can take a while...", xy=(0.5, 0.5), xycoords="axes fraction", ha="center")
         self.axis.patch.set_facecolor("None")
         self.axis.axis('off')
         self.axis.figure.canvas.draw()
