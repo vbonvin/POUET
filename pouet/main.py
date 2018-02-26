@@ -1665,7 +1665,7 @@ class VisibilityView(FigureCanvas):
         tel_lat, tel_lon, tel_elev = meteo.get_telescope_params()
 
         observer = ephem.Observer()
-        obs_time = self.currentmeteo.time
+        obs_time = meteo.time
         observer.date = obs_time.iso
         observer.lat = tel_lat.to_string(unit=u.degree, decimal=True)
         observer.lon = tel_lon.to_string(unit=u.degree, decimal=True)
