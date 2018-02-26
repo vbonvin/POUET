@@ -10,7 +10,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os, sys
 import obs, run, util, plots
 import meteo as meteomodule
-import design
 from astropy import units as u
 from astropy.time import Time, TimeDelta
 import astropy.coordinates.angles as angles
@@ -28,8 +27,22 @@ import numpy as np
 
 import logging
 mutex = QtCore.QMutex()
-#logging.basicConfig(format='%(asctime)s | %(name)s(%(funcName)s): %(message)s', level=logging.DEBUG)
-#logger = logging.getLogger(__name__)
+
+
+# define a bunch of hardcoded global variables (bad!) depending on user config
+
+global SETTINGS  # TKU: I know I did it like this, how to do it better (and stay SIMPLE)
+SETTINGS = util.readconfig("config/settings.cfg")
+
+if SETTINGS["display"]["windowsize"] == "regular":
+    import design
+    visibility_height = 4.0
+elif SETTINGS["display"]["windowsize"] == "small":
+    import design_small as design
+    visibility_height = 2.78
+else:
+    logging.critical("Windowsize keyword not recognized in settings.cfg. Exiting...")
+    sys.exit()
 
 
 class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
@@ -54,7 +67,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # You can control the logging level
         logging.getLogger().setLevel(logging.DEBUG)
 
-        
         logging.info('Startup...')
         
         self.allsky_debugmode = False  
@@ -82,7 +94,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.weatherDisplayRefresh.clicked.connect(self.weather_display)
         self.allSkyRefresh.clicked.connect(self.allsky_refresh)
         self.configCloudsShowLayersValue.clicked.connect(self.allsky_redisplay)
-        #self.checkObsStatus.clicked.connect(self.check_obs_status)
         self.configAutoupdateFreqValue.valueChanged.connect(self.set_timer_interval)
         self.configTimenow.clicked.connect(self.set_configTimeNow)
         self.configUpdate.clicked.connect(self.do_update)
@@ -111,18 +122,77 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # To handle the all sky in a thread...
         self.threadAllskyUpdate = ThreadAllskyUpdate(parent=self)
         self.threadAllskyUpdate.allskyUpdate.connect(self.on_threadAllskyUpdate)
-        
+
+        # initialize regular expression validators for alpha and delta selecters
+        alpha_regexp = QtCore.QRegExp('([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]')
+        delta_regexp = QtCore.QRegExp('-?[0-8][0-9]:[0-5][0-9]:[0-5][0-9]')
+
+        self.alpha_validator = QtGui.QRegExpValidator(alpha_regexp)
+        self.delta_validator = QtGui.QRegExpValidator(delta_regexp)
+
+        # we do not set validators as attribute of QLineEdit as it prevents the user to enter what he wants. Instead, we test against them when the textfield is changed
+
+        self.alphaMinObs.textChanged.connect(self.validate_alpha)
+        self.alphaMaxObs.textChanged.connect(self.validate_alpha)
+
+        self.deltaMinObs.textChanged.connect(self.validate_delta)
+        self.deltaMaxObs.textChanged.connect(self.validate_delta)
+
+        #todo: initialize the validation at startup - it avoids having to define these flags here
+        self.alphaMinObs.isValid = True
+        self.alphaMaxObs.isValid = True
+        self.deltaMinObs.isValid = True
+        self.deltaMaxObs.isValid = True
+
         # testing stuff at startup...
-
-        
         self.load_obs(filepath='../cats/2m2lenses_withobsprogram.pouet')
-
         obs_model = self.listObs.model()
-        print(obs_model.rowCount())
+
         #sys.exit()
 
-        
-        
+    def validate_alpha(self):
+        """
+        Validate that the user input for the alpha min and max fields are well inside predefined boudaries (00:00:00 to 23:59:59)
+
+        Add a boolean to the sender field (isValid)
+        """
+
+        state = self.alpha_validator.validate(self.sender().text(), 0)[0]
+        if state == QtGui.QValidator.Acceptable:
+            color = '#c4df9b'
+            self.sender().isValid = True
+        elif state == QtGui.QValidator.Intermediate:
+            color = '#fff79a'  # yellow
+            self.sender().isValid = False
+        else:
+            color = '#f6989d'  # red
+            self.sender().isValid = False
+
+        self.sender().setStyleSheet('QLineEdit { background-color: %s }' % color)
+
+
+
+    def validate_delta(self):
+        """
+        Validate that the user input for the delta min and max fields are well inside predefined boudaries (-89:59:59 to 89:59:59)
+
+        Add a boolean to the sender field (isValid), set to True only when the validator returns an Acceptable
+        """
+
+        state = self.delta_validator.validate(self.sender().text(), 0)[0]
+        if state == QtGui.QValidator.Acceptable:
+            color = '#c4df9b'
+            self.sender().isValid = True
+        elif state == QtGui.QValidator.Intermediate:
+            color = '#fff79a'  # yellow
+            self.sender().isValid = False
+        else:
+            color = '#f6989d'  # red
+            self.sender().isValid = False
+
+        self.sender().setStyleSheet('QLineEdit { background-color: %s }' % color)
+
+
     @QtCore.pyqtSlot(str)
     def on_threadlog(self, msg):
         """
@@ -365,8 +435,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         # Initial params
         name = QtGui.QStandardItem(o.name)
         name.setCheckable(True)
-        alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':'))
-        delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':'))
+        alpha = QtGui.QStandardItem(o.alpha.to_string(unit=u.hour, sep=':', pad=True))
+        delta = QtGui.QStandardItem(o.delta.to_string(unit=u.degree, sep=':', pad=True))
         observability = QtGui.QStandardItem(str("{:1.1f}".format(o.observability)))
         obsprogram = QtGui.QStandardItem(o.obsprogram)
 
@@ -720,6 +790,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         clouds = self.toggleCloudsObs.isChecked()
         alphamin = self.toggleAlphaMinObs.isChecked()
         alphamax = self.toggleAlphaMaxObs.isChecked()
+        deltamin = self.toggleDeltaMinObs.isChecked()
+        deltamax = self.toggleDeltaMaxObs.isChecked()
 
 
         obs_model = self.listObs.model()
@@ -747,8 +819,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         criteria = []
 
         if airmass:
-            airmassmin, airmassmax = self.airmassMinObs.value(), self.airmassMaxObs.value()
-            criteria.append({"id": "airmass", "min": airmassmin, "max": airmassmax})
+            criteria.append({"id": "airmass", "max":  self.airmassMaxObs.value()})
 
         if moondist:
             criteria.append({"id": "moondist", "min": self.moondistMinObs.value()})
@@ -762,16 +833,64 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         if clouds:
             criteria.append({"id": "clouds", "min": 0})
 
+        # alpha
         if alphamin and alphamax:
-            criteria.append({"id": "alphaboth", "min": self.alphaMinObs.value(), "max": self.alphaMaxObs.value()})
-
-        """
+            if self.alphaMinObs.isValid and self.alphaMaxObs.isValid:
+                criteria.append({"id": "alphaboth", "min": self.alphaMinObs.text(), "max": self.alphaMaxObs.text()})
+            elif self.alphaMinObs.isValid and not self.alphaMaxObs.isValid:
+                criteria.append({"id": "alphamin", "min": self.alphaMinObs.text()})
+                self.toggleAlphaMaxObs.setChecked(False)
+                logging.warning("Alpha max field not valid - I discard it...")
+            elif not self.alphaMinObs.isValid and self.alphaMaxObs.isValid:
+                criteria.append({"id": "alphamax", "max": self.alphaMaxObs.text()})
+                self.toggleAlphaMinObs.setChecked(False)
+                logging.warning("Alpha min field not valid - I discard it...")
+            else:
+                self.toggleAlphaMinObs.setChecked(False)
+                self.toggleAlphaMaxObs.setChecked(False)
+                logging.warning("Alpha min and max fields not valid - I discard them...")
         elif alphamin and not alphamax:
-            criteria.append({"id": "alphamin", "min": self.alphaMinObs.value()})
-        elif alphamax and not alphamin:
-            criteria.append({"id": "alphamax", "max": self.alphaMaxObs.value()})
-        """
+            if self.alphaMinObs.isValid:
+               criteria.append({"id": "alphamin", "min": self.alphaMinObs.text()})
+            else:
+                self.toggleAlphaMinObs.setChecked(False)
+                logging.warning("Alpha min field not valid - I discard it...")
 
+        elif not alphamin and alphamax:
+            if self.alphaMaxObs.isValid:
+                criteria.append({"id": "alphamax", "max": self.alphaMaxObs.text()})
+            else:
+                self.toggleAlphaMaxObs.setChecked(False)
+                logging.warning("Alpha max field not valid - I discard it...")
+
+        if deltamin and deltamax:
+            if self.deltaMinObs.isValid and self.deltaMaxObs.isValid:
+                criteria.append({"id": "deltaboth", "min": self.deltaMinObs.text(), "max": self.deltaMaxObs.text()})
+            elif self.deltaMinObs.isValid and not self.deltaMaxObs.isValid:
+                criteria.append({"id": "deltamin", "min": self.deltaMinObs.text()})
+                self.toggleDeltaMaxObs.setChecked(False)
+                logging.warning("Delta max field not valid - I discard it...")
+            elif not self.deltaMinObs.isValid and self.deltaMaxObs.isValid:
+                criteria.append({"id": "deltamax", "max": self.deltaMaxObs.text()})
+                self.toggleDeltaMinObs.setChecked(False)
+                logging.warning("Delta min field not valid - I discard it...")
+            else:
+                self.toggleDeltaMinObs.setChecked(False)
+                self.toggleDeltaMaxObs.setChecked(False)
+                logging.warning("Delta min and max fields not valid - I discard them...")
+        elif deltamin and not deltamax:
+            if self.deltaMinObs.isValid:
+               criteria.append({"id": "deltamin", "min": self.deltaMinObs.text()})
+            else:
+                self.toggleDeltaMinObs.setChecked(False)
+                logging.warning("Delta min field not valid - I discard it...")
+
+        elif not deltamin and deltamax:
+            if self.deltaMaxObs.isValid:
+                criteria.append({"id": "deltamax", "max": self.deltaMaxObs.text()})
+            else:
+                self.toggleDeltaMaxObs.setChecked(False)
+                logging.warning("Delta max field not valid - I discard it...")
 
 
         run.hide_observables(self.observables, criteria)
@@ -1580,12 +1699,15 @@ class SkychartView(FigureCanvas):
         self.axis.patch.set_facecolor("None")
         self.axis.figure.canvas.draw()
 
+
+
 class VisibilityView(FigureCanvas):
     """
     Class to handle the visibility widget
     """
 
-    def __init__(self, parent=None, width=4.5, height=4):
+
+    def __init__(self, parent=None, width=4.5, height=visibility_height):
         """
         Constructor
         
@@ -1598,8 +1720,8 @@ class VisibilityView(FigureCanvas):
         self.figure.patch.set_facecolor("None")
 
         self.figure.subplots_adjust(wspace=0.)
-        self.figure.subplots_adjust(bottom=0.23)
-        self.figure.subplots_adjust(top=0.95)
+        self.figure.subplots_adjust(bottom=0.24)
+        self.figure.subplots_adjust(top=0.93)
         self.figure.subplots_adjust(right=0.9)
         self.figure.subplots_adjust(left=0.13)
 
@@ -1811,8 +1933,6 @@ class ThreadAllskyUpdate(QtCore.QThread):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication
-    global SETTINGS # TKU: I know I did it like this, how to do it better (and stay SIMPLE)
-    SETTINGS = util.readconfig("config/settings.cfg")
     form = POUET()                 # We set the form to be our ExampleApp (design)
     form.show()                         # Show the form
     app.exec_()                         # and execute the app
