@@ -1,5 +1,6 @@
 numpy==1.13.3
 astropy==2.0.2
+astroquery=0.3.7
 matplotlib==2.1.0
 QtAwesome==0.4.4
 qtconsole==4.3.1

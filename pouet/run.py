@@ -59,7 +59,7 @@ def hide_observables(observables, criteria):
     for c in criteria:
         for o in observables:
             if c["id"] == "airmass":
-                if o.airmass < c["min"] or o.airmass > c["max"]:
+                if  o.airmass > c["max"]:
                     o.hidden = True
             elif c["id"] == "moondist":
                 if o.angletomoon.degree < c["min"]:
@@ -71,8 +71,105 @@ def hide_observables(observables, criteria):
                 if o.observability <= c["min"]:
                     o.hidden = True
             elif c["id"] == "clouds":
-                if o.cloudfree <= c["min"]:
+                if o.cloudfree is not None and o.cloudfree <= c["min"]:
                     o.hidden = True
+                elif o.cloudfree is None:
+                    o.hidden = True
+
+
+            elif c["id"] == "alphaboth":
+                if o.alpha.to_string(sep=":", pad=True) <= c["min"] or o.alpha.to_string(sep=":", pad=True) >= c["max"]:
+                    o.hidden = True
+            elif c["id"] == "alphamin":
+                if o.alpha.to_string(sep=":", pad=True) <= c["min"]:
+                    o.hidden = True
+            elif c["id"] == "alphamax":
+                if o.alpha.to_string(sep=":", pad=True) >= c["max"]:
+                    o.hidden = True
+
+            elif c["id"] == "deltaboth":
+
+                delta = o.delta.to_string(sep=":", pad=True).split(".")[0]
+
+                # we start with the easy cases where max < min
+                if len(c["max"]) > len(c["min"]):
+                    o.hidden = True
+                elif len(c["max"]) == 8 and len(c["min"]) == 8 and c["min"] > c["max"]:
+                    o.hidden = True
+                elif len(c["max"]) == 9 and len(c["min"]) == 9 and c["min"] < c["max"]:
+                    o.hidden = True
+
+
+                elif len(delta) == 8:  # then obs is positive
+                    if len(c["min"]) == 8 and len(c["max"]) == 8:
+                        # all positive, standard comparison
+                        if delta <= c["min"] or delta >= c["max"]:
+                            o.hidden = True
+                    elif len(c["max"]) == 8 and len(c["min"]) == 9:
+                        #  obs is positive, min is negative --> ignore it
+                        if delta >= c["max"]:
+                            o.hidden = True
+                    elif len(c["max"]) == 9 and len(c["min"]) == 9:
+                        # obs is positive, constraint are negative --> hide obs
+                        o.hidden = True
+
+                elif len(delta) == 9:  # then obs is negative
+                    if len(c["min"]) == 8 and len(c["max"]) == 8:
+                        # obs negative, constraint positive --> hide obs
+                        o.hidden = True
+                    elif len(c["min"]) == 9 and len(c["max"]) == 8:
+                        # max constrain is positive, ignore it
+                        if delta >= c["min"]:
+                            o.hidden = True
+                    elif len(c["max"]) == 9 and len(c["min"]) == 9:
+                        # all negative, inverted comparison:
+                        if delta <= c["max"] or delta >= c["min"]:
+                            o.hidden = True
+
+
+            elif c["id"] == "deltamin":
+                delta = o.delta.to_string(sep=":", pad=True).split(".")[0]
+
+                if len(delta) == 8:  # then obs is positive
+                    if len(c["min"]) == 8:
+                        # all positive, standard comparison
+                        if o.delta.to_string(sep=":", pad=True) <= c["min"]:
+                            o.hidden = True
+                    elif len(c["min"]) == 9:
+                        # constrain negative, ignore it
+                        pass
+
+                elif len(delta) == 9:  # then obs is negative
+                    if len(c["min"]) == 8:
+                        # cmin bigger than obs, hide it
+                        o.hidden = True
+                    elif len(c["min"]) == 9:
+                        # both negative, inverse comparison
+                        if o.delta.to_string(sep=":", pad=True) >= c["min"]:
+                            o.hidden = True
+
+
+            elif c["id"] == "deltamax":
+                delta = o.delta.to_string(sep=":", pad=True).split(".")[0]
+
+                if len(delta) == 8:  # then obs is positive
+                    if len(c["max"]) == 8:
+                        # all positive, standard comparison
+                        if o.delta.to_string(sep=":", pad=True) >= c["max"]:
+                            o.hidden = True
+                    elif len(c["max"]) == 9:
+                        # cmax smaller than obs, hide it
+                        o.hidden = True
+
+                elif len(delta) == 9:  # then obs is negative
+                    if len(c["max"]) == 8:
+                        # cmax bigger than obs, ignore it
+                        pass
+                    elif len(c["max"]) == 9:
+                        # both negative, inverse comparison
+                        if o.delta.to_string(sep=":", pad=True) <= c["max"]:
+                            o.hidden = True
+
             else:
                 pass
 
@@ -94,8 +191,12 @@ if __name__ == "__main__":
     # load a catalogue of observables
     observables = obs.rdbimport("../cats/2m2lenses.rdb", obsprogramcol=None, obsprogram='lens')
 
-    observables = [o for o in observables if o.name == "PSJ1606-2333"]
+    #observables = [o for o in observables if o.name == "PSJ1606-2333"]
 
+    for o in observables:
+        print(o.alpha.to_string(sep=":"))
+
+    #sys.exit()
     obs_night = Time("2018-02-12 01:00:00", format='iso', scale='utc')
     #plots.shownightobs(observable=observables[0], meteo=currentmeteo, obs_night="2018-02-12", savefig=False, verbose=True)
 
