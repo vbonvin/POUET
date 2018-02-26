@@ -263,7 +263,7 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 		plt.show()
 		
 		
-def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, boxsize=None, survey='DSS'):
+def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, boxsize=None, survey='DSS', cmap="Greys"):
 	"""
 	Uses astroquery (hopefully soon accessible from `astropy.vo`) to plot an image of the target
 	"""
@@ -281,7 +281,6 @@ def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, b
 		boxsize *= 1.*u.arcmin
 
 
-	#hdu = SkyView.get_images(position=position, coordinates='icrs', survey=survey, radius=boxsize, grid=True)[0][0]
 	try:
 		hdu = SkyView.get_images(position=position, coordinates='icrs', survey=survey, radius=boxsize, grid=True)[0][0]
 	except urllib.error.HTTPError:
@@ -336,13 +335,13 @@ def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, b
 		
 	image_data = hdu.data
 	
-	ax.imshow(image_data, cmap=plt.get_cmap("Greys"))
+	ax.imshow(image_data, cmap=plt.get_cmap(cmap))
 
 	imgsize = image_data.shape[0]
 	inner_boundary = 0.02
 	outer_boundary = 0.08
 
-	lwr = 1.5
+	lwr = 2.5
 	cr = 'firebrick'
 	alphar = 0.5
 

@@ -47,11 +47,6 @@
      <string>2MASS-J</string>
     </property>
    </item>
-   <item>
-    <property name="text">
-     <string>GOODS: HST ACS I</string>
-    </property>
-   </item>
   </widget>
   <widget class="QPushButton" name="flipNorth">
    <property name="geometry">
@@ -144,6 +139,19 @@
    </property>
    <property name="text">
     <string>Size [arcmin]</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="invertColors">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>200</y>
+     <width>99</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Invert colors</string>
    </property>
   </widget>
  </widget>

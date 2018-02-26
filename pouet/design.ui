@@ -16,10 +16,10 @@
   <widget class="QLabel" name="allSkyUpdateValue">
    <property name="geometry">
     <rect>
-     <x>1230</x>
+     <x>1150</x>
      <y>10</y>
-     <width>131</width>
-     <height>10</height>
+     <width>211</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="font">
@@ -670,29 +670,6 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="weatherLastUpdate">
-     <property name="geometry">
-      <rect>
-       <x>230</x>
-       <y>390</y>
-       <width>81</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>8</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Last update: </string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
     <widget class="QLabel" name="weatherConditions">
      <property name="geometry">
       <rect>
@@ -828,9 +805,9 @@
     <widget class="QLabel" name="weatherLastUpdateValue">
      <property name="geometry">
       <rect>
-       <x>310</x>
-       <y>390</y>
-       <width>121</width>
+       <x>220</x>
+       <y>391</y>
+       <width>201</width>
        <height>21</height>
       </rect>
      </property>
@@ -845,7 +822,7 @@
       <string> XX.XX.XXZXX:XX:XX</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
     <widget class="QLabel" name="siteLabel">
@@ -1481,35 +1458,12 @@
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="brightLastUpdate">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>230</y>
-       <width>71</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>8</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>computed for</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
     <widget class="QLabel" name="brightLastUpdateValue">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>230</y>
-       <width>131</width>
+       <x>130</x>
+       <y>231</y>
+       <width>191</width>
        <height>20</height>
       </rect>
      </property>
@@ -1524,15 +1478,15 @@
       <string>XX.XX.XXXX XX:XX:XX</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="nightLastUpdateValueBefore">
+    <widget class="QLabel" name="nightLastUpdateValue">
      <property name="geometry">
       <rect>
-       <x>150</x>
-       <y>90</y>
-       <width>80</width>
+       <x>69</x>
+       <y>92</y>
+       <width>331</width>
        <height>20</height>
       </rect>
      </property>
@@ -1547,76 +1501,7 @@
       <string>XX.XX.XXXX</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-    <widget class="QLabel" name="nightLastUpdate">
-     <property name="geometry">
-      <rect>
-       <x>60</x>
-       <y>90</y>
-       <width>101</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>8</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>computed for night</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-    <widget class="QLabel" name="nightLastUpdateValueAfter">
-     <property name="geometry">
-      <rect>
-       <x>240</x>
-       <y>90</y>
-       <width>81</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>8</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>XX.XX.XXXX</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-    <widget class="QLabel" name="brightLastUpdate_2">
-     <property name="geometry">
-      <rect>
-       <x>240</x>
-       <y>90</y>
-       <width>10</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>8</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>to</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
    </widget>
@@ -2070,29 +1955,6 @@
     <string>Refresh now</string>
    </property>
   </widget>
-  <widget class="QLabel" name="allSkyUpdate">
-   <property name="geometry">
-    <rect>
-     <x>1160</x>
-     <y>10</y>
-     <width>90</width>
-     <height>10</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>8</pointsize>
-     <weight>50</weight>
-     <bold>false</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>Image update: </string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-   </property>
-  </widget>
   <widget class="QFrame" name="statusFrame">
    <property name="geometry">
     <rect>
@@ -2213,7 +2075,6 @@
   <zorder>tabWidget</zorder>
   <zorder>configUpdate</zorder>
   <zorder>allSkyRefresh</zorder>
-  <zorder>allSkyUpdate</zorder>
   <zorder>statusFrame</zorder>
   <zorder>configTimenow</zorder>
   <zorder>allSkyUpdateWindValue</zorder>
