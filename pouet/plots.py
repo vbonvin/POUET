@@ -107,8 +107,8 @@ def plot_airmass_on_sky(target, meteo, ax=None):
 		if not ii % 20 == 0:
 			continue
 
-		str_time = util.time2hhmm(obs_times[ii])
-		ax.annotate(str_time, xy=(azimuths[ii], altitudes[ii]), fontsize=12, ha="left", va="baseline", color="k")
+		str_time = "{} UT".format(util.time2hhmm(obs_times[ii]))
+		ax.annotate(str_time, xy=(azimuths[ii], altitudes[ii]), fontsize=10, ha="left", va="baseline", color="k")
 		ax.scatter(azimuths[ii], altitudes[ii], marker=".", c='darkorange', s=2)
 	ax.set_rlim(1, 90)
 

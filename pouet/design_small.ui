@@ -323,7 +323,7 @@
       <rect>
        <x>10</x>
        <y>100</y>
-       <width>91</width>
+       <width>101</width>
        <height>21</height>
       </rect>
      </property>
@@ -334,14 +334,17 @@
     <widget class="QDoubleSpinBox" name="airmassMaxObs">
      <property name="geometry">
       <rect>
-       <x>103</x>
+       <x>110</x>
        <y>99</y>
        <width>66</width>
        <height>24</height>
       </rect>
      </property>
+     <property name="decimals">
+      <number>1</number>
+     </property>
      <property name="minimum">
-      <double>1.000000000000000</double>
+      <double>1.100000000000000</double>
      </property>
      <property name="maximum">
       <double>10.000000000000000</double>
@@ -433,9 +436,9 @@
     <widget class="QCheckBox" name="toggleUncheckedObs">
      <property name="geometry">
       <rect>
-       <x>400</x>
+       <x>410</x>
        <y>40</y>
-       <width>91</width>
+       <width>111</width>
        <height>21</height>
       </rect>
      </property>
@@ -448,7 +451,7 @@
       <rect>
        <x>305</x>
        <y>40</y>
-       <width>71</width>
+       <width>81</width>
        <height>21</height>
       </rect>
      </property>
@@ -461,7 +464,7 @@
       <rect>
        <x>305</x>
        <y>62</y>
-       <width>91</width>
+       <width>101</width>
        <height>21</height>
       </rect>
      </property>
@@ -472,9 +475,9 @@
     <widget class="QCheckBox" name="toggleCheckedObs">
      <property name="geometry">
       <rect>
-       <x>401</x>
+       <x>410</x>
        <y>60</y>
-       <width>81</width>
+       <width>111</width>
        <height>21</height>
       </rect>
      </property>
@@ -601,7 +604,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Refresh now</string>
+      <string>Refresh</string>
      </property>
     </widget>
     <widget class="QLabel" name="weatherHumidityValue">
@@ -916,7 +919,7 @@
     <widget class="QLabel" name="nightStartCivilValue">
      <property name="geometry">
       <rect>
-       <x>150</x>
+       <x>130</x>
        <y>120</y>
        <width>181</width>
        <height>21</height>
@@ -960,7 +963,7 @@
     <widget class="QLabel" name="nightEndCivilValue">
      <property name="geometry">
       <rect>
-       <x>550</x>
+       <x>470</x>
        <y>120</y>
        <width>181</width>
        <height>21</height>
@@ -982,7 +985,7 @@
     <widget class="QLabel" name="nightEndCivil">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>360</x>
        <y>120</y>
        <width>131</width>
        <height>21</height>
@@ -1004,7 +1007,7 @@
     <widget class="QLabel" name="nightStartNauticalValue">
      <property name="geometry">
       <rect>
-       <x>150</x>
+       <x>130</x>
        <y>150</y>
        <width>181</width>
        <height>21</height>
@@ -1026,7 +1029,7 @@
     <widget class="QLabel" name="nightEndNauticalValue">
      <property name="geometry">
       <rect>
-       <x>550</x>
+       <x>470</x>
        <y>150</y>
        <width>181</width>
        <height>21</height>
@@ -1070,7 +1073,7 @@
     <widget class="QLabel" name="nightEndNautical">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>360</x>
        <y>150</y>
        <width>131</width>
        <height>21</height>
@@ -1092,7 +1095,7 @@
     <widget class="QLabel" name="nightStartAstroValue">
      <property name="geometry">
       <rect>
-       <x>150</x>
+       <x>130</x>
        <y>180</y>
        <width>181</width>
        <height>21</height>
@@ -1136,7 +1139,7 @@
     <widget class="QLabel" name="nightEndAstro">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>360</x>
        <y>180</y>
        <width>131</width>
        <height>21</height>
@@ -1158,7 +1161,7 @@
     <widget class="QLabel" name="nightEndAstroValue">
      <property name="geometry">
       <rect>
-       <x>550</x>
+       <x>470</x>
        <y>180</y>
        <width>181</width>
        <height>21</height>
@@ -1202,7 +1205,7 @@
     <widget class="QLabel" name="sunCoordinatesValues">
      <property name="geometry">
       <rect>
-       <x>150</x>
+       <x>120</x>
        <y>290</y>
        <width>261</width>
        <height>21</height>
@@ -1268,7 +1271,7 @@
     <widget class="QLabel" name="sunAltazValue">
      <property name="geometry">
       <rect>
-       <x>150</x>
+       <x>120</x>
        <y>320</y>
        <width>181</width>
        <height>21</height>
@@ -1351,7 +1354,7 @@
     <widget class="QLabel" name="sunMoon">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>360</x>
        <y>260</y>
        <width>201</width>
        <height>21</height>
@@ -1373,7 +1376,7 @@
     <widget class="QLabel" name="moonAltazValue">
      <property name="geometry">
       <rect>
-       <x>550</x>
+       <x>470</x>
        <y>320</y>
        <width>181</width>
        <height>21</height>
@@ -1395,7 +1398,7 @@
     <widget class="QLabel" name="moonCoordinates">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>360</x>
        <y>290</y>
        <width>131</width>
        <height>21</height>
@@ -1417,7 +1420,7 @@
     <widget class="QLabel" name="moonAltaz">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>360</x>
        <y>320</y>
        <width>131</width>
        <height>21</height>
@@ -1439,7 +1442,7 @@
     <widget class="QLabel" name="moonCoordinatesValues">
      <property name="geometry">
       <rect>
-       <x>550</x>
+       <x>470</x>
        <y>290</y>
        <width>261</width>
        <height>21</height>
@@ -1879,8 +1882,8 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>330</x>
-       <y>290</y>
+       <x>10</x>
+       <y>350</y>
        <width>271</width>
        <height>22</height>
       </rect>
@@ -1898,8 +1901,8 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>330</x>
-       <y>320</y>
+       <x>10</x>
+       <y>380</y>
        <width>431</width>
        <height>22</height>
       </rect>

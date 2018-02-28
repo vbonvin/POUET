@@ -95,6 +95,10 @@ class Clouds():
             return None
         
         x, y = self.detect_stars()
+        
+        if x is None or y is None:
+            return None
+        
         return self.get_observability_map(x, y)
         
     def detect_stars(self, sigma_blur=1.2, threshold=8, neighborhood_size=20, fwhm_threshold=5, meas_star=True, return_all=False):
@@ -121,7 +125,11 @@ class Clouds():
         data_min = filters.minimum_filter(image, neighborhood_size)
         
         # In order to avoid outputing warnings, remove all nans (not the Indian bread)
-        delta_arr = data_max - data_min
+        try:
+            delta_arr = data_max - data_min
+        except TypeError:
+            logging.warning("Could only download part of the all sky image and failed to analyse it")
+            return None, None
         delta_arr[np.isnan(delta_arr)] = 0.
 
         diff = (delta_arr > threshold)
