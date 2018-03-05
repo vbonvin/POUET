@@ -7,3 +7,6 @@ install:
 
 script:
   - coverage run tests/test.py
+
+after_success:
+  - coveralls
