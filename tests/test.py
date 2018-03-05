@@ -8,9 +8,8 @@ from astropy.time import Time
 import os, sys
 path = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), '../pouet')
 sys.path.append(path)
-import obs
+import clouds, main, meteo, obs, plots, run, util
 
-sys.exit()
 
 logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',
                     level=logging.DEBUG)
