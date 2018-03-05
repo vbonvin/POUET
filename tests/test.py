@@ -15,7 +15,7 @@ os.system("ln -s ../pouet/obsprogram .")
 
 import clouds, main, meteo, obs, plots, run, util
 
-
+print(os.system("ls ."))
 
 logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',
                     level=logging.DEBUG)
