@@ -8,8 +8,9 @@ Launch the application, link POUET functions to the design
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os, sys
+
 import obs, run, util, plots
-import meteo as meteomodule
+
 from astropy import units as u
 from astropy.time import Time, TimeDelta
 import astropy.coordinates.angles as angles
@@ -32,7 +33,9 @@ mutex = QtCore.QMutex()
 # define a bunch of hardcoded global variables (bad!) depending on user config
 
 global SETTINGS  # TKU: I know I did it like this, how to do it better (and stay SIMPLE)
-SETTINGS = util.readconfig("config/settings.cfg")
+
+herepath = os.path.join(os.path.join(os.path.dirname(os.path.realpath(sys.argv[0]))))
+SETTINGS = util.readconfig(os.path.join(herepath, "config/settings.cfg"))
 
 if SETTINGS["display"]["windowsize"] == "regular":
     import design
@@ -145,7 +148,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.deltaMaxObs.isValid = True
 
         # testing stuff at startup...
-        self.load_obs(filepath='../cats/2m2lenses_withobsprogram.pouet')
+        herepath = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])))
+        self.load_obs(filepath=os.path.join(herepath, '../cats/2m2lenses_withobsprogram.pouet'))
         obs_model = self.listObs.model()
 
         #sys.exit()
@@ -1933,6 +1937,7 @@ class ThreadAllskyUpdate(QtCore.QThread):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication
+    app.setStyle(QtWidgets.QStyleFactory.create('WindowsXP'))
     form = POUET()                 # We set the form to be our ExampleApp (design)
     form.show()                         # Show the form
     app.exec_()                         # and execute the app

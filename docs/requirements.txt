@@ -13,4 +13,3 @@ requests==2.18.4
 configparser==3.5.0
 coverage==4.5.1
 coveralls==1.2.0
-astroquery==0.3.7

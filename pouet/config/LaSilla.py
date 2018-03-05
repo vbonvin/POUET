@@ -23,8 +23,8 @@ class WeatherReport():
         
         :param name: name of the cfg file, only included for completeness.
         """
-        
-        self.config = util.readconfig(os.path.join("config", "{}.cfg".format(name)))
+
+        self.config = util.readconfig(os.path.join(os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "config", "{}.cfg".format(name))))
         
     def get(self, debugmode, FLAG = -9999):
         """
