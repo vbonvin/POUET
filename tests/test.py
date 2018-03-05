@@ -5,7 +5,9 @@ Testing script, v1
 import os, sys, logging
 from astropy.time import Time
 
-sys.path.append('/home/vivien/work/pouet/pouet')
+import os, sys
+path = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), '../pouet')
+sys.path.append(path)
 import obs
 
 sys.exit()
