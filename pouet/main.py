@@ -29,12 +29,15 @@ import numpy as np
 import logging
 mutex = QtCore.QMutex()
 
+import inspect
+
 
 # define a bunch of hardcoded global variables (bad!) depending on user config
 
 global SETTINGS  # TKU: I know I did it like this, how to do it better (and stay SIMPLE)
 
-herepath = os.path.join(os.path.join(os.path.dirname(os.path.realpath(sys.argv[0]))))
+herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+
 SETTINGS = util.readconfig(os.path.join(herepath, "config/settings.cfg"))
 
 if SETTINGS["display"]["windowsize"] == "regular":
@@ -148,7 +151,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.deltaMaxObs.isValid = True
 
         # testing stuff at startup...
-        herepath = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])))
+        herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+
         self.load_obs(filepath=os.path.join(herepath, '../cats/2m2lenses_withobsprogram.pouet'))
         obs_model = self.listObs.model()
 

@@ -2,7 +2,7 @@ import requests
 import numpy as np
 import re
 import os
-import sys 
+import sys, inspect
 
 sys.path.insert(0, '../pouet')
 import util
@@ -24,7 +24,7 @@ class WeatherReport():
         :param name: name of the cfg file, only included for completeness.
         """
 
-        self.config = util.readconfig(os.path.join(os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "config", "{}.cfg".format(name))))
+        self.config = util.readconfig(os.path.join(os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "{}.cfg".format(name))))
         
     def get(self, debugmode, FLAG = -9999):
         """

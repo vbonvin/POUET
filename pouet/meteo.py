@@ -15,7 +15,7 @@ from astropy.time import Time
 #import urllib.request, urllib.error, urllib.parse
 import ephem
 import numpy as np
-import os, sys
+import os, sys, inspect
 
 
 import util, clouds
@@ -35,7 +35,8 @@ class Meteo:
 
 
         self.name = name
-        self.location = util.readconfig(os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "config", "{}.cfg".format(name)))
+        self.location = util.readconfig(os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+, "config", "{}.cfg".format(name)))
         self.get_telescope_params()
         
         self.weatherReport = (util.load_station(name)).WeatherReport()

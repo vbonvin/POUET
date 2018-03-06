@@ -9,14 +9,7 @@ import os, sys
 path = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), '../pouet')
 sys.path.append(path)
 
-# symlink config and obprogram
-os.system("ln -s ../pouet/config .")
-os.system("ln -s ../pouet/obsprogram .")
 
-
-print("AAAAAAAAAAAHHHHHHH")
-print(os.system("ls -lrt ."))
-sys.exit()
 import clouds, main, meteo, obs, plots, run, util
 
 
@@ -32,7 +25,7 @@ logger.warning(os.getcwd())
 currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=False, debugmode=False)
 
 # load a catalogue of observables
-observables = obs.rdbimport("../cats/2m2lenses.rdb", obsprogramcol=None, obsprogram='lens')
+observables = obs.rdbimport(os.path.join(path, "../cats/2m2lenses.rdb"), obsprogramcol=None, obsprogram='lens')
 
 observables = [o for o in observables if o.name == "PSJ1606-2333"]
 
@@ -50,7 +43,3 @@ currentmeteo.update(obs_time=Time.now())
 # todo create a new time object, play with it
 
 
-
-# remove links
-os.system("unlink config")
-os.system("unlink obsprogram")
