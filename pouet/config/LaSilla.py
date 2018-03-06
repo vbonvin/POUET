@@ -24,7 +24,7 @@ class WeatherReport():
         :param name: name of the cfg file, only included for completeness.
         """
 
-        self.config = util.readconfig(os.path.join(os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "{}.cfg".format(name))))
+        self.config = util.readconfig(os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "{}.cfg".format(name)))
         
     def get(self, debugmode, FLAG = -9999):
         """
@@ -47,7 +47,7 @@ class WeatherReport():
         error_msg = "Cannot download weather data. Either you or the weather server is offline!"
         
         if debugmode:
-            fname = "config/meteoDebugMode.last"
+            fname = os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "meteoDebugMode.last")
             fi = open(fname, mode='r')
             data = ""
             with fi:

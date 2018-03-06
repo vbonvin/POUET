@@ -22,7 +22,7 @@ logger.critical("This should say Python >= 3.0: {}".format(sys.version))
 logger.warning(os.getcwd())
 
 # initialize meteo
-currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=False, debugmode=False)
+currentmeteo = meteo.Meteo(name='LaSilla', cloudscheck=True, debugmode=True)
 
 # load a catalogue of observables
 observables = obs.rdbimport(os.path.join(path, "../cats/2m2lenses.rdb"), obsprogramcol=None, obsprogram='lens')
