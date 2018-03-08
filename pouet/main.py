@@ -1944,7 +1944,7 @@ def main():
     app.setStyle(QtWidgets.QStyleFactory.create('WindowsXP'))
     form = POUET()                 # We set the form to be our ExampleApp (design)
     form.show()                         # Show the form
-    app.exec_()                         # and execute the app
+    app.exec_()
 
 if __name__ == '__main__':
     main()

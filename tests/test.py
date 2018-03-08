@@ -2,10 +2,10 @@
 Testing script, v1
 """
 
-import os, sys, logging
+import os, sys, logging, threading, time
 from astropy.time import Time
 
-import os, sys
+
 path = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), '../pouet')
 sys.path.append(path)
 
@@ -45,4 +45,17 @@ currentmeteo.update(obs_time=Time.now())
 
 #plots.shownightobs(observable=observables[0], meteo=currentmeteo, obs_night="2018-02-12", savefig=False, verbose=True)
 
-main.main()
+
+
+t = threading.Thread(target=main.main)
+t.daemon = True
+t.start()
+
+
+SETTINGS = util.readconfig(os.path.join("pouet/config/settings.cfg"))
+asfreq = float(SETTINGS['validity']['allskyfrequency']) * 60.0
+wrfreq = float(SETTINGS['validity']['weatherreportfrequency'])
+
+exectime = max(asfreq, wrfreq)*1.8
+time.sleep(exectime)
+sys.exit()
