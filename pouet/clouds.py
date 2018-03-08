@@ -10,7 +10,7 @@ import copy
 import requests
 import astropy.time
 from astropy import units as u
-import sys
+import sys, os, inspect
 
 import util
 
@@ -48,8 +48,8 @@ class Clouds():
         
         if fimage is None:
             fimage = "current.jpg"
-            if debugmode: 
-                fimage = "config/AllSkyDebugMode.jpg" # To be used for debug purposes
+            if debugmode:
+                fimage = os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])) , "config", "AllSkyDebugMode.jpg")
                 logger.warning("Cloud analysis is working in debug mode (not using the real current image)")
             self.fimage = fimage
 

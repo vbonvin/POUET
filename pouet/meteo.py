@@ -101,7 +101,7 @@ class Meteo:
     def __str__(self, obs_time=Time.now()):
         # not very elegant
 
-        msg = "="*30+"\nName:\t\t%s\nDate:\t%s\n" %(self.name, self.date)
+        msg = "="*30+"\nName:\t\t%s\nDate:\t%s\n" %(self.name, self.time)
 
         try:
             msg+= "Moon Altitude:\t%s\n"%self.moonalt.hour
