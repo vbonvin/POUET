@@ -11,7 +11,7 @@ before_script:
   - sleep 3 # give xvfb some time to start
 
 script:
-  - coverage run tests/test.py
+  - coverage run --source=. tests/test.py
 
 after_success:
   - coveralls
