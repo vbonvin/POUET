@@ -44,3 +44,5 @@ currentmeteo.update(obs_time=Time.now())
 
 
 #plots.shownightobs(observable=observables[0], meteo=currentmeteo, obs_night="2018-02-12", savefig=False, verbose=True)
+
+main.main()
