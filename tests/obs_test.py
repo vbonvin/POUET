@@ -43,6 +43,9 @@ currentmeteo.update(obs_time=Time.now())
 # todo create a new time object, play with it
 
 
+
+"""
+
 #plots.shownightobs(observable=observables[0], meteo=currentmeteo, obs_night="2018-02-12", savefig=False, verbose=True)
 
 
@@ -62,8 +65,5 @@ try:
     t._stop()
 except:
     pass
+"""
 
-
-runpy.run_path("pouet/clouds.py")
-
-sys.exit()

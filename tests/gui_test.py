@@ -9,14 +9,12 @@ sys.path.append(path)
 
 
 import main
-
 import unittest
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtTest import QTest
 from PyQt5.QtCore import Qt
 
 app = QApplication(sys.argv)
-
 
 
 class PouetTest(unittest.TestCase):
@@ -32,7 +30,6 @@ class PouetTest(unittest.TestCase):
 		self.form.toggleAlphaMinObs.setChecked(True)
 		self.form.hide_observables()
 		#self.form.ui.displaySelectedObs.clicked(True)
-
 
 
 	"""
@@ -151,9 +148,7 @@ class PouetTest(unittest.TestCase):
 		self.assertEqual(self.form.speedName, "&Vaporize")
 	"""
 
+
 if __name__ == "__main__":
+
 	unittest.main()
-
-
-
-
