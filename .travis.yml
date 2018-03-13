@@ -12,6 +12,7 @@ before_script:
 
 script:
   - coverage run --source=. tests/test.py
+  - coverage run --source=. tests/gui_test.py
 
 after_success:
   - coveralls
