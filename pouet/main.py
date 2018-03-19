@@ -51,6 +51,8 @@ else:
     sys.exit()
 
 
+
+
 class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def __init__(self, parent=None):
         super(POUET, self).__init__(parent)
@@ -204,7 +206,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     @QtCore.pyqtSlot(str)
     def on_threadlog(self, msg):
         """
-        Helpers that writes a message to the log box when prompted from a `logging` call. (Don't ask...)
+        Helper that writes a message to the log box when prompted from a `logging` call.
         """
         self.viewLogs.appendPlainText(msg)
         
@@ -435,7 +437,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
         Assumes the time has been refreshed
 
-        :param o:
+        :param o: :class:`~obs.Observable`
+        :param FLAG: A string representing how non-defined variables, such as wind for non-visible observables, are represented.
         :return:
         """
 
@@ -504,10 +507,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
     def load_obs(self, filepath=None):
+
         """
-        Loads a catalogue given a filepath or a user-chosen file (this prompts a choose file... pop-up)
+        Loads a catalogue given a filepath or a user-chosen file (this prompts a select file and a column definition pop-ups)
         
-        :param filepath: optional argument to bypass the Select a file dialogue (but not the choose your column pop-up)
+        :param filepath: optional argument to bypass the Select a file dialogue (but not the column definition pop-up)
         """
 
         logmsg = ''
@@ -641,17 +645,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         """
         Update the observability of the observables, and update the display model
 
-        Works only on the non hidden observables
+        .. note:: Works only on the non hidden observables
 
-        Assumes all the hidden=False observables are in the model - no more, no less - but this should ALWAYS be the case
+        .. note:: Assumes all the hidden=False observables are in the model - no more, no less - but this should ALWAYS be the case
 
-        :return: None
         """
 
-        # refresh the observables observability flags that have hidden == True
+        # refresh the observables observability flags that have hidden == False
         run.refresh_status(self.currentmeteo, self.observables)
         for o in self.observables:
-            if o.hidden == False:
+            if o.hidden is False:
                 o.compute_observability(self.currentmeteo, cloudscheck=True, verbose=False)
 
 
@@ -679,8 +682,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
         # compute observability and refresh the model
-        for  o in self.observables:
-            if o.hidden == False:
+        for o in self.observables:
+            if o.hidden is False:
 
                 name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
 
@@ -709,7 +712,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         """
         Update the current model according to observables status and display it.
 
-        This function DOES NOT update the observability. To do this, use to update_obs()
+        .. note::This function DOES NOT update the observability. To do this, use :meth:`~main.update_obs()`
 
         :param obs_model: QStandardItemModel
         :return:
@@ -768,6 +771,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
     def check_obs_status(self, obs_model):
         """
+        Reads the observables model and return the check states and corresponding names
+
+        :param obs_model: observables model
+
         :return: states of model observables
         """
 
@@ -784,9 +791,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
     def hide_observables(self):
         """
-        Hide observables according to a given criterion.
+        Hide observables according to the criteria selected by the user in the gui.
 
-        :return: None
         """
 
         checked = self.toggleCheckedObs.isChecked()
@@ -908,6 +914,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
     def unhide_observables(self):
+        """
+        Set the hidden flag of all the observables to False
+        """
 
         for o in self.observables:
             o.hidden = False
@@ -937,9 +946,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
     def listObs_plot_targets(self):
         """
         Plots the selected targets in the visbility and all sky.
-        The user can select in which plot they want to see the target (2 checkboxes in the config tab).
+
+
+        .. note:: The user can select in which plot they want to see the target (2 checkboxes in the config tab).
         
-        .. Note:: displayed in all sky only if delta time between obs_time and all sky last refresh is smaller than `showallskytargets` (in global settings) - OR if debug mode.
+        .. note:: displayed in all sky only if delta time between obs_time and all sky last refresh is smaller than `showallskytargets` (in global settings) - OR if debug mode.
         """
         
         obs_model = self.listObs.model()
@@ -1174,7 +1185,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         """
         Actually calls to draw the visibility. (and does not handle the target plot) 
         
-        .. Note:: if there is a too large delta time between weather report and obs_time, does not display weather info (threshold defined in global settings, `validity`/`weatherreport`)
+        .. note:: if there is a too large delta time between weather report and obs_time, does not display weather info (threshold defined in global settings, `validity`/`weatherreport`)
         """
         
         airmass = self.visibilityAirmassValue.value()
@@ -1246,6 +1257,7 @@ class MyLogger(logging.Handler):
         self.logWriter = logWriter
 
     def emit(self, record):
+        #todo: Add what a record is in doc
         """
         This is called each time there is a new logging record. Basically reads the record, formats it and sends it to the logWritter for display.
         """
@@ -1265,6 +1277,8 @@ class LogWriter(QtCore.QThread):
     def set_msg(self, msg):
         """
         records a message and sends it to the GUI for display.
+
+        :param msg: Text to be displayed
         """
         self.dataSent.emit(msg)
 
@@ -1387,7 +1401,7 @@ class AllSkyView(FigureCanvas):
 
     def display(self, meteo, plot_analysis=True):
         """
-        ZE method to draw the all sky and its analysis.
+        Big method to draw the all sky and its analysis.
         
         :param meteo: the meteo instance to get the last refresh of the image (and if couldn't download for a while [in global settings/`validity`/`allsky`] displays an error message)
         :param plot_analysis: if `True` shows the analysis layer, if `False` only the orginal all sky image
@@ -1473,7 +1487,7 @@ class AllSkyView(FigureCanvas):
         
         :param meteo: to get the weather and the parameters of the allsky
         
-        If the wind is below the warn limit, does nothing, if above hatches in orange the region 90deg away from the wind and if above limit hatches all the image in red.
+        .. note::If the wind is below the warn limit, does nothing, if above hatches in orange the region 90deg away from the wind and if above limit hatches all the image in red.
         """
 
         params = meteo.allsky.station.params
@@ -1552,8 +1566,8 @@ class AirmassView(FigureCanvas):
         
     def show(self, target, meteo):
         """
-        Draws the airmass by calling `plots.plot_airmass_on_sky()`
-        
+        Draws the airmass by calling :meth:`~plots.plot_airmass_on_sky()`
+
         :param target: an observable instance
         :param meteo: the meteo instance (used for the obs_time)
         """
@@ -1565,7 +1579,7 @@ class AirmassView(FigureCanvas):
         
 class SkychartView(FigureCanvas):
     """
-    Handles the GUI of the Sky Chart (`plots.plot_target_on_sky()`)
+    Handles the GUI of the Sky Chart (:meth:`~plots.plot_target_on_sky()`)
     """
 
     def __init__(self, target, parent=None, width=6, height=5):
@@ -1668,6 +1682,7 @@ class SkychartView(FigureCanvas):
         QtWidgets.QApplication.processEvents()
 
     def changeSurvey(self, value):
+        #todo: define what value is in the doc
         """
         Change the images from one survey to another
         """
@@ -1682,6 +1697,7 @@ class SkychartView(FigureCanvas):
         
         
     def changeBoxSize(self, value):
+        # todo: define what value is in the doc
         """
         Change the size of the image
         
@@ -1753,6 +1769,7 @@ class VisibilityView(FigureCanvas):
         
         
     def show_targets(self, xs, ys, names, meteo):
+        # todo: remove meteo from method param, as it seems to be useless (to be tested...that's why we need to push often and to have CI working !
         """
         Displays targets in the all sky
         
@@ -1889,6 +1906,7 @@ class VisibilityView(FigureCanvas):
         self.finish_plot(tel_lat)
         
     def finish_plot(self, tel_lat):
+        # todo: define what tel_lat is in doc
         """
         helper to finish the plot correctly. 
         """
@@ -1903,7 +1921,7 @@ class VisibilityView(FigureCanvas):
         self.draw()
         
 class ObsModel(QtCore.QAbstractTableModel):
-    
+    #todo: Is that used somewhere? looks like not...test what happens when removing it.
     def __init__(self, parent, *args):
         
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
