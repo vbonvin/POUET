@@ -32,7 +32,21 @@ class Observable:
 
 	def __init__(self, name='emptyobservable', obsprogram=None, attributes=None, alpha=None, delta=None, 
 				minangletomoon=None, maxairmass=None, exptime=None):
+		"""
+		Constructor
 
+		An observable is the basic building bloc of POUET. It stores all the values of a target that are needed to compute its observability at a given time from a given position
+
+
+		:param name: string, name of the observable
+		:param obsprogram: string, related to one of the existing programs defined in :any:'obsprogram'
+		:param attributes: any type of extra information about the target you want to store
+		:param alpha: Right Ascension angle, in hours HH:MM:ss
+		:param delta: Declination angle, in degree DD:MM:ss
+		:param minangletomoon: float, minimum angle in the sky plane to the moon below which the target is not to be observed
+		:param maxairmass: float, maximum airmass below which the target is not to be observed
+		:param exptime: float, expected exposure time of the target
+		"""
 
 		self.name = name
 		self.obsprogram = obsprogram
@@ -65,7 +79,12 @@ class Observable:
 
 
 	def __str__(self):
+		"""
 
+		:return: message printing the current altitude, azimuth and airmass of the target, if defined.
+
+		.. note:: to have these values defined, you must first call :meth:'~obs.Observable.compute_altaz' and :meth:'~obs.Observable.compute_airmass', using a :py:'meteo.Meteo' object
+		"""
 		# not very elegant
 
 		msg = "="*30+"\nName:\t\t%s\nProgram:\t%s\nAlpha:\t\t%s\n" \
@@ -93,7 +112,7 @@ class Observable:
 
 	def copy(self):
 		"""
-		:return: Observable: a python deep copy of the current observable
+		:return: an, observable, python deep copy of the current observable
 		"""
 
 		return pythoncopy.deepcopy(self)
@@ -104,7 +123,6 @@ class Observable:
 		Computes the distance to the moon
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
-		:return: None
 		"""
 
 		moonalt, moonaz = meteo.moonalt, meteo.moonaz
@@ -117,10 +135,9 @@ class Observable:
 
 	def compute_angletosun(self, meteo):
 		"""
-		Computes distance to the Sun
+		Computes the distance to the Sun
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
-		:return: None
 		"""
 
 		sunalt, sunaz = meteo.sunalt, meteo.sunaz
@@ -137,7 +154,6 @@ class Observable:
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
 
-		:return: None
 		"""
 
 		winddirection = meteo.winddirection
@@ -153,11 +169,10 @@ class Observable:
 		
 	def compute_altaz(self, meteo):
 		"""
-		Computes altitude and azimuth of the observable.
+		Computes the altitude and azimuth of the observable.
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
 
-		:return: None
 		"""
 		azimuth, altitude = meteo.get_AzAlt(self.alpha, self.delta, obs_time=meteo.time)
 		self.altitude = altitude
@@ -166,11 +181,10 @@ class Observable:
 
 	def compute_airmass(self, meteo):
 		"""
-		Computes altitude and azimuth of the observable.
+		Computes the airmass of the observable.
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
 
-		:return: None
 		"""
 
 		self.airmass = util.elev2airmass(self.altitude.radian, meteo.elev)
@@ -184,10 +198,9 @@ class Observable:
 		:param meteo: a Meteo object, whose cloudmap attribute has been actualized beforehand
 
 		todo: instead of taking altaz coordinates in memory, shouldn't we use meteo.time to recompute altaz on the fly?
+
 		
-		:return: None
-		
-		:note: is_cloudfree is actualized with 0: cloudy or 1: no clouds. If unavailable, returns 2: connection error, if error during computation of observability from map: 3
+		.. note:: is_cloudfree is actualized with 0: cloudy or 1: no clouds. If unavailable, returns 2: connection error, if error during computation of observability from map: 3
 		"""
 
 		ERROR_CONN = 2.
@@ -223,7 +236,6 @@ class Observable:
 		Update the observable parameters according to the meteo object passed: altitude, azimuth, angle to wind, airmass, angle to moon and angle to sun.
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
-		:return: None
 		"""
 
 		self.compute_altaz(meteo)
@@ -233,17 +245,18 @@ class Observable:
 		self.compute_angletosun(meteo)
 
 
-	def compute_observability(self, meteo, cwvalidity=30, displayall=True, cloudscheck=True, verbose=True, future=False):
+	def compute_observability(self, meteo, cwvalidity=30, cloudscheck=True, verbose=True, displayall=True, future=False):
 		"""
-		Update the status using :meth:`~obs.Observable.update`. Compute the observability, a value between 0 and 1 that tells if the target can be observed at a given time. Also define flags for each parameter (moon, wind, etc...)
+		Update the status using :meth:`~obs.Observable.update`. Compute the observability param, a value between 0 and 1 that tells if the target can be observed at a given time. Also define flags for each parameter (moon, wind, etc...)
 
 		The closer to 1 the better
 		0 is impossible to observe
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
-
-		:param displayall: boolean
-
+		:param cwvalidity: float, current weather validity: time (in minutes) after/before which the allsky cloud coverage and wind are not taken into account in the observability, effectively setting the future variable to True
+		:param verbose: boolean, displaying the status of the observable according to the present function
+		:param displayall: boolean, if verbose is True, then print also the targets that are not observable.
+		:param future: boolean, if set to True then cloud coverage and wind are note taken into account in the observability.
 		"""
 
 		logger.info("current time is %s"  % meteo.time)
@@ -266,7 +279,7 @@ class Observable:
 		# check the	moondistance:
 		self.obs_moondist = True
 		if self.angletomoon.degree < self.minangletomoon:
-			#observability -= 0.2 #TODO: this seems a bit dangerous: observability could go below zero!
+			#observability -= 0.2 #TODO: this seems a bit dangerous: observability could go below zero! --> only if we code the combination in a bad way !
 			observability *= 0.75
 			self.obs_moondist = False
 			msg += '\nMoonDist:%0.1f' % self.angletomoon.degree
@@ -275,7 +288,7 @@ class Observable:
 		self.obs_highairmass = True
 		if self.airmass > 1.5:
 			self.obs_highairmass = False
-			#observability -= 0.3 #TODO: this seems a bit dangerous: observability could go below zero!
+			#observability -= 0.3 #TODO: this seems a bit dangerous: observability could go below zero!  --> only if we code the combination in a bad way !
 			observability *= 0.75
 			msg += '\nAirmass:%0.2f' % self.airmass
 
@@ -369,29 +382,37 @@ class Observable:
 		self.observability = observability
 
 
-def showstatus(observables, meteo, obs_time=None, displayall=True, cloudscheck=True):
+def showstatus(observables, meteo, displayall=True, cloudscheck=True):
 	"""
-	Using a list of observables, print their observability at the given obs_time. The moon position 
-	and all observables are updated according to the given obs_time. The wind is always taken at 
-	the current time.
+	print the observability of a list of observables according to a given meteo.
 
-	displayall = True allows all the targets to be displayed, even if they cannot be observed
+	:param observables: list of observables, :meth:'~obs.Observable'
+	:param displayall: boolean, if set to True then display the status of all the targets, even those which are not visible.
+	:param cloudscheck: boolean, if set to True then use the cloud coverage in the observability computation.
 	"""
 
-	# NO, we keep meteo update outside obs functions !
-	# meteo.update(obs_time=obs_time)
 	for observable in observables:
 		observable.compute_observability(meteo=meteo, displayall=displayall,
 								cloudscheck=cloudscheck, verbose=True)
 
 
 
-
-
-def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, startline=1, obsprogram=None, verbose=False):
+#todo: refactor rdbimport and rdbexport to pouetimport and pouetexport
+def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, obsprogram=None):
 
 	"""
 	Import an rdb catalog into a list of observables
+
+	Must be compatible with astropy Table reader (i.e. a header line, then an empty/blank/comment line, then each obs in a dedicated line, attributes separater by a tab or a space)
+
+	:param filepath: path to the file you want to import. Must be a text file, format is not important.
+	:param namecol: integer, index of the column containing the names
+	:param alphacol: integer, index of the column containing the right ascension
+	:param deltacol: integer, index of the column containing the declination
+	:param obsprogramcol: integer, index of the column containing the obs program. If not provided, use the provided obsprogram instead.
+	:param obsprogram: which :any:'obsprogram' is to be used as a default if nothing is provided from the imported file.
+
+	.. note:: providing an obsprogramcol overloads the given obsprogram, as long as there is a valid field in the rdb obsprogramcol. You can use both to load a catalogue that has only part of its programcol defined.
 	"""
 
 	logger.debug("Reading \"%s\"..." % (os.path.basename(filepath)))
