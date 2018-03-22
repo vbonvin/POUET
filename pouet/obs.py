@@ -410,7 +410,7 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, obsp
 	:param alphacol: integer, index of the column containing the right ascension
 	:param deltacol: integer, index of the column containing the declination
 	:param obsprogramcol: integer, index of the column containing the obs program. If not provided, use the provided obsprogram instead.
-	:param obsprogram: which :any:'obsprogram' is to be used as a default if nothing is provided from the imported file.
+	:param obsprogram: which :any:'obsprogram.__init__' is to be used as a default if nothing is provided from the imported file.
 
 	.. note:: providing an obsprogramcol overloads the given obsprogram, as long as there is a valid field in the rdb obsprogramcol. You can use both to load a catalogue that has only part of its programcol defined.
 	"""

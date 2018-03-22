@@ -23,16 +23,35 @@ import util, clouds
 import logging
 logger = logging.getLogger(__name__)
 
+
+#todo: there are a lot of obs_time=Time.now() still in the code, it should be cleared from these!
+
 class Meteo:
     """
     Class to hold the meteorological conditions of the current night and the location of the site
 
-    Typically, a Site object is created when POUET starts, and then update itself every XX minutes
+    Typically, a Meteo object is created when POUET starts, and then update itself every XX minutes
     """
 
     def __init__(self, name='uknsite', time=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None,
             winddirection=-1, windspeed=-1, cloudscheck=True, fimage=None, debugmode=False):
+        """
 
+        :param name: string, name of the meteo object (typically the site where you are located, i.e. LaSilla. Must correspond to a .cfg file in :file:`config` that contains the location of the site. See :file:`config/LaSilla.cfg` for example.
+        :param time: Astropy Time object. If None, use the current time as default
+        :param moonaltitude: Astropy Angle object, altitude of the moon . If none, is computed using the site location when :meth:`~meteo.update` is called.
+        :param moonazimuth: Astropy Angle object, azimuth of the moon . If none, is computed using the site location when :meth:`~meteo.update` is called.
+        :param sunaltitude: Astropy Angle object, altitude of the Sun . If none, is computed using the site location when :meth:`~meteo.update` is called.
+        :param sunazimuth: Astropy Angle object, azimuth of the Sun . If none, is computed using the site location when :meth:`~meteo.update` is called.
+        :param winddirection: float, direction of the wind, in degree. If none, is computed using the site weather report when :meth:`~meteo.update` is called.
+        :param windspeed: float, speed of the wind in m/s. If none, is computed using the site weather report when :meth:`~meteo.update` is called.
+        :param cloudscheck: boolean. If True, uses :py:`clouds.Clouds` to analyze an all-sky image and create a mapping of the clouds in the plane of the sky
+        :param fimage:string, name of the filename of the all-sky image to analyse
+        :param debugmode: boolean. If True, use dummy values for the wind and all-sky
+
+        .. warning:: the moon and sun position, wind speed and angle default values provided at construction will be overwritten by :meth:`~meteo.update`
+
+        """
 
         self.name = name
         self.location = util.readconfig(os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
@@ -62,11 +81,23 @@ class Meteo:
         
 
     def updatemoonpos(self, obs_time=Time.now()):
+        """
+        Updates the moon position in the sky with respect to the observer
+
+        :param obs_time: Astropy Time object, time at which you want to compute the moon coordinates
+        """
+
         Az, Alt = self.get_moon(obs_time=obs_time)
         self.moonalt = Alt
         self.moonaz = Az
 
     def updatesunpos(self, obs_time=Time.now()):
+        """
+        Updates the Sun position in the sky with respect to the observer
+
+        :param obs_time: Astropy Time object, time at which you want to compute the Sun coordinates
+        """
+
         Az, Alt = self.get_sun(obs_time=obs_time)
         self.sunalt = Alt
         self.sunaz = Az
@@ -74,7 +105,7 @@ class Meteo:
         
     def updateclouds(self):
         """
-        Excecutes the clouds code, if map not available, saves None to cloudmap
+        Excecutes the clouds code in :meth:`~clouds.Clouds`, if map not available, saves None to cloudmap
         """
     
         try:
@@ -87,8 +118,12 @@ class Meteo:
 
     def update(self, obs_time=Time.now(), minimal=False):
         """
-        minimal=True update only the moon and sun position. Useful for predictions (as you can't predict the clouds or winds, no need to refresh them)
+        Update the time-dependent parameters: Sun and moon position, wind speed and direction, cloud coverage map. Wrapper around the :meth:`~meteo.updatemoonpos`, :meth:`~meteo.updatesunpos`, :meth:`~meteo.updateweather` and :meth:`~meteo.updateclouds`
+
+        :param obs_time: Astropy Time object. If None, use the current time as default.
+        :param minimal: boolean. If True, update only the moon and sun position. Useful for predictions where wind and cloud coverage cannot be estimated.
         """
+
         self.time=obs_time
         self.updatemoonpos(obs_time=obs_time)
         self.updatesunpos(obs_time=obs_time)
@@ -125,8 +160,12 @@ class Meteo:
 
         return msg
 
+
     def updateweather(self):
-    
+        """
+        Updates the weather-related parameters from the site weather report.
+        """
+
         self.winddirection, self.windspeed, self.temperature, self.humidity = self.weatherReport.get(debugmode=self.debugmode)
         
         """
@@ -143,6 +182,11 @@ class Meteo:
             self.lastest_weatherupdate_time = Time.now()
     
     def get_moon(self, obs_time=Time.now()):
+        """
+
+        :param obs_time:
+        :return:
+        """
 
         observer = ephem.Observer()
         observer.date = obs_time.iso
