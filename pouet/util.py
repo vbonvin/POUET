@@ -18,6 +18,7 @@ import ephem
 from configparser import SafeConfigParser
 import importlib
 import sys
+import gzip
 #import csv
 import numpy as np
 
@@ -31,10 +32,20 @@ logger = logging.getLogger(__name__)
 
 
 def takeclosest(dico, key, value):
+	#todo: rename dico in dict
 	"""
-	Assumes dict[key] is sorted. Returns the dict value which dict[key] is closest to value.
+	.. warning:: I assume that dict[key] is sorted.
+
+	Returns the dict value which dict[key] is closest to value.
 	If two dict[key] are equally close to value, return the highest (i.e. latest).
-	This is much faster than a simple min loop, although a bit more tedious to use.
+
+	:param dico: python dictionary you want to sort
+	:param key: dictionary key used for sorting
+	:param value: target value,
+
+	:return: index of the element in dico that is the closest to the target value
+
+	.. note:: This is much faster than a simple min loop, although a bit more tedious to use.
 	"""
 	mylist = [elt[key] for elt in dico]
 
@@ -52,7 +63,14 @@ def takeclosest(dico, key, value):
 
 
 def hilite(string, status, bold):
-	'''Graphism: colors and bold in the terminal'''
+	"""
+	Helper to add colors and bold in the terminal
+
+	:param string: string you want to color or bold
+	:param status: boolean, if True then the text is colored in green, otherwise in red.
+	:param bold: boolean, if True then the text is bolded
+	:return:
+	"""
 
 	if not sys.stdout.isatty() : return '*'+string+'*'
 
@@ -68,195 +86,16 @@ def hilite(string, status, bold):
 	return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), string)
 
 
-def excelimport(filename, obsprogram=None):
-	if noexcelimport:
-		raise NotImplemented("Excel files cannot be imported at the moment")
-	else:
-
-		"""
-		Import an excel catalog(...) into a list of observables
-		I directly read the excel values, I do NOT evaluate the formulas in them.
-		It is up to you to put the right mjd in the excel sheets.
-	
-		Warning : NEVER use the coordinates from an excel sheet to create an rdb night planning. ALWAYS use the rdb catalogs loaded in the edp. And double check the distance to moon !
-		"""
-
-		observables = []
-
-		#### For BEBOP
-		if obsprogram == 'bebop':
-			"""
-			special properties:
-	
-			phases : a list of dictionnaries : [{mjd, phase, hourafterstart }]
-			comment : a string of comments (exptime, requested phase,...)
-			internalobs : a boolean (0 or 1), allowing or not observability
-			"""
-
-			try:
-				wb = openpyxl.load_workbook(filename, data_only=True)  # Read the excel spreadsheet, loading the values directly
-				#ws = wb.active  # choose active sheet
-				ws = wb['Sheet1']
-			except:
-				raise RuntimeError("Either %s does not exists, or it is not in .xlsx format !!" % filename)
-
-			# Get tabler limits
-			rows = ws.rows
-			columns = ws.columns
-			breakcolind = None
-			breakrowind = None
-			for ind, cell in enumerate(rows[1]):
-				if cell.value == None:
-					#breakcolind = cell.column
-					breakcolind = rows[1][ind-1].column
-					break
-				else:
-					pass
-
-			for ind, cell in enumerate(columns[0]):
-				if cell.value == None:
-					#breakrowind = cell.row
-					breakrowind = columns[0][ind-1].row
-					break
-				else:
-					pass
-
-			# Read only the non "None" data and put it in a table of dict, because fuck excel and fuck openpyxl.
-			data = ws['A1':'%s%s' % (breakcolind, breakrowind)]
-			"""
-			Structure of the spreadsheet:
-			Infos are from A1 to W2
-			Datas are from A3 ro W30
-			B1 : actual modified julian date
-			A : name
-			B : target
-			C : comment
-			I : observability
-			J : requested phase
-			M1 to W1 : mjd over the night
-			M2 to W2 : corresponding time after night start, in hours
-			M to W : phases
-			"""
-
-			phasesnames = ['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W']
-			values = {}
-			for indr, row in enumerate(data):
-				for indc, cell in enumerate(row):
-					try:
-						values[cell.address] = cell.value # Apparently, this is an old version
-					except:
-						values[cell.coordinate] = cell.value
-
-			for i in np.arange(3, 31):
-				# create an observable object with the common properties
-				name = values['A%s' % str(i)]
-
-				coordinates = values['B%s' % str(i)]
-				alpha = coordinates[0:2]+':'+coordinates[2:4]+':'+coordinates[4:6]
-				delta = coordinates[7:9]+':'+coordinates[9:11]+':'+coordinates[11:13]
-				if coordinates[6] == "S":
-					delta = '-'+delta
-
-				# add properties specific to this program
-				## Tricky stuff here : the jdb in the excel sheet is the mjd + 0.5.
-				phases = [{'mjd': values['%c%i' % (col, 1)]-0.5, 'hourafterstart': values['%c%i' % (col, 2)], 'phase': values['%c%i' % (col, i)]} for col in phasesnames]
-				attributes = {'phases': phases}
-				#observable.phases = phases
-				if values['I%s' % str(i)] == 'yes':
-					attributes['internalobs'] = 1
-				else:
-					attributes['internalobs'] = 0
-
-				observable = obs.Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta,
-					attributes=attributes)
-
-				comment = ''
-				if values['C%s' % str(i)] is not None:
-					comment = comment + values['C%s' % str(i)]
-				if values['J%s' % str(i)] != '/':
-					comment = comment + '\n' + 'Requested phase: ' + values['J%s' % str(i)]
-				if comment != '':
-					observable.comment = comment
-
-				observables.append(observable)
-
-			#TODO: check that the modified julian date corresponds to the ongoing night
-			#TODO: assert that the above structure is correct ! (use keywords in the Info fields...?)
-
-		if obsprogram == "transit":
-			pass
-
-		if obsprogram == "superwasp":
-			# http://openpyxl.readthedocs.org/en/latest/optimized.html --- that will be useful for Amaury's monstruous spreadsheet
-			"""
-			special properties:
-	
-			phases : a list of dictionnaries : [{mjd, phase, hourafterstart }]
-			comment : a string of comments (exptime, requested phase,...)
-			internalobs : a boolean (0 or 1), allowing or not observability
-			"""
-
-			logger.info('reading %s...' % filename)
-			try:
-				wb = openpyxl.load_workbook(filename, data_only=True)  # Read the excel spreadsheet, loading the values directly
-				ws = wb['Observations']  # choose active sheet
-			except:
-				raise RuntimeError("Either %s does not exists, or it is not in .xlsx format !!" % filename)
-
-			logger.info('get tabler limits...')
-			# Get tabler limits
-			rows = ws.rows
-			columns = ws.columns
-			breakcolind = None
-			breakrowind = None
-			for ind, cell in enumerate(rows[1]):
-				if cell.value == None:
-					#breakcolind = cell.column
-					breakcolind = rows[1][ind-1].column
-					break
-				else:
-					pass
-
-			for ind, cell in enumerate(columns[0]):
-				if cell.value == None:
-					#breakrowind = cell.row
-					breakrowind = columns[0][ind-1].row
-					break
-				else:
-					pass
-			logger.info(breakrowind, breakcolind)
-			sys.exit()
 
 
-			# Read only the non "None" data and put it in a table of dict, because fuck excel and fuck openpyxl.
-			data = ws['A1':'%s%s' % (breakcolind, breakrowind)]
-			"""
-			Structure of the spreadsheet:
-			Infos are from A1 to W2
-			Datas are from A3 ro W30
-			B1 : actual modified julian date
-			A : name
-			B : target
-			C : comment
-			I : observability
-			J : requested phase
-			M1 to W1 : mjd over the night
-			M2 to W2 : corresponding time after night start, in hours
-			M to W : phases
-			"""
-
-		if obsprogram == "followup":
-			pass
-
-		return observables
-
-
-
-def writepickle(obj, filepath, verbose=True, protocol = -1):
+def writepickle(obj, filepath):
 	"""
 	I write your python object obj into a pickle file at filepath.
 	If filepath ends with .gz, I'll use gzip to compress the pickle.
-	Leave protocol = -1 : I'll use the latest binary protocol of pickle.
+
+	:param obj: python container you want to compress
+	:param filepath: string, path where the pickle will be written
+
 	"""
 	if os.path.splitext(filepath)[1] == ".gz":
 		pkl_file = gzip.open(filepath, 'wb')
@@ -341,5 +180,196 @@ def load_station(name):
 
 def time2hhmm(obstime):
 	return (str(obstime).split(" ")[1]).split(".")[0][:-3]
-	
-	
+
+
+def excelimport(filename, obsprogram=None):
+	"""
+	Wrapper around openpyxl to transform excel sheets into POUET.
+
+	.. info:: This feature is still experimental and completely spreadsheet dependent. Requirex openpyxl installed, otherwise exits.
+
+	Import an excel catalog into a list of observables
+
+	:param filename: string, path to the excel file
+	:param obsprogram: string, observing program associated to the catalog you are importing.
+
+	:return: list of observables
+
+	.. warning:: I directly read the excel values, I do NOT evaluate the formulas in them. It is up to the user to put the right mjd in the excel sheets.
+
+	"""
+
+	if noexcelimport:
+		raise NotImplemented("Excel files cannot be imported at the moment - you need to install openpyxl")
+	else:
+
+		observables = []
+
+		#### For BEBOP
+		if obsprogram == 'bebop':
+			"""
+			special properties:
+
+			phases : a list of dictionnaries : [{mjd, phase, hourafterstart }]
+			comment : a string of comments (exptime, requested phase,...)
+			internalobs : a boolean (0 or 1), allowing or not observability
+			"""
+
+			try:
+				wb = openpyxl.load_workbook(filename,
+				                            data_only=True)  # Read the excel spreadsheet, loading the values directly
+				# ws = wb.active  # choose active sheet
+				ws = wb['Sheet1']
+			except:
+				raise RuntimeError("Either %s does not exists, or it is not in .xlsx format !!" % filename)
+
+			# Get tabler limits
+			rows = ws.rows
+			columns = ws.columns
+			breakcolind = None
+			breakrowind = None
+			for ind, cell in enumerate(rows[1]):
+				if cell.value == None:
+					# breakcolind = cell.column
+					breakcolind = rows[1][ind - 1].column
+					break
+				else:
+					pass
+
+			for ind, cell in enumerate(columns[0]):
+				if cell.value == None:
+					# breakrowind = cell.row
+					breakrowind = columns[0][ind - 1].row
+					break
+				else:
+					pass
+
+			# Read only the non "None" data and put it in a table of dict, because fuck excel and fuck openpyxl.
+			data = ws['A1':'%s%s' % (breakcolind, breakrowind)]
+			"""
+			Structure of the spreadsheet:
+			Infos are from A1 to W2
+			Datas are from A3 ro W30
+			B1 : actual modified julian date
+			A : name
+			B : target
+			C : comment
+			I : observability
+			J : requested phase
+			M1 to W1 : mjd over the night
+			M2 to W2 : corresponding time after night start, in hours
+			M to W : phases
+			"""
+
+			phasesnames = ['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W']
+			values = {}
+			for indr, row in enumerate(data):
+				for indc, cell in enumerate(row):
+					try:
+						values[cell.address] = cell.value  # Apparently, this is an old version
+					except:
+						values[cell.coordinate] = cell.value
+
+			for i in np.arange(3, 31):
+				# create an observable object with the common properties
+				name = values['A%s' % str(i)]
+
+				coordinates = values['B%s' % str(i)]
+				alpha = coordinates[0:2] + ':' + coordinates[2:4] + ':' + coordinates[4:6]
+				delta = coordinates[7:9] + ':' + coordinates[9:11] + ':' + coordinates[11:13]
+				if coordinates[6] == "S":
+					delta = '-' + delta
+
+				# add properties specific to this program
+				## Tricky stuff here : the jdb in the excel sheet is the mjd + 0.5.
+				phases = [{'mjd': values['%c%i' % (col, 1)] - 0.5, 'hourafterstart': values['%c%i' % (col, 2)],
+				           'phase': values['%c%i' % (col, i)]} for col in phasesnames]
+				attributes = {'phases': phases}
+				# observable.phases = phases
+				if values['I%s' % str(i)] == 'yes':
+					attributes['internalobs'] = 1
+				else:
+					attributes['internalobs'] = 0
+
+				observable = obs.Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta,
+				                            attributes=attributes)
+
+				comment = ''
+				if values['C%s' % str(i)] is not None:
+					comment = comment + values['C%s' % str(i)]
+				if values['J%s' % str(i)] != '/':
+					comment = comment + '\n' + 'Requested phase: ' + values['J%s' % str(i)]
+				if comment != '':
+					observable.comment = comment
+
+				observables.append(observable)
+
+		# TODO: check that the modified julian date corresponds to the ongoing night
+		# TODO: assert that the above structure is correct ! (use keywords in the Info fields...?)
+
+		if obsprogram == "transit":
+			pass
+
+		if obsprogram == "superwasp":
+			# http://openpyxl.readthedocs.org/en/latest/optimized.html --- that will be useful for Amaury's monstruous spreadsheet
+			"""
+			special properties:
+
+			phases : a list of dictionnaries : [{mjd, phase, hourafterstart }]
+			comment : a string of comments (exptime, requested phase,...)
+			internalobs : a boolean (0 or 1), allowing or not observability
+			"""
+
+			logger.info('reading %s...' % filename)
+			try:
+				wb = openpyxl.load_workbook(filename,
+				                            data_only=True)  # Read the excel spreadsheet, loading the values directly
+				ws = wb['Observations']  # choose active sheet
+			except:
+				raise RuntimeError("Either %s does not exists, or it is not in .xlsx format !!" % filename)
+
+			logger.info('get tabler limits...')
+			# Get tabler limits
+			rows = ws.rows
+			columns = ws.columns
+			breakcolind = None
+			breakrowind = None
+			for ind, cell in enumerate(rows[1]):
+				if cell.value == None:
+					# breakcolind = cell.column
+					breakcolind = rows[1][ind - 1].column
+					break
+				else:
+					pass
+
+			for ind, cell in enumerate(columns[0]):
+				if cell.value == None:
+					# breakrowind = cell.row
+					breakrowind = columns[0][ind - 1].row
+					break
+				else:
+					pass
+			logger.info(breakrowind, breakcolind)
+			sys.exit()
+
+			# Read only the non "None" data and put it in a table of dict, because fuck excel and fuck openpyxl.
+			data = ws['A1':'%s%s' % (breakcolind, breakrowind)]
+			"""
+			Structure of the spreadsheet:
+			Infos are from A1 to W2
+			Datas are from A3 ro W30
+			B1 : actual modified julian date
+			A : name
+			B : target
+			C : comment
+			I : observability
+			J : requested phase
+			M1 to W1 : mjd over the night
+			M2 to W2 : corresponding time after night start, in hours
+			M to W : phases
+			"""
+
+		if obsprogram == "followup":
+			pass
+
+		return observables
