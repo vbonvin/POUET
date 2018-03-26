@@ -107,10 +107,13 @@ def writepickle(obj, filepath):
 	logger.debug("Wrote %s" % filepath)
 
 
-def readpickle(filepath, verbose=True):
+def readpickle(filepath):
 	"""
 	I read a pickle file and return whatever object it contains.
 	If the filepath ends with .gz, I'll unzip the pickle file.
+
+	:param filepath: string, path of the pickle to load
+	:return: object contained in the pickle
 	"""
 	if os.path.splitext(filepath)[1] == ".gz":
 		pkl_file = gzip.open(filepath,'rb')
@@ -124,7 +127,12 @@ def readpickle(filepath, verbose=True):
 def readconfig(configpath):
 	"""
 	Reads in a config file
+
+	:param configpath: path of the configfile
+
+	:return: configuration dictionary
 	"""
+	#todo: change SafeConfigParser to ConfigParser. Make sure logic is respected
 	config = SafeConfigParser(allow_no_value=True)
 	
 	if not os.path.exists(configpath):
@@ -135,7 +143,17 @@ def readconfig(configpath):
 	return config
 
 def grid_points(res_x=400,res_y=200):
-	""" Generates grid points on the sky """
+
+	"""
+	Maps the whole sky in right ascension and declination
+
+	:param res_x: integer, number of points in right ascension
+	:param res_y: integer, number of points in declination
+
+	.. note:: the points are equally spaced.
+
+	:return: numpy tuples containing right ascension points and declination points
+	"""
 	
 	ra_i = 0.
 	ra_f = 2*np.pi
@@ -149,36 +167,60 @@ def grid_points(res_x=400,res_y=200):
 	return ras,decs
 
 def elev2airmass(el, alt, threshold=10.):
-	''' Converts the elevation to airmass.
-	:param elevation_deg: elevation [radians]
-	:param alt: altitude of station [m]
-	:return: air mass
-	This is the code used for the Euler EDP at La Silla.'''
+	"""
+	Converts the elevation to airmass.
+
+	:param el: float, elevation in radians
+	:param alt: float, altitude of the observer in meters
+	:param threshold: maximum allowed airmass, will be returned if actual airmass exceeds the threshold
+
+	:return: airmass
+
+	.. note:: This is the code used for the Euler EDP at La Silla."""
 
 	altitudeFactor = 0.00087 + alt*(-8.6664803e-8) # altitude factor
 
 	cosz = np.cos(np.pi/2.-el)
 
 	if(cosz< 0.1): # we do not compute Airmass for small value of cosz
-		airmass = threshold;
+		airmass = threshold
 	else:
-		airmass = (1.0 + altitudeFactor - altitudeFactor / (cosz * cosz)) / cosz;
+		airmass = (1.0 + altitudeFactor - altitudeFactor / (cosz * cosz)) / cosz
 
 	return airmass
 
 def check_value(var, flag):
-	
+	"""
+	Check that a value is NaN, replace it with a given flag if True
+
+	:param var: value to check against NaN
+	:param flag: replacement value
+	:return: processed value
+	"""
 	if np.isnan(var):
 		var = flag 
 	
 	return var
 
 def load_station(name):
+	"""
+	Load the parameters corresponding to an observation station
+
+	:param name: string, name of the station. The corresponding file must be located in :py:`config`
+
+	:return: station parameters
+	"""
 	module_name = "config.{}".format(name)
 	station = importlib.import_module(module_name, package=None)
 	return station
 
 def time2hhmm(obstime):
+	"""
+	Concatenate a string HH MM SS or HH.MM.SS into an HHMM string
+
+	:param obstime: string, HH MM SS or HH.MM.SS
+	:return: HHMM string
+	"""
 	return (str(obstime).split(" ")[1]).split(".")[0][:-3]
 
 
