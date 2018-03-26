@@ -183,9 +183,10 @@ class Meteo:
     
     def get_moon(self, obs_time=Time.now()):
         """
+        Compute the altitude and azimuth of the moon at the given time
 
-        :param obs_time:
-        :return:
+        :param obs_time:  Astropy Time object. If None, use the current time as default.
+        :return: altitude and azimuth angles as Astropy Angle objects
         """
 
         observer = ephem.Observer()
@@ -204,6 +205,12 @@ class Meteo:
     
     
     def get_sun(self, obs_time=Time.now()):
+        """
+        Compute the altitude and azimuth of the moon at the given time
+
+        :param obs_time:  Astropy Time object. If None, use the current time as default.
+        :return: altitude and azimuth angles as Astropy Angle objects
+        """
 
         observer = ephem.Observer()
         observer.date = obs_time.iso
@@ -223,11 +230,18 @@ class Meteo:
     def get_AzAlt(self, alpha, delta, obs_time=None, ref_dir=0):
     
         """
+        #todo: can't we do it with astropy as well?
         idea from http://aa.usno.navy.mil/faq/docs/Alt_Az.php
     
         Compute the azimuth and altitude of a source at a given time (by default current time of 
         execution), given its alpha and delta coordinates.
-    
+
+
+        :param alpha: Astrophy Angle object, right ascencion of the target you want to translate into altaz
+        :param delta: Astrophy Angle object, declination of the target you want to translate into altaz
+        :param obs_time: Astropy Time object. If None, use the current time as default.
+        :param ref_dir: float, zero point of the azimuth. Default is 0, corresponding to North.
+        :return: altitude and azimuth angles as Astropy Angle objects
         """
 
         if not obs_time:
@@ -263,6 +277,11 @@ class Meteo:
         return Az, Alt
     
     def get_telescope_params(self):
+        """
+        Puts the latitude, longitude and elevation of the telescope from the config file into Astropy Angle objects
+
+        :return: latitude, longitude and elevation of the telescope as Astropy Angle objects
+        """
         self.lat=angles.Angle(self.location.get("location", "latitude"))
         self.lon=angles.Angle(self.location.get("location", "longitude"))
         self.elev = float(self.location.get("location", "elevation"))
@@ -270,9 +289,16 @@ class Meteo:
         return self.lat, self.lon, self.elev
     
 
-    def get_nighthours(self, obs_night, twilight="nautical"):
+    def get_nighthours(self, obs_night, twilight="nautical", nhours=100):
         """
-        return a list of astropy Time objects, corresponding to the different hours of the obs_night
+        Computes a list of astropy Time objects, spanning to the different hours of the nights between twilights.
+
+        :param obs_night: string formatted as YYYY-MM-DD. Night where the observations start.
+        :param twilight: string, can be "civil", "nautical" or "astronomical", corresponding to Sun elevation of -6, -12 or -18 degree from the horizon, respectively.
+        :param nhours: integer, number of hours you want in the list
+
+        :return: list of Astropy Time objects, regularly spaced between twilights.
+
         """
     
         sunrise, sunset = self.get_twilights(obs_night, twilight)
@@ -283,16 +309,19 @@ class Meteo:
         sunset_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunset, format='iso', scale='utc').mjd
         sunrise_time = Time('%i-%02i-%02i %i:%i:%.03f' % sunrise, format='iso', scale='utc').mjd
     
-        mjds = np.linspace(sunset_time, sunrise_time, num=100)
+        mjds = np.linspace(sunset_time, sunrise_time, num=nhours)
         times = [Time(mjd, format='mjd', scale='utc') for mjd in mjds]
     
         return times
     
     def get_twilights(self, obs_night, twilight="nautical"):
         """
-        return a list of astropy Time objects: twilight in, twilight out
-        
-        .. warning:: The twilight times in PyEphem don't take into account the altitude ! See `https://github.com/brandon-rhodes/pyephem/issues/102`
+        Computes the twilight times for a given night
+
+        :param obs_night:  string formatted as YYYY-MM-DD. Night where the observations start.
+        :param twilight: string, can be "civil", "nautical" or "astronomical", corresponding to Sun elevation of -6, -12 or -18 degree from the horizon, respectively.
+
+        .. note:: The twilight times in PyEphem don't take into account the altitude ! See `https://github.com/brandon-rhodes/pyephem/issues/102`
         """
     
         lat, lon, elev = self.lat, self.lon, self.elev
