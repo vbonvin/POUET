@@ -1512,9 +1512,9 @@
     <attribute name="title">
      <string>Configuration</string>
     </attribute>
-    <widget class="QCheckBox" name="config_clouds_analyse">
+    <widget class="QCheckBox" name="configCloudsAnalysis">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>

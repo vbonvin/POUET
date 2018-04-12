@@ -107,6 +107,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         self.configUpdate.clicked.connect(self.do_update)
         self.visibilityDraw.clicked.connect(self.visibilitytool_draw)
         self.configDebugModeValue.clicked.connect(self.set_debug_mode)
+        self.configCloudsAnalysis.clicked.connect(self.set_cloud_analysis_mode)
         self.updatePlotObs.clicked.connect(self.listObs_plot_targets)
         self.updateSelectall.clicked.connect(self.listObs_selectall)
         self.displaySelectedObs.clicked.connect(self.hide_observables)
@@ -412,7 +413,18 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
             logging.warning("Now in {} mode for the All Sky!".format(mode))
             self.print_status("Change of mode complete.")
-
+            
+    def set_cloud_analysis_mode(self):
+        """
+        Enables or disables the cloud analysis in the observation computation.
+        """ 
+        
+        if self.configCloudsAnalysis.checkState() == 0:
+            self.cloudscheck = False
+            logging.info("Clouds will no longer be taken into account when computing the observability. Changes will be executed during the next update.")
+        else:
+            self.cloudscheck = True
+            logging.info("Clouds will be taken into account when computing the observability. Changes will be executed during the next update.")
         
     def do_update(self):
         """
@@ -655,7 +667,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
         run.refresh_status(self.currentmeteo, self.observables)
         for o in self.observables:
             if o.hidden is False:
-                o.compute_observability(self.currentmeteo, cloudscheck=True, verbose=False)
+                o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False)
 
 
         # load the display model and the current header
