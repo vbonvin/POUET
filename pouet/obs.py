@@ -280,7 +280,7 @@ class Observable:
 		self.obs_moondist = True
 		if self.angletomoon.degree < self.minangletomoon:
 			#observability -= 0.2 #TODO: this seems a bit dangerous: observability could go below zero! --> only if we code the combination in a bad way !
-			observability *= 0.75
+			observability *= 0.8
 			self.obs_moondist = False
 			msg += '\nMoonDist:%0.1f' % self.angletomoon.degree
 
@@ -289,7 +289,7 @@ class Observable:
 		if self.airmass > 1.5:
 			self.obs_highairmass = False
 			#observability -= 0.3 #TODO: this seems a bit dangerous: observability could go below zero!  --> only if we code the combination in a bad way !
-			observability *= 0.75
+			observability *= 0.7
 			msg += '\nAirmass:%0.2f' % self.airmass
 
 		# check the airmass:
