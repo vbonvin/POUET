@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'design.ui'
 #
-# Created by: PyQt5 UI code generator 5.10
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -88,7 +88,7 @@ class Ui_POUET(object):
         self.loadObs.setGeometry(QtCore.QRect(10, 5, 141, 23))
         self.loadObs.setObjectName("loadObs")
         self.listObs = QtWidgets.QTableView(self.obs)
-        self.listObs.setGeometry(QtCore.QRect(8, 86, 851, 641))
+        self.listObs.setGeometry(QtCore.QRect(8, 87, 851, 611))
         self.listObs.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.listObs.setDragEnabled(True)
         self.listObs.setAlternatingRowColors(True)
@@ -175,6 +175,20 @@ class Ui_POUET(object):
         self.alphaMaxObs = QtWidgets.QLineEdit(self.obs)
         self.alphaMaxObs.setGeometry(QtCore.QRect(440, 61, 61, 23))
         self.alphaMaxObs.setObjectName("alphaMaxObs")
+        self.saveObs = QtWidgets.QPushButton(self.obs)
+        self.saveObs.setGeometry(QtCore.QRect(10, 700, 101, 27))
+        self.saveObs.setObjectName("saveObs")
+        self.saveObsPath = QtWidgets.QLineEdit(self.obs)
+        self.saveObsPath.setGeometry(QtCore.QRect(214, 702, 111, 23))
+        self.saveObsPath.setObjectName("saveObsPath")
+        self.saveObsLabel = QtWidgets.QLabel(self.obs)
+        self.saveObsLabel.setGeometry(QtCore.QRect(147, 698, 71, 31))
+        self.saveObsLabel.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.saveObsLabel.setObjectName("saveObsLabel")
+        self.toggleSaveObsOverwrite = QtWidgets.QCheckBox(self.obs)
+        self.toggleSaveObsOverwrite.setGeometry(QtCore.QRect(360, 703, 81, 21))
+        self.toggleSaveObsOverwrite.setChecked(True)
+        self.toggleSaveObsOverwrite.setObjectName("toggleSaveObsOverwrite")
         self.tabWidget.addTab(self.obs, "")
         self.weather = QtWidgets.QWidget()
         self.weather.setObjectName("weather")
@@ -743,6 +757,10 @@ class Ui_POUET(object):
         self.toggleDeltaMaxObs.setText(_translate("POUET", "Delta <"))
         self.alphaMinObs.setText(_translate("POUET", "00:00:00"))
         self.alphaMaxObs.setText(_translate("POUET", "23:59:59"))
+        self.saveObs.setText(_translate("POUET", "Export "))
+        self.saveObsPath.setText(_translate("POUET", "cats/temp.pouet"))
+        self.saveObsLabel.setText(_translate("POUET", "Save path:"))
+        self.toggleSaveObsOverwrite.setText(_translate("POUET", "Overwrite"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.obs), _translate("POUET", "Observations"))
         self.weatherDisplayRefresh.setText(_translate("POUET", "Refresh now"))
         self.weatherHumidityValue.setText(_translate("POUET", "XX.X"))

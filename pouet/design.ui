@@ -249,9 +249,9 @@
      <property name="geometry">
       <rect>
        <x>8</x>
-       <y>86</y>
+       <y>87</y>
        <width>851</width>
-       <height>641</height>
+       <height>611</height>
       </rect>
      </property>
      <property name="editTriggers">
@@ -587,6 +587,64 @@
      </property>
      <property name="text">
       <string>23:59:59</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="saveObs">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>700</y>
+       <width>101</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Export </string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="saveObsPath">
+     <property name="geometry">
+      <rect>
+       <x>214</x>
+       <y>702</y>
+       <width>111</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>cats/temp.pouet</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="saveObsLabel">
+     <property name="geometry">
+      <rect>
+       <x>147</x>
+       <y>698</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Save path:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="toggleSaveObsOverwrite">
+     <property name="geometry">
+      <rect>
+       <x>360</x>
+       <y>703</y>
+       <width>81</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Overwrite</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>

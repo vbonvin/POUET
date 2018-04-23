@@ -443,11 +443,66 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, obsp
 
 
 
-def rdbexport(observables, filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, verbose=False):
+def rdbexport(filepath, observables, append=False):
 	"""
-	Export a list of observables as an rdb catalogue, to be read again later
+	Save a list of observables at a given filepath, respecting the formatting used when default importing with :meth:'obs.rdbimport'.
+
+	:param filepath: string. Path of where the .pouet file is written
+	:param observables: list of Observables to save
+	:param append: boolean. If True, then the current observables are added to the existing list
+
+	.. note:: append=True only works if the file you want to append to has the correct formatting. See headerline and headersubline in the source code.
 	"""
 
-	pass
+	headerline = "name\talpha\tdelta\tobsprogram\n"
+	headersubline = "----\t-----\t-----\t----------\n"
+
+	#todo: add a backup function
 
 
+	# check that the base folder exists
+	dirpath = os.path.dirname(os.path.abspath(filepath))
+	if not os.path.isdir(dirpath):
+		logger.error("Directory %s does not exist" % dirpath)
+		raise ValueError('Directory %s does not exist' % dirpath)
+
+	if not append:
+		f = open(filepath, 'w')
+		# write header
+		f.write(headerline)
+		f.write(headersubline)
+
+	else:
+		# check that the file exists
+		if not os.path.isfile(filepath):
+			f = open(filepath, 'w')
+			# write header
+			f.write(headerline)
+			f.write(headersubline)
+
+		else:
+			# check that header lines corresponds to the standard template
+			lines = open(filepath, 'r').readlines()[:2]
+			if not lines[0] == headerline and lines[1] == headersubline:
+				logger.error("Header format not standard")
+				raise ValueError('Header format not standard')
+			else:
+				f = open(filepath, 'a')
+
+	for o in observables:
+		f.write("%s\t%s\t%s\t%s\n" % (o.name, o.alpha.to_string(unit=u.hour, sep=':', pad=True), o.delta.to_string(unit=u.degree, sep=':', pad=True), o.obsprogram))
+
+	f.close()
+	return
+
+	# astropy tables does not work (bug??), puts a line with "S" in the rdb file...
+	"""
+	names = ['----'] + [o.name for o in observables]
+	alphas = ['-----'] + [o.alpha.to_string(unit=u.hour, sep=':', pad=True) for o in observables]
+	deltas = ['-----'] + [o.delta.to_string(unit=u.degree, sep=':', pad=True) for o in observables]
+	obsprograms = ['----------'] + [o.obsprogram for o in observables]
+
+	towrite = astropy.table.Table({'name': names, 'alpha': alphas, 'delta': deltas, 'obsprogram': obsprograms})
+
+	towrite.write(filepath, format="rdb", overwrite=True)
+	"""
