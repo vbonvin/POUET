@@ -62,7 +62,10 @@ def hide_observables(observables, criteria):
 
     for c in criteria:
         for o in observables:
-            if c["id"] == "airmass":
+            if c["id"] == "matchname":
+                if c["pattern"].strip() not in o.name:
+                    o.hidden = True
+            elif c["id"] == "airmass":
                 if  o.airmass > c["max"]:
                     o.hidden = True
             elif c["id"] == "moondist":

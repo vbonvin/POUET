@@ -834,12 +834,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 	def hide_observables(self):
 		"""
-		Hide observables according to the criteria selected by the user in the gui.
+		Hide observables according to the criteria selected by the user in the gui. Hiding is done by :meth:'~run.hide_observables'
 
 		"""
 
 		checked = self.toggleCheckedObs.isChecked()
 		unchecked = self.toggleUncheckedObs.isChecked()
+		matchname = self.toggleNameObs.isChecked()
 		airmass = self.toggleAirmassObs.isChecked()
 		moondist = self.toggleMoondistObs.isChecked()
 		sundist = self.toggleSundistObs.isChecked()
@@ -872,8 +873,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 					# hide from self
 					self.observables[[o.name for o in self.observables].index(names[i])].hidden = True
 
+
 		# other criterias
 		criteria = []
+
+		if matchname:
+			criteria.append({"id": "matchname", "pattern": self.nameObs.text()})
 
 		if airmass:
 			criteria.append({"id": "airmass", "max":  self.airmassMaxObs.value()})
