@@ -227,8 +227,10 @@ class Observable:
 
 		if self.cloudfree == ERROR_COMPUTE: 
 			logger.warning("Computation error in clouds")
-			
-		self.cloudfree = np.floor(float(self.cloudfree)*10.)/10.
+			return
+		
+		
+		self.cloudcover = 1.-np.floor(float(self.cloudfree)*10.)/10.
 
 
 	def update(self, meteo):

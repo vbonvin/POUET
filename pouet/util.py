@@ -88,13 +88,14 @@ def hilite(string, status, bold):
 
 
 
-def writepickle(obj, filepath):
+def writepickle(obj, filepath, protocol=-1):
 	"""
 	I write your python object obj into a pickle file at filepath.
 	If filepath ends with .gz, I'll use gzip to compress the pickle.
 
 	:param obj: python container you want to compress
 	:param filepath: string, path where the pickle will be written
+	:param protocol: Leave protocol = -1 : I'll use the latest binary protocol of pickle.
 
 	"""
 	if os.path.splitext(filepath)[1] == ".gz":
