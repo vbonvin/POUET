@@ -112,6 +112,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		self.updateSelectall.clicked.connect(self.listObs_selectall)
 		self.displaySelectedObs.clicked.connect(self.hide_observables)
 		self.displayAllObs.clicked.connect(self.unhide_observables)
+		self.printNamesObs.clicked.connect(self.print_selected_names)
 		self.saveObs.clicked.connect(self.save_obs)
 
 		#self.toggleAirmassObs.selfChecked.connect()
@@ -995,6 +996,19 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			obs_model.item(ii, 0).setCheckState(out_state)
 
 		self.listObs_check_state = out_state
+
+	def print_selected_names(self):
+		"""
+		Print the names of the selected objects in a popup.
+
+		"""
+
+		obs_model = self.listObs.model()
+		states, names = self.check_obs_status(obs_model)
+
+		toprint = "\n".join([n for s, n in zip(states, names) if s])
+
+		print(toprint)
 
 	def listObs_plot_targets(self):
 		"""
