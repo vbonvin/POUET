@@ -226,7 +226,7 @@ class Observable:
 				self.cloudfree = ERROR_COMPUTE
 
 		if self.cloudfree == ERROR_COMPUTE: 
-			logger.warning("Computation error in clouds")
+			logger.warning("Computational error in clouds")
 			return
 		
 		
