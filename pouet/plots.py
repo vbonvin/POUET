@@ -197,11 +197,11 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 		starttimes.append(times[obss.index(0.7)])
 		stoptimes.append(times[::-1][obss[::-1].index(0.7)])
 
-	if 0.5 in obss:
-		starttimes.append(times[obss.index(0.5)])
-		stoptimes.append(times[::-1][obss[::-1].index(0.5)])
+	if 0.56 in obss:
+		starttimes.append(times[obss.index(0.56)])
+		stoptimes.append(times[::-1][obss[::-1].index(0.56)])
 
-	if not 1 in obss and not 0.8 in obss and not 0.7 in obss and not 0.5 in obss:
+	if not 1 in obss and not 0.8 in obss and not 0.7 in obss and not 0.56 in obss:
 			print(("%s is not observable tonight !" % observable.name))
 			return
 
@@ -240,7 +240,7 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 		msg = "Airmass > 1.5"
 		plt.annotate(msg, xy=(0, -1.5),  xycoords='axes fraction', fontsize=14, color=color)
 
-	if 0.5 in obss:
+	if 0.56 in obss:
 		color = "indianred"
 		plt.axvspan(obss.index(0.5), len(obss)-obss[::-1].index(0.5), color='indianred')
 		msg = "Moonsep = %i, Airmass > 1.5" % int(min(moonseps))
