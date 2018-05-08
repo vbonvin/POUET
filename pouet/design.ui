@@ -456,7 +456,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Obs&gt; 0</string>
+      <string>Obs&gt;0</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="toggleCloudsObs">
@@ -469,7 +469,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Clouds &gt; 0</string>
+      <string>Cloudfree</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="toggleCheckedObs">

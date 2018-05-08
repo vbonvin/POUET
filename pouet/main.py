@@ -499,19 +499,24 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				wind.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['limit'])), role=QtCore.Qt.BackgroundRole)
 		else:
 			wind.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
-			wind.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['warn'])), role=QtCore.Qt.BackgroundRole)
+			wind.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['nodata'])), role=QtCore.Qt.BackgroundRole)
 
 		# Clouds
 		clouds = QtGui.QStandardItem()
 		if o.obs_clouds_info:
-			clouds.setData(str("{:1.1f}".format(o.cloudfree)), role=QtCore.Qt.DisplayRole)
-			if o.obs_clouds:
+			clouds.setData(str("{:1.1f}".format(o.cloudcover)), role=QtCore.Qt.DisplayRole)
+			if o.cloudcover <= 0.25:
 				clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['success'])), role=QtCore.Qt.BackgroundRole)
-			else:
+			elif o.cloudcover <= 0.75:
+				clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['warn'])), role=QtCore.Qt.BackgroundRole)
+			elif o.cloudcover <= 1:
 				clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['limit'])), role=QtCore.Qt.BackgroundRole)
+			else:
+				clouds.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
+				clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['nodata'])), role=QtCore.Qt.BackgroundRole)
 		else:
 			clouds.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
-			clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['warn'])), role=QtCore.Qt.BackgroundRole)
+			clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['nodata'])), role=QtCore.Qt.BackgroundRole)
 
 
 
