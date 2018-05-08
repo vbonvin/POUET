@@ -21,7 +21,7 @@ Tutorial
 Learn the basics of POUET and much more!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
       Tutorial <source/tutorial/intro>
       Q&A <source/tutorial/QandA>
