@@ -20,8 +20,11 @@ Tutorial
 
 Learn the basics of POUET and much more!
 
-   :doc:`Tutorial <tutorial/intro.rst>`
-   :doc:`Q&A <tutorial/QandA.rst>`
+.. toctree::
+   :maxdepth: 2
+
+      Tutorial <source/tutorial/intro>
+      Q&A <source/tutorial/QandA>
 
 
 Quick links
