@@ -20,7 +20,8 @@ Tutorial
 
 Learn the basics of POUET and much more!
 
-   :doc:`tutorial/intro.rst`
+   :doc:`Tutorial <tutorial/intro.rst>`
+   :doc:`Q&A <tutorial/QandA.rst>`
 
 
 Quick links
