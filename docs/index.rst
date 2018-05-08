@@ -15,6 +15,13 @@ Why using this software and not one of the dozens of alternatives already existi
 Designed by observers for observers. With lots of love and hopefully bug-free.
 
 
+Tutorial
+========
+
+Learn the basics of POUET and much more!
+
+   source/tutorial/intro.rst
+
 
 Quick links
 ===========
