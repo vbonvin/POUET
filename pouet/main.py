@@ -50,7 +50,7 @@ else:
 	logging.critical("Windowsize keyword not recognized in settings.cfg. Exiting...")
 	sys.exit()
 
-#import workingon as design
+import design_scalable as design
 
 
 
