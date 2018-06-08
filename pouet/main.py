@@ -30,27 +30,14 @@ import logging
 mutex = QtCore.QMutex()
 
 import inspect
-
+import design_scalable as design
 
 # define a bunch of hardcoded global variables (bad!) depending on user config
 
 global SETTINGS  # TKU: I know I did it like this, how to do it better (and stay SIMPLE)
 
 herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
-
 SETTINGS = util.readconfig(os.path.join(herepath, "config/settings.cfg"))
-
-if SETTINGS["display"]["windowsize"] == "regular":
-	import design
-	visibility_height = 4.0
-elif SETTINGS["display"]["windowsize"] == "small":
-	import design_small as design
-	visibility_height = 2.78
-else:
-	logging.critical("Windowsize keyword not recognized in settings.cfg. Exiting...")
-	sys.exit()
-
-import design_scalable as design
 
 
 
@@ -1799,7 +1786,7 @@ class VisibilityView(FigureCanvas):
 	"""
 
 
-	def __init__(self, parent=None, width=4.5, height=visibility_height):
+	def __init__(self, parent=None, width=4.66, height=3.5):
 		"""
 		Constructor
 
@@ -1812,7 +1799,7 @@ class VisibilityView(FigureCanvas):
 		self.figure.patch.set_facecolor("None")
 
 		self.figure.subplots_adjust(wspace=0.)
-		self.figure.subplots_adjust(bottom=0.24)
+		self.figure.subplots_adjust(bottom=0.15)
 		self.figure.subplots_adjust(top=0.93)
 		self.figure.subplots_adjust(right=0.9)
 		self.figure.subplots_adjust(left=0.13)

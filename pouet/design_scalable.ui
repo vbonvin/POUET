@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1353</width>
-    <height>894</height>
+    <width>1248</width>
+    <height>844</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -124,9 +124,12 @@
      </layout>
     </item>
     <item row="0" column="1" rowspan="2">
-     <layout class="QVBoxLayout" name="graphsLayout">
+     <layout class="QVBoxLayout" name="verticalLayout_12">
       <item>
        <layout class="QHBoxLayout" name="allSkyUpdateLayout">
+        <property name="spacing">
+         <number>6</number>
+        </property>
         <item>
          <widget class="QLabel" name="allSkyUpdateLabel">
           <property name="sizePolicy">
@@ -236,8 +239,14 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>250</width>
-          <height>250</height>
+          <width>466</width>
+          <height>350</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
          </size>
         </property>
         <property name="baseSize">
@@ -251,8 +260,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>441</width>
-           <height>385</height>
+           <width>466</width>
+           <height>350</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -279,8 +288,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>441</width>
-           <height>385</height>
+           <width>466</width>
+           <height>350</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -292,7 +301,7 @@
          <property name="minimumSize">
           <size>
            <width>250</width>
-           <height>250</height>
+           <height>350</height>
           </size>
          </property>
          <property name="baseSize">
@@ -307,8 +316,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>441</width>
-           <height>385</height>
+           <width>466</width>
+           <height>350</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -330,6 +339,9 @@
           </size>
          </property>
         </widget>
+        <zorder>allskyView</zorder>
+        <zorder>allskyViewLayer</zorder>
+        <zorder>allskyViewLayerTargets</zorder>
        </widget>
       </item>
       <item>
@@ -458,7 +470,7 @@
         <property name="minimumSize">
          <size>
           <width>250</width>
-          <height>250</height>
+          <height>350</height>
          </size>
         </property>
         <property name="baseSize">
@@ -488,7 +500,7 @@
       <property name="baseSize">
        <size>
         <width>800</width>
-        <height>650</height>
+        <height>600</height>
        </size>
       </property>
       <property name="tabShape">
@@ -2280,6 +2292,16 @@
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1248</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
