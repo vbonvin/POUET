@@ -565,16 +565,16 @@
              </spacer>
             </item>
             <item>
-             <widget class="QPushButton" name="displayAllObs">
+             <widget class="QPushButton" name="displaySelectedObs">
               <property name="text">
-               <string>Display all </string>
+               <string>Sort</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="displaySelectedObs">
+             <widget class="QPushButton" name="displayAllObs">
               <property name="text">
-               <string>Display selected</string>
+               <string>Reset list</string>
               </property>
              </widget>
             </item>
@@ -597,7 +597,7 @@
             <item>
              <widget class="QPushButton" name="updatePlotObs">
               <property name="text">
-               <string>Plot selected</string>
+               <string>Display selected</string>
               </property>
              </widget>
             </item>
@@ -972,7 +972,7 @@
             <item>
              <widget class="QPushButton" name="saveObs">
               <property name="text">
-               <string>Export </string>
+               <string>Export selected</string>
               </property>
              </widget>
             </item>
@@ -1019,7 +1019,7 @@
             <item>
              <widget class="QPushButton" name="printNamesObs">
               <property name="text">
-               <string>Show Names</string>
+               <string>Show selected names</string>
               </property>
              </widget>
             </item>
