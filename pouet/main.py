@@ -538,7 +538,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		ext = os.path.splitext(filepath)[1]
 
-		try:
+		if 1:
 			if ext != '.pouet':  # then it's a first load:
 
 				obsprogramlist = run.retrieve_obsprogramlist()
@@ -580,8 +580,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 					if okop:
 						logmsg += 'as %s ' % obsprogram
 					else:
-						obsprogram = None
+						# we use the default option
+						obsprogram = "default"
 						logmsg += 'as default '
+
 
 				else:
 					# we exit the load function
@@ -593,7 +595,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				pass
 
 
-			try:
+			if 1:
 				if ext != '.pouet':
 					self.print_status("Loading catalogue...", color=SETTINGS["color"]["warn"])
 					self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
@@ -633,14 +635,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				logging.info(logmsg)
 				namecat = filepath.split("/")[-1]
 				self.print_status("%s \nSucessfully loaded" % namecat, SETTINGS['color']['success'])
-
-			except:
+				self.loadedCatValue.setText(os.path.basename(namecat))
+			if 0:
 				logmsg += ' not loaded - wrong formatting'
 				logging.error(logmsg)
 
 				namecat = filepath.split("/")[-1]
 				self.print_status("%s \nWrong formatting: headers and columns match?" % namecat, SETTINGS['color']['warn'])
-		except:
+		if 0:
 			logmsg += ' not loaded - format unknown'
 			logging.error(logmsg)
 

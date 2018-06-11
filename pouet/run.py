@@ -47,8 +47,17 @@ def refresh_status(meteo, observables=None, minimal=False, obs_time=None):
 
 
 def retrieve_obsprogramlist():
+    """
+    Return a list of existing obsprogram in the obsprogram folder, minus the default obsprogram
+
+    :return: list of exising obsprogram, minus the default one.
+
+    .. warning:: path to obsprogram folder is hardcoded. This is wrong and should be changed!
+    """
+
     obsprogramlist = []
-    files = [f for f in os.listdir('obsprogram') if 'prog' in f and not 'pyc' in f]
+    #todo: obsprogram path is hardcoded, this is wrong!
+    files = [f for f in os.listdir('obsprogram') if 'prog' in f and '.py'in f and not 'pyc' in f and not "default" in f]
     for f in files:
         name = f.split('prog')[1].split('.py')[0]
         program = importlib.import_module("obsprogram.prog{}".format(name), package=None)
@@ -59,6 +68,13 @@ def retrieve_obsprogramlist():
 
 
 def hide_observables(observables, criteria):
+    """
+    Hide the observables not matching the given criteria
+
+    :param observables: list of :meth:`~obs.Observable`
+    :param criteria: list of dictionnaries. Each dict contains an "id" and associated keywords used for the hiding. See :meth:'~main.hide_observables'.
+
+    """
 
     for c in criteria:
         for o in observables:
