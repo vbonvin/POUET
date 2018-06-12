@@ -538,7 +538,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		ext = os.path.splitext(filepath)[1]
 
-		if 1:
+		try:
 			if ext != '.pouet':  # then it's a first load:
 
 				obsprogramlist = run.retrieve_obsprogramlist()
@@ -595,7 +595,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				pass
 
 
-			if 1:
+			try:
 				if ext != '.pouet':
 					self.print_status("Loading catalogue...", color=SETTINGS["color"]["warn"])
 					self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
@@ -635,18 +635,25 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				logging.info(logmsg)
 				namecat = filepath.split("/")[-1]
 				self.print_status("%s \nSucessfully loaded" % namecat, SETTINGS['color']['success'])
+				# update the catalog name
 				self.loadedCatValue.setText(os.path.basename(namecat))
-			if 0:
+				# clear the allsky display
+				self.allskylayerTargets.show_targets([], [], [])
+				self.visibilitytool_draw_exec()
+
+			except:
 				logmsg += ' not loaded - wrong formatting'
 				logging.error(logmsg)
 
 				namecat = filepath.split("/")[-1]
 				self.print_status("%s \nWrong formatting: headers and columns match?" % namecat, SETTINGS['color']['warn'])
-		if 0:
+		except:
 			logmsg += ' not loaded - format unknown'
 			logging.error(logmsg)
 
 			self.print_status("%s \nFormat unknown: not a catalog file..." % filepath, SETTINGS['color']['warn'])
+
+
 
 
 
@@ -1017,7 +1024,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			return
 
 		status, names = self.check_obs_status(self.listObs.model())
-		d = [names[i] for i, s in enumerate(status) if s==1]
+		d = [names[i] for i, s in enumerate(status) if s == 1]
 
 		alphas = []
 		deltas = []
@@ -1046,16 +1053,16 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		self.visibilitytool_draw_exec()
 		if self.configShowTargetsVisibilityValue.checkState() == 2:
-			# This is not the most perfect code ever, however if drawing on another layer, it's hard to read the coordinates of the mouse in the plot
+			# This is not the most perfect code ever (don't worry Thibs, we still love you), however if drawing on another layer, it's hard to read the coordinates of the mouse in the plot
 			# for the show_coordinate in all_sky, so by passing.
 			# (however visibilitytool_draw_exec is fast...)
+
 
 			self.visibilitytool.show_targets(alphas, deltas, ord_names, meteo=self.currentmeteo)
 
 			logging.debug("Plotted {} targets in visibility".format(len(d)))
 
 		#-------- Plots on all sky layer
-
 		self.allskylayerTargets.erase()
 		if self.configShowTargetsAllSkyValue.checkState() == 2:
 
@@ -1260,7 +1267,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 	def visibilitytool_draw(self):
 		"""
-		Method to prompt the drawing of the visibility and plots the selected targets in the visibility tool.
+		Method to prompt the drawing of the visibility and plot the selected targets in the visibility tool.
 		"""
 
 		self.visibilitytool_draw_exec()
