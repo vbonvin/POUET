@@ -6,140 +6,122 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>394</width>
-    <height>283</height>
+    <width>341</width>
+    <height>305</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QWidget" name="gridLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>6</x>
-     <y>36</y>
-     <width>381</width>
-     <height>201</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="headerGridLayout">
-    <item row="6" column="1">
-     <widget class="QDialogButtonBox" name="headerButtonBox">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="standardButtons">
-       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QComboBox" name="headerObsprogramValue"/>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="headerDec">
-      <property name="text">
-       <string>Dec </string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="headerName">
-      <property name="text">
-       <string>Name </string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QComboBox" name="headerNameValue"/>
-    </item>
-    <item row="4" column="1">
-     <widget class="QComboBox" name="headerDecValue"/>
-    </item>
-    <item row="3" column="1">
-     <widget class="QComboBox" name="headerRAValue"/>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="headerRA">
-      <property name="text">
-       <string>RA </string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="headerObsprogram">
-      <property name="text">
-       <string>Obs program</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="header">
-      <property name="text">
-       <string>My headers</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLabel" name="headerHelp">
-      <property name="text">
-       <string>Headers found in your file</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QLabel" name="headerInstructions">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>6</y>
-     <width>341</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Please associate the headers I found in your input file</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignJustify|Qt::AlignVCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="headerInstructions_2">
-   <property name="geometry">
-    <rect>
-     <x>90</x>
-     <y>240</y>
-     <width>211</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Obs program header is optional
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="headerInstructions">
+     <property name="text">
+      <string>Please associate the headers I found in your input file</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="headerGridLayout">
+     <item row="6" column="1">
+      <widget class="QDialogButtonBox" name="headerButtonBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QComboBox" name="headerObsprogramValue"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="headerDec">
+       <property name="text">
+        <string>Dec </string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="headerName">
+       <property name="text">
+        <string>Name </string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="headerNameValue"/>
+     </item>
+     <item row="4" column="1">
+      <widget class="QComboBox" name="headerDecValue"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QComboBox" name="headerRAValue"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="headerRA">
+       <property name="text">
+        <string>RA </string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="headerObsprogram">
+       <property name="text">
+        <string>Obs program</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="header">
+       <property name="text">
+        <string>Required</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="headerHelp">
+       <property name="text">
+        <string>Headers found in your file</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="headerInstructions_2">
+     <property name="text">
+      <string>Obs program header is optional
 select &quot;None&quot; if you don't have any</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
