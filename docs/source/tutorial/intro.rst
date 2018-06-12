@@ -76,7 +76,7 @@ Import a catalog
 POUET has been primarly designed to let you browse through a large list of targets (a catalog) and highligh/display only the targets of interest.
 
 Thus, your targets need to be arranged in a catalog. A POUET catalog can be as simple as a tab separated file, where each line is a target and each column a property. The first line is a header and second line is a separator. The minimal required properties are the name, alpha (HH:MM:SS.sss) and delta coordinates (DD:MM:SS.sss). A minimal working catalog should look like this:
-
+::
   name	alpha	delta
   ----	-----	-----
   HE0047-1756	00:50:27.83	-17:40:08.8
