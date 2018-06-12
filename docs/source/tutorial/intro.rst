@@ -2,7 +2,7 @@
 Welcome to POUET's tutorial!
 ****************************
 
-This section covers the basics of POUET usage.
+This section covers the basics of POUET usage. It is still under construction, but is progressing every day.
 
 
 Installation...
@@ -11,7 +11,6 @@ Installation...
 ...is currently not required. Simply clone/download the repository and move to its root.
 
 Make sure you have all the requirements installed
-
 ::
     pip install docs/requirements.txt
 
@@ -73,6 +72,7 @@ We will explore in more details these sections later on. For the moment, let's s
 
 Import a catalog
 ****************
+
 POUET has been primarly designed to let you browse through a large list of targets (a catalog) and highligh/display only the targets of interest.
 
 Thus, your targets need to be arranged in a catalog. A POUET catalog can be as simple as a tab separated file, where each line is a target and each column a property. The first line is a header and second line is a separator. The minimal required properties are the name, alpha (HH:MM:SS.sss) and delta coordinates (DD:MM:SS.sss). A minimal working catalog should look like this:
@@ -84,7 +84,23 @@ Thus, your targets need to be arranged in a catalog. A POUET catalog can be as s
   HE0230-2130	02:32:33.1	-21:17:26
   HE0435-1223	04:38:14.9	-12:17:14.4
 
-The reading is done by :meth:`~obs.rdbimport()`, which is a simple wrapper around astropy.table.Table.read(). Whatever suits astropy should work with POUET as well.
+The reading is done by :meth:`~obs.rdbimport()`, which is a simple wrapper around :meth:`astropy.table.Table.read()`. Whatever suits astropy should work with POUET as well.
 
 
-To load your catalog in POUET, clic on ``Load catalog`` and chose your catalog. POUET will open it and read its header. You will then be prompted to associate the headers of your catalog with the ones POUET needs
+To load your catalog in POUET, clic on ``Load catalog`` and chose your catalog. POUET will open it and read its header. You will then be prompted to associate the headers of your catalog with the ones POUET needs. If the file extension is not ``.pouet``, two consecutive popups will appear:
+
+
+.. figure:: plots/POUET_load_popup_1.png
+    :align: center
+    :alt: POUET mainwindow
+    :figclass: align-center
+
+    Headers selection popup
+.. figure:: plots/POUET_load_popup_2.png
+    :align: center
+    :alt: POUET mainwindow
+    :figclass: align-center
+
+    Default obsprogram selection popup
+
+....

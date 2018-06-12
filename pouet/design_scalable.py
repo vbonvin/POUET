@@ -1077,7 +1077,7 @@ class Ui_POUET(object):
 
     def retranslateUi(self, POUET):
         _translate = QtCore.QCoreApplication.translate
-        POUET.setWindowTitle(_translate("POUET", "MainWindow"))
+        POUET.setWindowTitle(_translate("POUET", "POUET"))
         self.label.setText(_translate("POUET", "Date & Time (UTC)"))
         self.configTime.setDisplayFormat(_translate("POUET", "dd.MM.yyyy HH:mm"))
         self.configTimenow.setText(_translate("POUET", "Set to now"))
