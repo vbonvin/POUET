@@ -90,7 +90,10 @@ The reading is done by :meth:`~obs.rdbimport()`, which is a simple wrapper aroun
 .. note:: If you do not have a separator line, you should use ``data_start=1`` in the :meth:`astropy.table.Table.read()` called in :meth:`~obs.rdbimport()`.
 
 
-To load your catalog in POUET, clic on ``Load catalog`` and chose your file. Then, if the file extension is not ``.pouet``, two consecutive popups will appear:
+To load your catalog in POUET, clic on ``Load catalog`` and chose your file. Then, if the file extension is not ``.pouet`` (more on `creating and using .pouet files`__ later on  (**broken link!!**)), two consecutive popups will appear:
+
+
+.. __: intro.rst
 
 
 .. figure:: plots/POUET_load_popup_1.png
@@ -113,4 +116,6 @@ The first pop-up asks you to associate the headers found in your catalog with th
 .. warning:: the current import process will be simplified in a future version.
 
 
-Learn how to `define your own observing program <http://www.python.org/>`_
+Learn how to `define your own observing program`__(**broken link!!**).
+
+.. __: intro.rst
