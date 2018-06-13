@@ -16,30 +16,12 @@ Why using this software and not one of the dozens of alternatives already existi
 Designed by observers for observers. With lots of love and hopefully bug-free.
 
 
-Tutorial
-========
-
-Learn the basics of POUET and much more!
+Quick links
+===========
 
 .. toctree::
    :maxdepth: 1
 
       Tutorial <source/tutorial/intro>
-      Q&A <source/tutorial/QandA>
-
-
-Quick links
-===========
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   source/modules
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+      Q&A <source/QandA>
+      Source code documentation <source/modules>

@@ -1,5 +1,5 @@
 pouet
-=====
+*****
 
 .. toctree::
    :maxdepth: 4

@@ -1,5 +1,5 @@
 pouet package
-=============
+*************
 
 Subpackages
 -----------
