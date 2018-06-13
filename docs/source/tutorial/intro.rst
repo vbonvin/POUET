@@ -116,6 +116,6 @@ The first pop-up asks you to associate the headers found in your catalog with th
 .. warning:: the current import process will be simplified in a future version.
 
 
-Learn how to `define your own observing program`__(**broken link!!**).
+Learn how to `define your own observing program`__ (**broken link!!**).
 
 .. __: intro.rst
