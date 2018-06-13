@@ -87,7 +87,10 @@ Thus, your targets need to be arranged in a catalog. A POUET catalog can be as s
 The reading is done by :meth:`~obs.rdbimport()`, which is a simple wrapper around :meth:`astropy.table.Table.read()`. Whatever suits astropy should work with POUET as well.
 
 
-To load your catalog in POUET, clic on ``Load catalog`` and chose your catalog. POUET will open it and read its header. You will then be prompted to associate the headers of your catalog with the ones POUET needs. If the file extension is not ``.pouet``, two consecutive popups will appear:
+.. note:: If you do not have a separator line, you should use ``data_start=1`` in the :meth:`astropy.table.Table.read()` called in :meth:`~obs.rdbimport()`.
+
+
+To load your catalog in POUET, clic on ``Load catalog`` and chose your file. Then, if the file extension is not ``.pouet``, two consecutive popups will appear:
 
 
 .. figure:: plots/POUET_load_popup_1.png
@@ -95,12 +98,19 @@ To load your catalog in POUET, clic on ``Load catalog`` and chose your catalog. 
     :alt: POUET mainwindow
     :figclass: align-center
 
-    Headers selection popup
+    Headers selection pop-up
 .. figure:: plots/POUET_load_popup_2.png
     :align: center
     :alt: POUET mainwindow
     :figclass: align-center
 
-    Default obsprogram selection popup
+    Default obsprogram selection pop-up
 
-....
+The first pop-up asks you to associate the headers found in your catalog with the ones POUET needs. The fourth header, called Obsprogram, is optional. It relates to the observing program associated to your targets. The observing program defines a set of properties that some of your targets share. Currently, this is limited to the minimal distance to the Moon and the maximum airmass of your target. If you do not have such a property, select ``None`` and then click ``Ok``. The second pop-up asks you to chose a default observing program for the targets that have none assigned. If you click on Cancel, the default observing program will be used.
+
+.. note:: currently, the properties of each observing program are simply used to raise warning flags if your targets are too close to the moon or at too high airmass. It does not prevent your targets to be displayed in POUET, so you can feel safe to use the default observing program (max airmass = 1.5, minimal distance to the moone = 30 deg)
+
+.. warning:: the current import process will be simplified in a future version.
+
+
+Learn how to `define your own observing program <http://www.python.org/>`_
