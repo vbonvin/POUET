@@ -9,14 +9,15 @@ Quick links
 ===========
 
 .. toctree::
-   :maxdepth: 1
+	:maxdepth: 4
+	:numbered:
 
-   Set-up POUET <setup>
-   Load and sort targets <basic_loadandsort>
-   Display targets and change time <basic_displayandtime>
-   Understanding warnings <basic_warningmessages>
-   Station, Configuration and Logs tabs <advanced_alttabs>
-   Customize POUET (quality of life improvements) <advanced_qualityoflife>
-   Customize POUET (new site, advanced usage) <advanced_newsite>
+    Set-up POUET <setup>
+    Load and sort targets <basic_loadandsort>
+    Display targets and change time <basic_displayandtime>
+    Understanding warnings <basic_warningmessages>
+    Station, Configuration and Logs tabs <advanced_alttabs>
+    Customize POUET (quality of life improvements) <advanced_qualityoflife>
+    Customize POUET (new site, advanced usage) <advanced_newsite>
 
 

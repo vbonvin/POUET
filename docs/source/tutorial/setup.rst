@@ -1,5 +1,8 @@
 .. _setup:
 
+Set-up
+======
+
 Installation...
 ***************
 

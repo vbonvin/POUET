@@ -1,4 +1,9 @@
-.. _basic_loadandsort:
+.. _loadandsort:
+
+Load and sort targets
+=====================
+
+
 
 Buttons, buttons everywhere
 ***************************
@@ -75,3 +80,7 @@ The first pop-up asks you to associate the headers found in your catalog with th
 Learn how to `define your own observing program`__ (**broken link!!**).
 
 .. __: intro.rst
+
+
+Sort your targets
+*****************
