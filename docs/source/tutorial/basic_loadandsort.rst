@@ -4,7 +4,6 @@ Load and sort targets
 =====================
 
 
-
 Buttons, buttons everywhere
 ***************************
 

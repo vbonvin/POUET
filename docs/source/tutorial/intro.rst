@@ -12,8 +12,8 @@ Quick links
 	:maxdepth: 4
 	:numbered:
 
-    Set-up POUET <setup>
-    Load and sort targets <basic_loadandsort>
+    setup
+    basic_loadandsort
     Display targets and change time <basic_displayandtime>
     Understanding warnings <basic_warningmessages>
     Station, Configuration and Logs tabs <advanced_alttabs>
