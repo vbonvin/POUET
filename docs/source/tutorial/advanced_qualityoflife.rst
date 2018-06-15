@@ -1,5 +1,7 @@
 .. _qol:
 
-Quality of life Improvements
+Quality of Life Improvements
 ============================
 
+
+To be written...
