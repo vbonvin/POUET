@@ -9,7 +9,7 @@ Buttons, buttons everywhere
 
 And they all serve a purpose. Let's have a look again at what a freshly opened session of POUET looks like:
 
-
+.. _main_colored:
 .. figure:: plots/POUET_mainwindow_colored.png
     :align: center
     :alt: POUET mainwindow
@@ -44,7 +44,7 @@ Thus, your targets need to be arranged in a catalog. A POUET catalog can be as s
   HE0230-2130	02:32:33.1	-21:17:26
   HE0435-1223	04:38:14.9	-12:17:14.4
 
-The reading is done by :meth:`~obs.rdbimport()`, which is a simple wrapper around :meth:`astropy.table.Table.read()`. Whatever suits astropy should work with POUET as well.
+The reading is done by :meth:`~obs.rdbimport`, which is a simple wrapper around :meth:`astropy.table.Table.read`. Whatever suits astropy should work with POUET as well.
 
 
 .. note:: If you do not have a separator line, you should use ``data_start=1`` in the :meth:`astropy.table.Table.read()` called in :meth:`~obs.rdbimport()`.
@@ -79,7 +79,22 @@ The first pop-up asks you to associate the headers found in your catalog with th
 Learn how to define your own observing program on the :ref:`qol` page.
 
 
-
-
 Sort your targets
 *****************
+
+Defining which targets are displayed is done through buttons in the small turquoise box of Fig. :numref:`main_colored`. Check the box corresponding on the criteria you want to apply to your list, and enter a value if needed. You can of course mix criteria as it suits you. To apply your sorting criteria, click on the ``Sort`` button.
+
+The sorting criteria are the following:
+
+  * Airmass smaller than
+  * Sun distance larger than [degree]
+  * Moon distance larger than [degree]
+  * Name containing [string pattern]
+  * Right Ascension (Alpha) earlier/later than [HH:MM:SS], from 00:00:00 to 24:00:00
+  * Declination (Delta) higher/lower than [DD:MM:SS], from -90:00:00 to +90:00:00
+  * Clouds index larger than 0. 1 means clear sky, 0 means full cloud coverage.
+  * Observability larger than 0. The observability is a combination of airmass, moon distance, wind, cloud coverage, etc... that provide a "smart" way of sorting targets.
+  * Selected/unselected targets. You can check targets in the list directly.
+
+.. note:: In future versions of POUET, users will be able to define their own observability formula. The default one currently used can be read at :meth:`~obs.compute_observability`.
+
