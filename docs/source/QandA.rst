@@ -1,24 +1,24 @@
-***
-Q&A
-***
+*******************
+Questions & Answers
+*******************
 
 
 Why this name?
 **************
 
-Because it sounds funny
+Because it sounds funny.
 
 
-Can I use it from everywhere?
-*****************************
+Can I use POUET from every observatory?
+***************************************
 
-Technically, yes. You just need to define a new config file associated to your location, and disable the webcam (Tutorial TBW).
+Technically, yes. You just need to define a new config file associated to your location, and disable the webcam (see :ref:`customsite`).
 
 
 How much trust can I put in your weather report?
 ************************************************
 
-The weather variable displayed in the code are directly copied from `La Silla weather report <http://www.ls.eso.org/lasilla/dimm/meteo.last>`_. However, we offer no guarantee that the displayed information are always up to date. Always refer to the official weather report of your observatory - POUET is NOT a replacement for it.
+The weather variable displayed in the code are directly copied from `La Silla weather report <http://www.ls.eso.org/lasilla/dimm/meteo.last>`_. Staled weather information turns the ``Site`` tab red in POUET. However, we offer no guarantee that the displayed information is correct. Always refer to the official weather report of your observatory - POUET is not a replacement for it.
 
 
 It's full of bugs! What should I do?
@@ -39,10 +39,10 @@ The code seems...a bit convoluted sometimes, to say the least.
 Both authors have learned (py)Qt coding this project. Be understanding.
 
 
-I've heard about a carnival mode...?
-************************************
+What is POUET's future?
+***********************
 
-Shhh...it's a secret! Pay attention to the details, though, you might find it yourself...
+We aim to make it as modulable as possible, so it can be used from anywhere.
 
 
 
