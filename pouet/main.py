@@ -146,7 +146,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		# testing stuff at startup...
 		herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 
-		self.load_obs(filepath=os.path.join(herepath, '../cats/2m2lenses_withobsprogram.pouet'))
+		self.load_obs(filepath=os.path.join(herepath, '../cats/example.pouet'))
 		obs_model = self.listObs.model()
 
 		#sys.exit()

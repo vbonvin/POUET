@@ -12,7 +12,7 @@ And they all serve a purpose. Let's have a look again at what a freshly opened s
 .. _main_colored:
 .. figure:: plots/POUET_mainwindow_colored.png
     :align: center
-    :alt: POUET mainwindow
+    :alt: POUET mainwindow with colored boxes
     :figclass: align-center
 
     A fresh POUET session, colored for the occasion
@@ -53,36 +53,55 @@ The reading is done by :meth:`~obs.rdbimport`, which is a simple wrapper around 
 To load your catalog in POUET, clic on ``Load catalog`` and chose your file. Then, if the file extension is not ``.pouet`` (more on this on the :ref:`qol` page), two consecutive popups will appear:
 
 
-.. __: intro.rst
-
-
 .. figure:: plots/POUET_load_popup_1.png
     :align: center
-    :alt: POUET mainwindow
+    :alt: POUET loading pop-up 1
     :figclass: align-center
 
     Headers selection pop-up
 .. figure:: plots/POUET_load_popup_2.png
     :align: center
-    :alt: POUET mainwindow
+    :alt: POUET loading pop-up 2
     :figclass: align-center
 
     Default obsprogram selection pop-up
 
 The first pop-up asks you to associate the headers found in your catalog with the ones POUET needs. The fourth header, called Obsprogram, is optional. It relates to the observing program associated to your targets. The observing program defines a set of properties that some of your targets share. Currently, this is limited to the minimal distance to the Moon and the maximum airmass of your target. If you do not have such a property, select ``None`` and then click ``Ok``. The second pop-up asks you to chose a default observing program for the targets that have none assigned. If you click on Cancel, the default observing program will be used.
 
-.. note:: currently, the properties of each observing program are simply used to raise warning flags if your targets are too close to the moon or at too high airmass. It does not prevent your targets to be displayed in POUET, so you can feel safe to use the default observing program (max airmass = 1.5, minimal distance to the moone = 30 deg)
+.. note:: currently, the properties of each observing program are simply used to raise warning flags if your targets are too close to the moon or at too high airmass. It does not prevent your targets to be displayed in POUET, so you can feel safe to use the default observing program (max airmass = 1.5, minimal distance to the moone = 30 deg). Learn how to define your own observing program on the :ref:`qol` page.
 
 .. warning:: the current import process will be simplified in a future version.
 
 
-Learn how to define your own observing program on the :ref:`qol` page.
+Once a catalog is loaded, all its targets appear in the list view. Try to load the ``example.cat`` catalog available on the ``cats`` folder, chosing the ``lens`` obsprogram. The output should look as follows:
+
+
+.. figure:: plots/POUET_example_load.png
+    :align: center
+    :alt: POUET with example.cat loaded
+    :figclass: align-center
+
+    Loading the example catalog of lensed quasars.
+
+
+Each target appear as a line in the list view. Non-straightforwardly understandable header keywords are:
+
+  * ``Obs`` for the observability [0-1]
+  * ``S`` for the angular distance to the Sun [degree]
+  * ``M`` for the angular distance to the Moon [degree]
+  * ``A`` for the airmass [1-10]
+  * ``W`` for the angle between the telescope and the wind direction [degree]
+  * ``C`` for the cloud index [0-1]
+
+The keyword cells get colored in green or red, depending if the current value matches the obsprogram constraints or not. A description of the wind angle can be found on the ref:`warningmessages` page. The observability and cloud index are detailed in the following section.
+
+.. note:: The wind angle and cloud index are displayed only if the observing time is less than 30min off from the actual time. See ref:`displayandtime` for more details.
 
 
 Sort your targets
 *****************
 
-Defining which targets are displayed is done through buttons in the small turquoise box of Fig. :numref:`main_colored`. Check the box corresponding on the criteria you want to apply to your list, and enter a value if needed. You can of course mix criteria as it suits you. To apply your sorting criteria, click on the ``Sort`` button.
+You can order the list view by clicking on the corresponding headers. Sorting which targets appear in the list view is done through buttons in the small turquoise box of Fig. :numref:`main_colored`. Check the box corresponding on the criteria you want to apply to your list, and enter a value if needed. You can of course mix criteria as it suits you. To apply your sorting criteria, click on the ``Sort`` button.
 
 The sorting criteria are the following:
 
@@ -96,5 +115,16 @@ The sorting criteria are the following:
   * Observability larger than 0. The observability is a combination of airmass, moon distance, wind, cloud coverage, etc... that provide a "smart" way of sorting targets.
   * Selected/unselected targets. You can check targets in the list directly.
 
-.. note:: In future versions of POUET, users will be able to define their own observability formula. The default one currently used can be read at :meth:`~obs.compute_observability`.
+.. note:: In future versions of POUET, users will be able to define their own observability formula per observing program. The default one currently used can be read at :meth:`~obs.compute_observability`.
 
+The ``Reset list`` button make all the targets visible again. The same can be achieved by unchecking the sorting boxes and clicking on the ``Sort`` button.
+
+If you sort the ``example.cat`` catalog with a right ascension later than 10h, a declination smaller than 50 degrees, an airmass smaller than 0.3 and keep only the targets that have "J1" in their name, you should have only two targets remaining:
+
+
+.. figure:: plots/POUET_example_sort.png
+    :align: center
+    :alt: POUET sorted catalog
+    :figclass: align-center
+
+    Loading the example catalog of lensed quasars.
