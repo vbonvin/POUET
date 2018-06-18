@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1248</width>
-    <height>844</height>
+    <height>848</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -2150,19 +2150,6 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
-               <widget class="QCheckBox" name="configDoubleClicAirmassValue">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="text">
-                 <string>On double-clic, show airmass plot</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="0">
                <widget class="QCheckBox" name="configShowTargetsAllSkyValue">
                 <property name="enabled">
@@ -2170,19 +2157,6 @@
                 </property>
                 <property name="text">
                  <string>Show selected objects in All Sky image</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QCheckBox" name="configDoubleClicSkyChartValue">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="text">
-                 <string>On double-clic, show Sky Chart (may require a connection)</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>
@@ -2266,13 +2240,29 @@
        <widget class="QWidget" name="verticalLayoutWidget">
         <property name="geometry">
          <rect>
-          <x>9</x>
-          <y>9</y>
-          <width>821</width>
-          <height>661</height>
+          <x>10</x>
+          <y>10</y>
+          <width>721</width>
+          <height>671</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout"/>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+        </layout>
        </widget>
       </widget>
      </widget>
@@ -2286,7 +2276,7 @@
      <x>0</x>
      <y>0</y>
      <width>1248</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

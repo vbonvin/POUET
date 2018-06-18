@@ -39,8 +39,6 @@ global SETTINGS  # TKU: I know I did it like this, how to do it better (and stay
 herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 SETTINGS = util.readconfig(os.path.join(herepath, "config/settings.cfg"))
 
-
-
 class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 	def __init__(self, parent=None):
 		super(POUET, self).__init__(parent)
@@ -59,7 +57,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		logTextBox = MyLogger(self._logwriter)
 		logTextBox.setFormatter(logging.Formatter(fmt='%(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s', datefmt='%m-%d-%Y %H:%M:%S'))
 		logging.getLogger().addHandler(logTextBox)
-
+		
 		# You can control the logging level
 		logging.getLogger().setLevel(logging.DEBUG)
 
@@ -105,8 +103,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		#self.toggleAirmassObs.selfChecked.connect()
 		self.visibilitytool.figure.canvas.mpl_connect('motion_notify_event', self.on_visibilitytoolmotion)
-		self.listObs.doubleClicked.connect(self.doubleclik_list)
-		self.listObs.verticalHeader().sectionDoubleClicked.connect(self.doubleclik_list)
 
 		# Stating timer
 		self.timer = QtCore.QTimer()
@@ -148,8 +144,63 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		self.load_obs(filepath=os.path.join(herepath, '../cats/example.pouet'))
 		obs_model = self.listObs.model()
+		
+	def contextMenuEvent(self, event):
+		"""
+		Controls the right click menu, note that this works as expected only when the focus is on the TableView
+		
+		.. todo:: make sure no menu appears when clicking anywhere else than the listObs tableview.
+		"""
+		
+		pos = event.globalPos()
+		row_id = self.listObs.rowAt(self.listObs.viewport().mapFromGlobal(pos).y())
 
-		#sys.exit()
+		#print("row =" + str(row_id))
+		
+		try:
+			targetname = self.listObs.model().item(row_id, 0).data(0)
+		except:
+			return
+		
+		#print(targetname)
+		
+		for target in self.observables:
+
+			if not target.name == targetname:
+				continue
+			menu = QtWidgets.QMenu()
+			airmassAction = menu.addAction("Show airmass")
+			skychartAction = menu.addAction("Show sky chart")
+			action = menu.exec_(pos)
+		
+			if action == airmassAction:
+				self.plot_show = uic.loadUi("dialogPlots.ui")
+
+
+				self.plot_show.setWindowTitle("Airmass for {}".format(target.name))
+
+				amv = AirmassView(parent=self.plot_show.widget)
+				amv.show(target, self.currentmeteo)
+
+				self.plot_show.open()
+			elif action == skychartAction:
+				self.print_status('Opening Sky Chart for {}...'.format(target.name), SETTINGS["color"]["warn"])
+
+				self.skychart_show = uic.loadUi("dialogSkyChart.ui")
+				self.skychart_show.setWindowTitle("Sky chart for {}".format(target.name))
+
+				skychart = SkychartView(target=target, parent=self.skychart_show.widget)
+				skychart.show()
+
+				self.skychart_show.flipNorth.clicked.connect(skychart.flipNorth)
+				self.skychart_show.flipEast.clicked.connect(skychart.flipEast)
+				self.skychart_show.SurveyBox.currentTextChanged.connect(skychart.changeSurvey)
+				self.skychart_show.sizeBox.currentTextChanged.connect(skychart.changeBoxSize)
+				self.skychart_show.invertColors.clicked.connect(skychart.invertColors)
+
+				self.skychart_show.open()
+
+				self.print_status('Sky chart opened.')
 
 	def validate_alpha(self):
 		"""
@@ -275,64 +326,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		azimuth, altitude = self.currentmeteo.get_AzAlt(ra, dec, obs_time=self.currentmeteo.time)
 		xpix, ypix = self.currentmeteo.allsky.station.get_image_coordinates(azimuth.value, altitude.value)
 		self.allskylayer.show_coordinates(xpix, ypix)
-
-	def doubleclik_list(self, mi):
-		"""
-		Method that defines what to do when the user double-clics on a observable
-
-		:param mi: given by pyqt, represent the list item in focus.
-		"""
-
-		obs_model = self.listObs.model()
-
-		try:
-			row_id = mi.row()
-		except AttributeError:
-			row_id = mi
-
-		targetname = obs_model.item(row_id, 0).data(0)
-
-		# Do we have something better than this search?
-		for target in self.observables:
-
-			if not target.name == targetname:
-				continue
-
-			####################################################
-
-			if self.configDoubleClicAirmassValue.checkState() == 2:
-
-				self.plot_show = uic.loadUi("dialogPlots.ui")
-
-
-				self.plot_show.setWindowTitle("Airmass for {}".format(target.name))
-
-				amv = AirmassView(parent=self.plot_show.widget)
-				amv.show(target, self.currentmeteo)
-
-				self.plot_show.open()
-
-			#####################################################
-
-			if self.configDoubleClicSkyChartValue.checkState() == 2:
-
-				self.print_status('Opening Sky Chart for {}...'.format(target.name), SETTINGS["color"]["warn"])
-
-				self.skychart_show = uic.loadUi("dialogSkyChart.ui")
-				self.skychart_show.setWindowTitle("Sky chart for {}".format(target.name))
-
-				skychart = SkychartView(target=target, parent=self.skychart_show.widget)
-				skychart.show()
-
-				self.skychart_show.flipNorth.clicked.connect(skychart.flipNorth)
-				self.skychart_show.flipEast.clicked.connect(skychart.flipEast)
-				self.skychart_show.SurveyBox.currentTextChanged.connect(skychart.changeSurvey)
-				self.skychart_show.sizeBox.currentTextChanged.connect(skychart.changeBoxSize)
-				self.skychart_show.invertColors.clicked.connect(skychart.invertColors)
-
-				self.skychart_show.open()
-
-				self.print_status('Sky chart opened.')
 
 	def print_status(self, msg, color=None):
 		"""

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'design_scalable.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_POUET(object):
     def setupUi(self, POUET):
         POUET.setObjectName("POUET")
-        POUET.resize(1248, 844)
+        POUET.resize(1248, 848)
         self.centralwidget = QtWidgets.QWidget(POUET)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.centralwidget)
@@ -252,7 +252,6 @@ class Ui_POUET(object):
         self.obs = QtWidgets.QWidget()
         self.obs.setObjectName("obs")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.obs)
-        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -472,7 +471,6 @@ class Ui_POUET(object):
         self.weather = QtWidgets.QWidget()
         self.weather.setObjectName("weather")
         self.gridLayout_5 = QtWidgets.QGridLayout(self.weather)
-        self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_5.setObjectName("gridLayout_5")
         self.verticalLayout_7 = QtWidgets.QVBoxLayout()
         self.verticalLayout_7.setObjectName("verticalLayout_7")
@@ -887,7 +885,6 @@ class Ui_POUET(object):
         self.config = QtWidgets.QWidget()
         self.config.setObjectName("config")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.config)
-        self.gridLayout_7.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_7.setObjectName("gridLayout_7")
         self.verticalLayout_11 = QtWidgets.QVBoxLayout()
         self.verticalLayout_11.setObjectName("verticalLayout_11")
@@ -1010,21 +1007,11 @@ class Ui_POUET(object):
         self.configShowTargetsVisibilityValue.setChecked(True)
         self.configShowTargetsVisibilityValue.setObjectName("configShowTargetsVisibilityValue")
         self.gridLayout_6.addWidget(self.configShowTargetsVisibilityValue, 0, 0, 1, 1)
-        self.configDoubleClicAirmassValue = QtWidgets.QCheckBox(self.config)
-        self.configDoubleClicAirmassValue.setEnabled(True)
-        self.configDoubleClicAirmassValue.setChecked(True)
-        self.configDoubleClicAirmassValue.setObjectName("configDoubleClicAirmassValue")
-        self.gridLayout_6.addWidget(self.configDoubleClicAirmassValue, 0, 1, 1, 1)
         self.configShowTargetsAllSkyValue = QtWidgets.QCheckBox(self.config)
         self.configShowTargetsAllSkyValue.setEnabled(True)
         self.configShowTargetsAllSkyValue.setChecked(True)
         self.configShowTargetsAllSkyValue.setObjectName("configShowTargetsAllSkyValue")
         self.gridLayout_6.addWidget(self.configShowTargetsAllSkyValue, 1, 0, 1, 1)
-        self.configDoubleClicSkyChartValue = QtWidgets.QCheckBox(self.config)
-        self.configDoubleClicSkyChartValue.setEnabled(True)
-        self.configDoubleClicSkyChartValue.setChecked(True)
-        self.configDoubleClicSkyChartValue.setObjectName("configDoubleClicSkyChartValue")
-        self.gridLayout_6.addWidget(self.configDoubleClicSkyChartValue, 1, 1, 1, 1)
         self.verticalLayout_8.addLayout(self.gridLayout_6)
         self.verticalLayout_11.addLayout(self.verticalLayout_8)
         self.gridLayout_7.addLayout(self.verticalLayout_11, 0, 0, 1, 1)
@@ -1055,9 +1042,10 @@ class Ui_POUET(object):
         self.log = QtWidgets.QWidget()
         self.log.setObjectName("log")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.log)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(9, 9, 821, 661))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 721, 671))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.tabWidget.addTab(self.log, "")
@@ -1067,7 +1055,7 @@ class Ui_POUET(object):
         self.statusbar.setObjectName("statusbar")
         POUET.setStatusBar(self.statusbar)
         self.menuBar = QtWidgets.QMenuBar(POUET)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1248, 20))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1248, 25))
         self.menuBar.setObjectName("menuBar")
         POUET.setMenuBar(self.menuBar)
 
@@ -1173,9 +1161,7 @@ class Ui_POUET(object):
         self.configDebugModeValue.setText(_translate("POUET", "Use local AllSky image and weather report [Debug mode]"))
         self.label_22.setText(_translate("POUET", "Observations"))
         self.configShowTargetsVisibilityValue.setText(_translate("POUET", "Show selected objects in visibility tool"))
-        self.configDoubleClicAirmassValue.setText(_translate("POUET", "On double-clic, show airmass plot"))
         self.configShowTargetsAllSkyValue.setText(_translate("POUET", "Show selected objects in All Sky image"))
-        self.configDoubleClicSkyChartValue.setText(_translate("POUET", "On double-clic, show Sky Chart (may require a connection)"))
         self.label_25.setText(_translate("POUET", "Written by Thibault Kuntzer and Vivien Bonvin, 2015-2018"))
         self.label_26.setText(_translate("POUET", "https://github.com/vbonvin/POUET"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.config), _translate("POUET", "Configuration"))
