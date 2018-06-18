@@ -755,13 +755,14 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		else:
 			append = True
 
+		obs.rdbexport(filepath, tosave, append=append)
 		try:
 			obs.rdbexport(filepath, tosave, append=append)
 			msg = "Successfully written %s" % filepath
 			logging.info(msg)
 			self.print_status(msg, color=SETTINGS["color"]["success"])
 		except:
-			msg = "Problem when writing the catalog..."
+			msg = "Could not write the catalog..."
 			logging.error(msg)
 			self.print_status(msg, color=SETTINGS["color"]["limit"])
 			return

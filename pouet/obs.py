@@ -465,8 +465,9 @@ def rdbexport(filepath, observables, append=False):
 	# check that the base folder exists
 	dirpath = os.path.dirname(os.path.abspath(filepath))
 	if not os.path.isdir(dirpath):
-		logger.error("Directory %s does not exist" % dirpath)
-		raise ValueError('Directory %s does not exist' % dirpath)
+		os.makedirs(dirpath)
+		logger.info("Directory %s has been created" % dirpath)
+		#raise ValueError('Directory %s does not exist' % dirpath)
 
 	if not append:
 		f = open(filepath, 'w')
