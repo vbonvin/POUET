@@ -128,3 +128,41 @@ If you sort the ``example.cat`` catalog with a right ascension later than 10h, a
     :figclass: align-center
 
     Loading the example catalog of lensed quasars.
+
+
+Display targets on the all-sky and visibility views
+***************************************************
+
+The right part of POUET's main window regroups two views. At the top is the all-sky view, and at the bottom is the visibility view.
+
+The all-sky view is, as its name says, an all-sky view from La Silla. The image comes from the `Danish telescope AllSky Camera <http://allsky-dk154.asu.cas.cz>`_, and is refreshed by default every 2 minutes. A RA/DEC grid is superposed on top of it, as well as a cloud analysis layer that colors the view according to the cloud coverage. At the top of the plot are displayed the date of the last update of the all-sky and the wind (see :ref:`warningmessages`) as well as a ``Refresh`` button, especially useful is you deactivate the automatic updates (see :ref:`alttabs`).
+
+
+.. figure:: plots/POUET_allsky.png
+    :align: center
+    :alt: POUET all-sky
+    :figclass: align-center
+
+    All-sky view
+
+
+.. warning:: The presence of the moon masks the stars on the all-sky view, thus mimicking the presence of clouds and triggering false cloud detection.
+
+
+The visibility view is a RA/DEC plot that indicates which region of the sky can be observed according to two criterias: the angle to the Moon, and the airmass. You can change the values at the top of the view and then click ``Draw`` to display a new region. The color of the visible region corresponds to the angle to the Moon, indicated in the right colorbar.
+
+.. figure:: plots/POUET_visibility.png
+    :align: center
+    :alt: POUET all-sky
+    :figclass: align-center
+
+    Visibility view
+
+.. note:: If you hover the mouse cursor over the visibility view, a marker appears on the all-sky view at the corresponding coordinates.
+
+
+
+
+
+
+

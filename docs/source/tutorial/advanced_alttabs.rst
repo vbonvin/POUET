@@ -1,4 +1,4 @@
-.. _advanced_alttabs:
+.. _alttabs:
 
 Extra tabs
 ==========
