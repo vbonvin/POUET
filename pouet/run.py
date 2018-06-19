@@ -3,7 +3,7 @@ High-level functions around meteo and obs
 Running the script should provide a minimal text output
 """
 
-import os, sys
+import os, sys, inspect
 from astropy.time import Time
 
 
@@ -13,6 +13,8 @@ import obs, meteo, plots
 import importlib
 
 import logging
+herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+
 logger = logging.getLogger(__name__)
 
 def startup(name='LaSilla', cloudscheck=True, debugmode=False):
@@ -57,7 +59,7 @@ def retrieve_obsprogramlist():
 
     obsprogramlist = []
     #todo: obsprogram path is hardcoded, this is wrong!
-    files = [f for f in os.listdir('obsprogram') if 'prog' in f and '.py'in f and not 'pyc' in f and not "default" in f]
+    files = [f for f in os.listdir(os.path.join(herepath,'obsprogram')) if 'prog' in f and '.py'in f and not 'pyc' in f and not "default" in f]
     for f in files:
         name = f.split('prog')[1].split('.py')[0]
         program = importlib.import_module("obsprogram.prog{}".format(name), package=None)

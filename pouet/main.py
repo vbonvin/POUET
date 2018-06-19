@@ -174,7 +174,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			action = menu.exec_(pos)
 		
 			if action == airmassAction:
-				self.plot_show = uic.loadUi("dialogPlots.ui")
+				self.plot_show = uic.loadUi(os.path.join(herepath, "dialogPlots.ui"))
 
 
 				self.plot_show.setWindowTitle("Airmass for {}".format(target.name))
@@ -186,7 +186,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			elif action == skychartAction:
 				self.print_status('Opening Sky Chart for {}...'.format(target.name), SETTINGS["color"]["warn"])
 
-				self.skychart_show = uic.loadUi("dialogSkyChart.ui")
+				self.skychart_show = uic.loadUi(os.path.join(herepath, "dialogSkyChart.ui"))
 				self.skychart_show.setWindowTitle("Sky chart for {}".format(target.name))
 
 				skychart = SkychartView(target=target, parent=self.skychart_show.widget)
@@ -209,7 +209,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		selectedNames = "\n".join([n for s, n in zip(states, names) if s])
 		
-		self.names_show = uic.loadUi("dialogNames.ui")
+		self.names_show = uic.loadUi(os.path.join(herepath, "dialogNames.ui"))
 
 		textField = QtWidgets.QPlainTextEdit(self.names_show)
 		textField.setGeometry(self.names_show.geometry())
@@ -555,7 +555,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				obsprogramnames = (o["name"] for o in obsprogramlist)
 
 				# header popup
-				self.headerPopup = uic.loadUi("headerdialog.ui")
+				self.headerPopup = uic.loadUi(os.path.join(herepath, "headerdialog.ui"))
 
 				# split by tabs/spaces
 				#todo: if columns are empty, the reader misses that. Either correct or print a warning, e.g. assert len(headers) == len(lines[0]) ??
