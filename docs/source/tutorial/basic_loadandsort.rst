@@ -127,7 +127,7 @@ If you sort the ``example.cat`` catalog with a right ascension later than 10h, a
     :alt: POUET sorted catalog
     :figclass: align-center
 
-    Loading the example catalog of lensed quasars.
+    Sorting the example catalog of lensed quasars.
 
 
 Display targets on the all-sky and visibility views
@@ -161,6 +161,41 @@ The visibility view is a RA/DEC plot that indicates which region of the sky can 
 .. note:: If you hover the mouse cursor over the visibility view, a marker appears on the all-sky view at the corresponding coordinates.
 
 
+If you check some targets on the list view and click on ``Display selected``, they will appear on the corresponding coordinates on both the all-sky and visibility views.
+
+
+.. figure:: plots/POUET_targetsondisplay.png
+    :align: center
+    :alt: POUET all-sky
+    :figclass: align-center
+
+    Targets displayed on the visibility view
+
+
+Extra plots
+***********
+
+Upon right-clicking on a target in the list view, a drop-down menu will appear, giving you access to additional useful plots for the selected target. Currently, two options are available:
+
+  * ``Show sky chart`` opens a pop-up where you can query existing large sky surveys (currently `DSS <http://archive.eso.org/dss/dss>`_, `NEAT <https://neat.jpl.nasa.gov>`_ and `2MASS-J <https://www.ipac.caltech.edu/2mass/>`_) for a finding chart of your target.
+
+  .. figure:: plots/POUET_skychart.png
+    :align: center
+    :alt: POUET sky chart
+    :figclass: align-center
+
+    Sky chart of HE0435-1223
+
+
+  * ``Show airmass`` opens an pop-up displaying the evolution of the airmass of your target over its visibility range during the current night, in an Altitude-Azimuth radial grid.
+
+
+  .. figure:: plots/POUET_airmass.png
+    :align: center
+    :alt: POUET airmass display
+    :figclass: align-center
+
+    Airmass evolution of HE0435-1223 over night
 
 
 
