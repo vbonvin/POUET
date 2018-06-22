@@ -1,6 +1,6 @@
 .. _customsite:
 
-Change your observing site
-==========================
+Customize your observing site
+=============================
 
 To be written...
