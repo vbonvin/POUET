@@ -391,8 +391,7 @@ if __name__ == "__main__":
 
 	currentmeteo = meteomodule.Meteo(name="LaSilla", cloudscheck=False, debugmode=True)
 	currentmeteo.time = Time("2018-02-15 07:00:00.0")
-	target = obs.Observable(name="2M1134-2103", obsprogram="lens",alpha="11:34:40.5", delta="-21:03:23")
-	#target = obs.Observable(name="HE0435-1223", obsprogram="lens",alpha="04:38:14.9", delta="-12:17:14.4")
+	target = obs.Observable(name="HE0435-1223", obsprogram="lens",alpha="04:38:14.9", delta="-12:17:14.4")
 	
 	plot_target_on_sky(target=target)
 	plt.show()

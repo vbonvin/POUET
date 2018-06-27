@@ -200,7 +200,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 				self.skychart_show.open()
 
-				self.print_status('Sky chart opened.')
+				self.print_status('Sky chart opened.', SETTINGS["color"]["success"])
 				
 	def showSelectedNames(self):
 
@@ -281,7 +281,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		self.allsky_redisplay()
 
-		self.print_status("All Sky refresh done.")
+		self.print_status("All Sky refresh done.", SETTINGS["color"]["success"])
 
 
 	def init_warn_station(self):
@@ -412,7 +412,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			self.do_update()
 
 			logging.warning("Now in {} mode for the All Sky!".format(mode))
-			self.print_status("Change of mode complete.")
+			self.print_status("Change of mode complete.", SETTINGS["color"]["success"])
 
 	def set_cloud_analysis_mode(self):
 		"""
@@ -439,7 +439,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		self.listObs_plot_targets()
 		logging.info("General update performed")
-		self.print_status("Update done")
+		self.print_status("Update done.", SETTINGS["color"]["success"])
 
 
 
@@ -656,12 +656,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				logging.error(logmsg)
 
 				namecat = filepath.split("/")[-1]
-				self.print_status("%s \nWrong formatting: headers and columns match?" % namecat, SETTINGS['color']['warn'])
+				self.print_status("%s \nWrong formatting: headers and columns match?" % namecat, SETTINGS['color']['limit'])
 		except:
 			logmsg += ' not loaded - format unknown'
 			logging.error(logmsg)
 
-			self.print_status("%s \nFormat unknown: not a catalog file..." % filepath, SETTINGS['color']['warn'])
+			self.print_status("%s \nFormat unknown: not a catalog file..." % filepath, SETTINGS['color']['limit'])
 
 
 
@@ -747,7 +747,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			msg = "No valid filepath given \n"
 			msg += "It must end with .pouet"
 			logging.error(msg)
-			self.print_status(msg, color=SETTINGS["color"]["warn"])
+			self.print_status(msg, color=SETTINGS["color"]["limit"])
 			return
 
 		if self.toggleSaveObsOverwrite.isChecked():
@@ -1301,7 +1301,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		else:
 			self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
 
-		self.print_status("Auto-refresh done.", SETTINGS['color']['nominal'])
+		self.print_status("Auto-refresh done.", SETTINGS['color']['success'])
 
 
 class MyLogger(logging.Handler):
