@@ -102,7 +102,7 @@ class Clouds():
         
         return self.get_observability_map(x, y)
         
-    def detect_stars(self, sigma_blur=1.2, threshold=8, neighborhood_size=20, fwhm_threshold=5, meas_star=True, return_all=False):
+    def detect_stars(self, sigma_blur=1.0, threshold=0.05, neighborhood_size=20, fwhm_threshold=5, meas_star=True, return_all=False):
         """
         Analyses the images to find the stars. 
 
@@ -119,7 +119,8 @@ class Clouds():
         
         logger.debug("Detecting stars in All Sky...")
         original = self.im_original
-        image = filters.gaussian_filter(self.im_masked, sigma_blur)
+        image = copy.copy(self.im_masked)#filters.gaussian_filter(self.im_masked, sigma_blur)
+        image /= filters.gaussian_filter(np.nan_to_num(image), 10)
         data_max = filters.maximum_filter(image, neighborhood_size)
         maxima = (image == data_max)
         
@@ -165,7 +166,7 @@ class Clouds():
         else:
             return resx, resy
         
-    def get_observability_map(self, x, y, threshold=50, filter_sigma=2):
+    def get_observability_map(self, x, y, threshold=40, filter_sigma=3, max_pxval=170):
         """
         Returns an observability map (an image of the sky)
         
@@ -173,6 +174,7 @@ class Clouds():
         :param y: y coordinates of detected stars
         :param threshold: distance threshold in px of stars such that we have observations
         :param filter_sigma: sigma of the Gaussian kernel, default=2 
+        :param max_pxval: px value above which the visibility is considered to be 0, default=170
         
         :return: an observability map with the same dimension as the input image.
         """
@@ -182,11 +184,13 @@ class Clouds():
         if len(x) > 0:
             notnans = np.where(np.isnan(self.im_masked) == False)
             notnans = list(zip(notnans[0], notnans[1]))
-            tree = cKDTree(list(zip(x,y)))    
+            pts = np.array([x,y]).T
+            tree = cKDTree(pts)    
             for nx, ny in notnans:
                 obs = len(tree.query_ball_point((ny,nx), threshold))
                 if obs > 2 : observability[nx,ny] = 1. 
-                elif obs > 1 : observability[nx,ny] = 0.5
+                elif obs >= 1 : observability[nx,ny] = 0.5
+            observability[filters.gaussian_filter(np.nan_to_num(self.im_masked), 10) > max_pxval] = 0
             observability = filters.gaussian_filter(observability, filter_sigma)
         
         self.observability_map = observability.T
@@ -384,21 +388,27 @@ if __name__ == "__main__":
         #print '180, 0,', analysis.is_observable(np.deg2rad(180), np.deg2rad(0))
         
         plt.figure(figsize=(18,6))
-        plt.subplot(1, 3, 1)
+        plt.tight_layout()
+        plt.subplot(1, 4, 1)
         plt.imshow(imo, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
         plt.scatter(ax, ay, s=4, marker='o', edgecolors='g', color='none')
         #plt.scatter(x, y, s=4, marker='o', edgecolors='r', color='none')
         plt.title('Detected peaks')
         
-        plt.subplot(1, 3, 2)
+        plt.subplot(1, 4, 2)
         plt.imshow(imo, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
         plt.scatter(x, y, s=4, marker='o', edgecolors='r', color='none')
         plt.title('Detected stars')
         
-        plt.subplot(1, 3, 3)
+        plt.subplot(1, 4, 3)
         plt.imshow(imo, vmin=0, vmax=255, cmap=plt.get_cmap('Greys_r'))
         plt.imshow(observability, cmap=plt.get_cmap('RdYlGn'), alpha=0.2)
         plt.title("Observability")
+        
+        plt.subplot(1, 4, 4)
+        #imo = imo[~np.isnan(imo)]
+        #plt.hist(imo, 100)
+        plt.imshow(imo/filters.gaussian_filter(np.nan_to_num(imo), 10), cmap=plt.get_cmap('Greys_r'))
     
-    plt.show()
+        plt.show()
 
