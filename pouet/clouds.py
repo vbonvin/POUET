@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.ndimage
-from scipy.optimize import leastsq
+from scipy.optimize import least_squares
 import scipy.ndimage.filters as filters
 import scipy.ndimage as ndimage
 from scipy.spatial import cKDTree
@@ -54,7 +54,7 @@ class Clouds():
             self.fimage = fimage
 
         self.observability_map = None
-    
+
     def retrieve_image(self):
         """
         Downloads the current all sky from the server and saves it to disk.
@@ -116,7 +116,6 @@ class Clouds():
         :param return_all: if `True`, returns the positions of stars + detected objects otherwise only stars
 
         """
-        
         logger.debug("Detecting stars in All Sky...")
         original = self.im_original
         image = copy.copy(self.im_masked)#filters.gaussian_filter(self.im_masked, sigma_blur)
@@ -125,7 +124,7 @@ class Clouds():
         maxima = (image == data_max)
         
         data_min = filters.minimum_filter(image, neighborhood_size)
-        
+
         # In order to avoid outputing warnings, remove all nans (not the Indian bread)
         try:
             delta_arr = data_max - data_min
@@ -136,10 +135,9 @@ class Clouds():
 
         diff = (delta_arr > threshold)
         maxima[diff == 0] = 0
-        
         labeled, _ = ndimage.label(maxima)
         slices = ndimage.find_objects(labeled)
-        
+
         x, y = [], []
         for dy, dx in slices:
             x_center = (dx.start + dx.stop - 1)/2
@@ -149,7 +147,6 @@ class Clouds():
         
         if not meas_star: 
             return x, y
-        
         resx = []
         resy = []
         for xx, yy in zip(x, y):
@@ -158,7 +155,6 @@ class Clouds():
                 resx.append(xx)
                 resy.append(yy)
                 #resfwhm.append(f)
-        
         logger.debug("Done. {} stars found".format(len(resx)))
         
         if return_all:
@@ -221,7 +217,6 @@ def loadallsky(fnimg, station, return_complete=False):
     
     :return: Masked image or masked image and original image. Note that if cannot download, returns `None` or `None, None`. 
     """
-    
     logger.debug("Loading image {}...".format(fnimg))
     im = scipy.ndimage.imread(fnimg)
     ar = np.array(im)
@@ -242,7 +237,7 @@ def loadallsky(fnimg, station, return_complete=False):
         return ar, rest
     else:
         return ar
-    
+
 def gaussian(params, stamp, stampsize):
     """
     Returns a 2D gaussian profile
@@ -313,7 +308,9 @@ def fwhm(data,xc,yc,stampsize,show=False, verbose=False):
 
     guess=[stampsize/2.,stampsize/2.,2.,1e5, np.median(data)]
 
-    p, _ = leastsq(gaussian,guess,args=(stamp,stampsize))
+    #p, _ = leastsq(gaussian,guess,args=(stamp,stampsize))
+    res = least_squares(gaussian,guess,args=(stamp,stampsize), method='lm', max_nfev=50)
+    p = res.x
 
 
     if p[2]<0.2 or p[2]>1e3:
