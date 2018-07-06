@@ -40,7 +40,7 @@ Usually, when the wind blows above a certain limit, you will want to avoid point
     When the wind blows too hard, a pointing limit grid appears on the displays.
 
 
-If the wind blows really too hard, then the telescope should be closed for safety measures. Most modern telescopes have automatic closing procedures (either a closing signal sent to the telescope, or a human operator forcing you to close it) but just in case you are all alone and don't pay too much attention to your official weather report, POUET sends you a visual reminder.
+If the wind blows really too hard, then the telescope should be closed for safety measures. Most modern telescopes have automatic closing procedures (either a closing signal sent to the telescope, or a human operator forcing you to close it) but just in case you are all alone and don't pay too much attention to your official weather report, POUET displays a visual reminder in both the visibility and all-sky views.
 
   .. figure:: plots/POUET_strongwind.png
     :align: center
@@ -55,9 +55,40 @@ POUET closing limit is 20m/s, and as the pointing limit can be changed (see :ref
 Clouds detection
 ****************
 
-The approach chosen in POUET to detect clouds is very straightforward: small boxes are drawn on the all sky image and a peak detection algorithm counts how many stars are visible. If that number is large enough, then POUET assumes the sky is clear and paint the all-sky in green.
+The approach chosen in POUET to detect clouds is very straightforward: small boxes are drawn on the all sky image and a peak detection algorithm counts how many stars are visible. If that number is large enough, then POUET assumes the sky is clear and paint the all-sky in green. A Gaussian filtering is also applied to reduce the false cloud detection due to the presence of the moon.
 
 The number of stars per box has been optimized to match a visual detection from the `Danish telescope AllSky Camera <http://allsky-dk154.asu.cas.cz>`_. If you plan to use another all-sky (see :ref:`customsite`), the cloud detection algorithm might need some adaptation.
 
 
+A target behind the clouds will have its cloud flag ``C`` in the list view painted in red with a value of 0, and, of course, appears in a correspondingly red region in the all-sky display. The yellow regions corresponds to areas with a cloud density between thin and thick; you can still hope for some flux if you do e.g. spectroscopy of bright objects, but don't even attempt to do photometric observations, unless you are really desperate (The "I'm-a-PhD-student-whose-thesis-can-be-awarded-only-if-I-get-these-observations-done-tonight" kind of desperate).
 
+
+  .. figure:: plots/POUET_cloudswarning.png
+    :align: center
+    :alt: POUET clouds limit
+    :figclass: align-center
+
+    When everyone else is closed because of bad weather, the smart POUET user knows he can still observe WFI2033.
+
+
+
+Moon distance
+*************
+
+In a similar fashion than the wind limit or cloud coverage, a target too close to the moon will have its ``M`` box in the list view painted in red. The default minimum moon distance is 30 degree, but can of course be changed (see :ref:`qol`)
+
+
+  .. figure:: plots/POUET_moonwarning.png
+    :align: center
+    :alt: POUET moon warning
+    :figclass: align-center
+
+    HE0047-1743 is too close to the moon.
+
+The same warning flag exists for the distance to the Sun, ``S``.
+
+
+No internet connexion
+*********************
+
+Observatories are remote places, whose network connections are sometimes hectic. POUET works as best as it could in offline mode. Of course, the all-sky view will be disabled, similarly to the finding charts

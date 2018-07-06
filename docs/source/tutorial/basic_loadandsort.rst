@@ -1,7 +1,7 @@
 .. _loadandsort:
 
-Load and sort targets
-=====================
+Basic usage
+===========
 
 
 Buttons, buttons everywhere
@@ -68,7 +68,7 @@ To load your catalog in POUET, clic on ``Load catalog`` and chose your file. The
 
 The first pop-up asks you to associate the headers found in your catalog with the ones POUET needs. The fourth header, called Obsprogram, is optional. It relates to the observing program associated to your targets. The observing program defines a set of properties that some of your targets share. Currently, this is limited to the minimal distance to the Moon and the maximum airmass of your target. If you do not have such a property, select ``None`` and then click ``Ok``. The second pop-up asks you to chose a default observing program for the targets that have none assigned. If you click on Cancel, the default observing program will be used.
 
-.. note:: currently, the properties of each observing program are simply used to raise warning flags if your targets are too close to the moon or at too high airmass. It does not prevent your targets to be displayed in POUET, so you can feel safe to use the default observing program (max airmass = 1.5, minimal distance to the moone = 30 deg). Learn how to define your own observing program on the :ref:`qol` page.
+.. note:: currently, the properties of each observing program are simply used to raise warning flags if your targets are too close to the moon or at too high airmass. It does not prevent your targets to be displayed in POUET, so you can feel safe to use the default observing program (max airmass = 1.5, minimal distance to the moon = 30 deg). Learn how to define your own observing program on the :ref:`qol` page.
 
 .. warning:: the current import process will be simplified in a future version.
 
@@ -95,7 +95,7 @@ Each target appear as a line in the list view. Non-straightforwardly understanda
 
 The keyword cells get colored in green or red, depending if the current value matches the obsprogram constraints or not. A description of the wind angle can be found on the ref:`warningmessages` page. The observability and cloud index are detailed in the following section.
 
-.. note:: The wind angle and cloud index are displayed only if the observing time is less than 30min off from the actual time. See ref:`displayandtime` for more details.
+.. note:: The wind angle and cloud index are displayed only if the observing time is less than 30min off from the actual time.
 
 
 Sort your targets
@@ -199,5 +199,22 @@ Upon right-clicking on a target in the list view, a drop-down menu will appear, 
 
 
 
+Change the current time
+***********************
 
+If you want to plan ahead (or in the past, who are we to judge), you can use the time box at the top left of the main window to change the date and time of the observations. Once set, click on ``Update`` to refresh the values displayed in your target list. If you are more than 30 away from the current time, both the clouds and wind values are disabled.
+
+
+  .. figure:: plots/POUET_thefuture.png
+    :align: center
+    :alt: POUET airmass display
+    :figclass: align-center
+
+    HE0047 will still be visible in July 2222. No wind or clouds prediction, though.
+
+
+.. note:: The all-sky view still displays the up-to-date all-sky image. This is designed to remind you of the current weather situation.
+
+
+You can come back to the current time by clicking on ``Set to now``, then ``Update``.
 
