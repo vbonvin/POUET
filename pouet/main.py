@@ -1943,7 +1943,7 @@ class VisibilityView(FigureCanvas):
 			cbar = self.figure.colorbar(CS, ax=self.axis, cax=self.cax, ticks=t)
 			cbar.ax.set_yticklabels(tl, fontsize=9)
 
-		if check_wind and WS > wpl:
+		if check_wind and WS >= wpl:
 			cmap = LinearSegmentedColormap.from_list('mycmap', [(0., 'red'),
 																(1, cw)]
 													 )
