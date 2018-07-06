@@ -50,3 +50,14 @@ If the wind blows really too hard, then the telescope should be closed for safet
     When the wind blows really too hard, POUET reminds you that no observations are possible.
 
 POUET closing limit is 20m/s, and as the pointing limit can be changed (see :ref:`customsite`). As an extra warning, note that in both cases the ``Station`` tab changed color (yellow for pointing limit, red for closing limit)
+
+
+Clouds detection
+****************
+
+The approach chosen in POUET to detect clouds is very straightforward: small boxes are drawn on the all sky image and a peak detection algorithm counts how many stars are visible. If that number is large enough, then POUET assumes the sky is clear and paint the all-sky in green.
+
+The number of stars per box has been optimized to match a visual detection from the `Danish telescope AllSky Camera <http://allsky-dk154.asu.cas.cz>`_. If you plan to use another all-sky (see :ref:`customsite`), the cloud detection algorithm might need some adaptation.
+
+
+
