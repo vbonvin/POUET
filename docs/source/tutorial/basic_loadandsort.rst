@@ -202,7 +202,7 @@ Upon right-clicking on a target in the list view, a drop-down menu will appear, 
 Change the current time
 ***********************
 
-If you want to plan ahead (or in the past, who are we to judge), you can use the time box at the top left of the main window to change the date and time of the observations. Once set, click on ``Update`` to refresh the values displayed in your target list. If you are more than 30 away from the current time, both the clouds and wind values are disabled.
+If you want to plan ahead (or in the past, who are we to judge), you can use the time box at the top left of the main window to change the date and time of the observations. Once set, click on ``Update`` to refresh the values displayed in your target list. If you are more than 30 minutes away from the current time, both the clouds and wind values are disabled in the list view.
 
 
   .. figure:: plots/POUET_thefuture.png
