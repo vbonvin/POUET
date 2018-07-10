@@ -1934,7 +1934,7 @@ class VisibilityView(FigureCanvas):
 		self.axis.contourf(ra_g, dec_g, vis, cmap=plt.get_cmap("Greys"))
 
 		if do_plot_contour:
-			CS = self.axis.contour(ra_g, dec_g, sep, levels=[50, 70, 90], colors=['yellow', 'red', 'k'], inline=1)
+			CS = self.axis.contour(ra_g, dec_g, sep, levels=[50, 70, 90], colors=['yellow', 'red', 'k'])
 			self.axis.clabel(CS, fontsize=9, fmt='%d°')
 			CS = self.axis.contourf(ra_g, dec_g, sep, v, )
 

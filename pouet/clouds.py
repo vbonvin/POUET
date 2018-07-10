@@ -119,6 +119,12 @@ class Clouds():
         logger.debug("Detecting stars in All Sky...")
         original = self.im_original
         image = copy.copy(self.im_masked)#filters.gaussian_filter(self.im_masked, sigma_blur)
+        
+        # This condition is there only to make the code more resilient, but should not occur.
+        if image is None:
+            logger.error("im_masked is None, probably an issue with the download. Skipping analysis...")
+            return None, None
+        
         image /= filters.gaussian_filter(np.nan_to_num(image), 10)
         data_max = filters.maximum_filter(image, neighborhood_size)
         maxima = (image == data_max)
@@ -162,7 +168,7 @@ class Clouds():
         else:
             return resx, resy
         
-    def get_observability_map(self, x, y, threshold=40, filter_sigma=3, max_pxval=170):
+    def get_observability_map(self, x, y, threshold=40, filter_sigma=3, max_pxval=180):
         """
         Returns an observability map (an image of the sky)
         

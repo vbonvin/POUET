@@ -325,7 +325,7 @@ class Observable:
 		# check the clouds
 		self.obs_clouds, self.obs_clouds_info = cloudscheck, True
 		if not future:
-			if cloudscheck and observability > 0:
+			if cloudscheck:
 				self.is_cloudfree(meteo)
 				if self.cloudfree <= 0.5 :
 					self.obs_clouds = False
@@ -340,7 +340,7 @@ class Observable:
 				else:
 					self.obs_clouds_info = False
 					warnings += '\nNo cloud info'
-					print("no cloud info")
+					#print("no cloud info")
 			else:
 				self.obs_clouds_info = False
 				warnings += '\nNo cloud info'
