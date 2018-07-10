@@ -146,9 +146,6 @@ The all-sky view is, as its name says, an all-sky view from La Silla. The image 
     All-sky view
 
 
-.. warning:: The presence of the moon masks the stars on the all-sky view, thus mimicking the presence of clouds and triggering false cloud detection.
-
-
 The visibility view is a RA/DEC plot that indicates which region of the sky can be observed according to two criterias: the angle to the Moon, and the airmass. You can change the values at the top of the view and then click ``Draw`` to display a new region. The color of the visible region corresponds to the angle to the Moon, indicated in the right colorbar.
 
 .. figure:: plots/POUET_visibility.png
