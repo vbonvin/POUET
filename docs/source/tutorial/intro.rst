@@ -14,7 +14,6 @@ Quick links
 
     setup
     basic_loadandsort
-    Display targets and change time <basic_displayandtime>
     Understanding warnings <basic_warningmessages>
     Station, Configuration and Logs tabs <advanced_alttabs>
     Customize POUET (quality of life improvements) <advanced_qualityoflife>
