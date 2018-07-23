@@ -9,7 +9,7 @@ Welcome to POUET's documentation!
 
 POUET - Programing Observations Usefully at the Euler Telescope
 
-  .. figure:: plots/POUET_welcomepage.png
+  .. figure:: source/tutorial/plots/POUET_welcomepage.png
     :align: center
     :alt: POUET example
     :figclass: align-center
