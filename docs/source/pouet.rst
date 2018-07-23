@@ -1,15 +1,6 @@
 pouet package
 *************
 
-Subpackages
------------
-
-.. toctree::
-
-    pouet.obsprogram
-    pouet.config
-
-
 
 Submodules
 ----------
@@ -74,3 +65,11 @@ pouet\.plots module
     :show-inheritance:
 
 
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pouet.obsprogram
+    pouet.config
