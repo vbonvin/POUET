@@ -16,9 +16,9 @@ Quick links
 
     setup
     basic_loadandsort
-    Understanding warnings <basic_warningmessages>
+    Understanding warning messages <basic_warningmessages>
     Station, Configuration and Logs tabs <advanced_alttabs>
-    Customize POUET (quality of life improvements) <advanced_qualityoflife>
-    Customize POUET (new site, advanced usage) <advanced_newsite>
+    Improve your quality of life (must read) <advanced_qualityoflife>
+    Configure POUET (advanced) <advanced_newsite>
 
 

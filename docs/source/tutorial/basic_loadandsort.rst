@@ -59,6 +59,7 @@ To load your catalog in POUET, clic on ``Load catalog`` and chose your file. The
     :figclass: align-center
 
     Headers selection pop-up
+.. _obsprogrampopup:
 .. figure:: plots/POUET_load_popup_2.png
     :align: center
     :alt: POUET loading pop-up 2
