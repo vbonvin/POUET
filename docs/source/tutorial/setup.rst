@@ -21,7 +21,7 @@ Tree structure
 At the root of POUET, you will find the following directories
 
   * ``archives`` contains old pieces of code (will disappear in a future version)
-  * ``cats`` contains the catalogs loaded/savec by POUET
+  * ``cats`` contains the catalogs loaded/saved by POUET
   * ``docs`` contains the documentation and requirement files
   * ``misc`` contains stuff (will disappear in a future version)
   * ``pouet`` contains the source code
