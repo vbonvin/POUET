@@ -51,7 +51,7 @@ The default obsprogram parameters can be accessed in ``pouet/obsprogram/progdefa
 
 This file contains a couple of functions we are still playing with (keep in mind that POUET is still under development) and that are currently not used. The only values of interest are the ``minangletomoon`` and ``maxairmass``, that define the observability of your targets once loaded in POUET. To change the default behaviour of POUET, simply edit these values.
 
-If you work with multiple kind of targets that have various angle to moon and airmass requirements, you can also create new obsprogram files. Simply copy/paste the ``progdefault.py`` file, rename it as ``prog%YOUROBSPROGRAMNAME%.py`` and edit its value. When loading a new catalog in POUET, your new obspgrogram will appear in the obsgprogram popup selection (see Fig. :numref:`obsprogrampopup`).
+If you work with multiple kind of targets that have various angle to moon and airmass requirements, you can also create new obsprogram files. Simply copy/paste the ``progdefault.py`` file, rename it as ``prog%YOUROBSPROGRAMNAME%.py`` and edit its value. When loading a new catalog in POUET, your new obspgrogram will appear in the obsgprogram popup selection.
 
 
 .. note:: The obsprogram files are read each time you import a new catalog. If you have a POUET instance launched and edit the obsprogram files on the fly, you should reload your catalogs for the effects to take change, no choice.
