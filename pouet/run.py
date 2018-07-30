@@ -21,9 +21,9 @@ def startup(name='LaSilla', cloudscheck=True, debugmode=False):
     """
 	Initialize meteo
 
-    :return:
+    :return: Meteo object
     """
-
+    logging.debug("Loading a new meteo...")
     currentmeteo = meteo.Meteo(name=name, cloudscheck=cloudscheck, debugmode=debugmode)
 
     return currentmeteo
@@ -77,7 +77,7 @@ def hide_observables(observables, criteria):
     :param criteria: list of dictionnaries. Each dict contains an "id" and associated keywords used for the hiding. See :meth:'~main.hide_observables'.
 
     """
-
+    logging.debug("Hiding observables...")
     for c in criteria:
         for o in observables:
             if c["id"] == "matchname":
@@ -104,7 +104,6 @@ def hide_observables(observables, criteria):
                 elif o.cloudfree is None:
                     o.hidden = True
 
-
             elif c["id"] == "alphaboth":
                 if o.alpha.to_string(sep=":", pad=True) <= c["min"] or o.alpha.to_string(sep=":", pad=True) >= c["max"]:
                     o.hidden = True
@@ -126,7 +125,6 @@ def hide_observables(observables, criteria):
                     o.hidden = True
                 elif len(c["max"]) == 9 and len(c["min"]) == 9 and c["min"] < c["max"]:
                     o.hidden = True
-
 
                 elif len(delta) == 8:  # then obs is positive
                     if len(c["min"]) == 8 and len(c["max"]) == 8:
@@ -154,7 +152,6 @@ def hide_observables(observables, criteria):
                         if delta <= c["max"] or delta >= c["min"]:
                             o.hidden = True
 
-
             elif c["id"] == "deltamin":
                 delta = o.delta.to_string(sep=":", pad=True).split(".")[0]
 
@@ -175,7 +172,6 @@ def hide_observables(observables, criteria):
                         # both negative, inverse comparison
                         if o.delta.to_string(sep=":", pad=True) >= c["min"]:
                             o.hidden = True
-
 
             elif c["id"] == "deltamax":
                 delta = o.delta.to_string(sep=":", pad=True).split(".")[0]
@@ -200,7 +196,7 @@ def hide_observables(observables, criteria):
 
             else:
                 pass
-
+    logging.info("Observables hidden.")
 
 if __name__ == "__main__":
 

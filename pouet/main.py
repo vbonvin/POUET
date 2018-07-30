@@ -144,6 +144,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		self.load_obs(filepath=os.path.join(herepath, '../cats/example.pouet'))
 		obs_model = self.listObs.model()
+
+		logging.info("Start-up successfully done")
+		self.print_status("Start-up successfully done", SETTINGS["color"]["success"])
+
 		
 	def contextMenuEvent(self, event):
 		"""
@@ -154,15 +158,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		
 		pos = event.globalPos()
 		row_id = self.listObs.rowAt(self.listObs.viewport().mapFromGlobal(pos).y())
-
-		#print("row =" + str(row_id))
 		
 		try:
 			targetname = self.listObs.model().item(row_id, 0).data(0)
 		except:
 			return
-		
-		#print(targetname)
 		
 		for target in self.observables:
 
@@ -174,16 +174,20 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			action = menu.exec_(pos)
 		
 			if action == airmassAction:
+				logging.debug("Opening Airmass rosette...")
+				self.print_status('Opening Airmass chart for {}...'.format(target.name), SETTINGS["color"]["warn"])
 				self.plot_show = uic.loadUi(os.path.join(herepath, "dialogPlots.ui"))
-
-
 				self.plot_show.setWindowTitle("Airmass for {}".format(target.name))
 
 				amv = AirmassView(parent=self.plot_show.widget)
 				amv.show(target, self.currentmeteo)
 
 				self.plot_show.open()
+				logging.info("Airmass rosette opened.")
+				self.print_status('Airmass rosette opened.', SETTINGS["color"]["success"])
+
 			elif action == skychartAction:
+				logging.debug("Opening Sky Chart...")
 				self.print_status('Opening Sky Chart for {}...'.format(target.name), SETTINGS["color"]["warn"])
 
 				self.skychart_show = uic.loadUi(os.path.join(herepath, "dialogSkyChart.ui"))
@@ -200,9 +204,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 				self.skychart_show.open()
 
+				logging.info("Sky chart opened.")
 				self.print_status('Sky chart opened.', SETTINGS["color"]["success"])
 				
 	def showSelectedNames(self):
+
+		logging.debug("Opening selected names popup...")
 
 		obs_model = self.listObs.model()
 		states, names = self.check_obs_status(obs_model)
@@ -218,6 +225,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		textField.appendPlainText(selectedNames)
 
 		self.names_show.open()
+
+		logging.info("Display selected names")
+		self.print_status("Display selected names", SETTINGS["color"]["success"])
 
 	def validate_alpha(self):
 		"""
@@ -238,7 +248,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			self.sender().isValid = False
 
 		self.sender().setStyleSheet('QLineEdit { background-color: %s }' % color)
-
 
 
 	def validate_delta(self):
@@ -274,21 +283,18 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		"""
 		When an AllSky update is finished, this method is being called. It gets the image from the thread (element 0 in the list `sample`) and displays it.
 		"""
-
+		logging.debug("Displaying all sky...")
 		self.currentmeteo.allsky = sample[0]
-
 		self.allskylayer.erase()
-
 		self.allsky_redisplay()
-
+		logging.info("All Sky refresh done.")
 		self.print_status("All Sky refresh done.", SETTINGS["color"]["success"])
-
 
 	def init_warn_station(self):
 		"""
 		Initialises the weather warning flags for the current observing station
 		"""
-
+		logging.debug("Initialize weather warning flags...")
 		self.station_reached_limit = False
 		self.station_reached_warn = False
 		self.weather_reached_limit = False
@@ -298,17 +304,21 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		"""
 		Rings the (weather) alarm if there are warning flags by changing the color of the `Station` tab.
 		"""
-
+		logging.debug("Coloring the weather tab according to weather...")
 		if self.station_reached_limit or self.weather_reached_limit:
 			self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station (!)"))
 			self.changeTabColor(color=SETTINGS['color']['limit'])
+			logging.info("Closing weather conditions detected.")
+			self.print_status("Closing weather conditions detected.", SETTINGS["color"]["limit"])
 		elif self.station_reached_warn or self.weather_reached_warn:
 			self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station (!)"))
 			self.changeTabColor(color=SETTINGS['color']['warn'])
+			logging.info("Warning weather conditions detected.")
+			self.print_status("Warning weather conditions detected.", SETTINGS["color"]["nominal"])
 		else:
 			self.tabWidget.setTabText(self.tabWidget.indexOf(self.weather), QtCore.QCoreApplication.translate("POUET", "Station"))
 			self.changeTabColor(color=SETTINGS['color']['nominal'])
-
+			logging.info("No weather warnings.")
 
 	def changeTabColor(self, color, tab=None):
 		"""
@@ -317,10 +327,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		:param color: a pyqt recognised color
 		:param tab: the tab for which to change the color (default: station). Note that you should give the tab widget variable here.
 		"""
-
 		if tab is None:
 			tab = self.weather
-
 		self.tabWidget.tabBar().setTabTextColor(self.tabWidget.indexOf(tab), QtGui.QColor(color))
 
 	def on_visibilitytoolmotion(self, event):
@@ -331,7 +339,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		.. note:: this is only active if All Sky has an image and difference between obs_time and last all sky refresh is smaller than value defined in settings under `showallskycoordinates` - OR in debug mode.
 		"""
-
 		if event.inaxes != self.visibilitytool.axis: return
 
 		if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.currentmeteo.time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > float(SETTINGS['validity']['showallskycoordinates'])):
@@ -351,7 +358,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		:param msg: text to display
 		:param color: pyqt recognised named color
 		"""
-
 		if color is None:
 			color = SETTINGS['color']['nominal']
 
@@ -363,7 +369,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		"""
 		Helper that sets the auto-refresh frequency when the corresponding field in the `configuration` tab is changed
 		"""
-
 		interval = self.configAutoupdateFreqValue.value() * 1000 * 60
 		self.timer.setInterval(interval)
 		logging.debug("Set auto-refresh to {} min".format(self.configAutoupdateFreqValue.value()))
@@ -372,18 +377,17 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		"""
 		Helper that sets the date/time Edit widget to current time when prompted by the `Set to now` button
 		"""
-
 		#get current date and time
 		now = QtCore.QDateTime.currentDateTimeUtc()
 
 		#set current date and time to the object
 		self.configTime.setDateTime(now)
+		logging.debug("Updating date/time Edit widget with current time.")
 
 	def save_Time2obstime(self):
 		"""
 		Sets the meteo time object to what the date/time edit widget shows
 		"""
-
 		self.currentmeteo.time = Time(self.configTime.dateTime().toPyDateTime(), scale="utc")
 		logging.debug("obs_time is now set to {:s}".format(str(self.currentmeteo.time)))
 
@@ -391,7 +395,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		"""
 		Changes the mode to either `debug` or `production`. When in debug, local AllSky and the WeatherReport archive files are used (for the LaSilla station)
 		"""
-
+		logging.debug("Switching observing modes...")
 		if self.configDebugModeValue.checkState() == 0:
 			goto_mode = False
 		else:
@@ -411,26 +415,27 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			self.auto_refresh()
 			self.do_update()
 
-			logging.warning("Now in {} mode for the All Sky!".format(mode))
+			logging.info("Now in {} mode for the All Sky!".format(mode))
 			self.print_status("Change of mode complete.", SETTINGS["color"]["success"])
 
 	def set_cloud_analysis_mode(self):
 		"""
 		Enables or disables the cloud analysis in the observation computation.
 		"""
-
 		if self.configCloudsAnalysis.checkState() == 0:
 			self.cloudscheck = False
-			logging.info("Clouds will no longer be taken into account when computing the observability. Changes will be executed during the next update.")
+			logging.info("Disabling clouds analysis.")
+			self.print_status("Disabling clouds analysis.", SETTINGS["color"]["success"])
 		else:
 			self.cloudscheck = True
-			logging.info("Clouds will be taken into account when computing the observability. Changes will be executed during the next update.")
+			logging.info("Enabling clouds analysis.")
+			self.print_status("Enabling clouds analysis.", SETTINGS["color"]["success"])
 
 	def do_update(self):
 		"""
 		Method to perform a complete update of the observability for the date/time set in the obs_time widget
 		"""
-
+		logging.debug("Updating observability...")
 		self.print_status("Updating observability...", SETTINGS['color']['warn'])
 		self.save_Time2obstime()
 		self.site_display()
@@ -438,23 +443,21 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		self.update_obs()
 
 		self.listObs_plot_targets()
-		logging.info("General update performed")
-		self.print_status("Update done.", SETTINGS["color"]["success"])
-
-
+		logging.info("General observability update performed")
+		self.print_status("Observability update done.", SETTINGS["color"]["success"])
 
 	def get_standard_items(self, o, FLAG='---'):
 		"""
-		Create the default QStandardItem objects for an observable o
+		Create the default QStandardItem objects for an observable o.
 
-		Assumes the time has been refreshed
+		Assumes the time has been refreshed.
 
 		:param o: :class:`~obs.Observable`
 		:param FLAG: A string representing how non-defined variables, such as wind for non-visible observables, are represented.
-		:return:
+		:return: A bunch of QStandardItem: name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds
 		"""
-
-
+		if SETTINGS["misc"]["singletargetlogs"] is "True":
+			logging.debug("Create QStandardItems for {}...".format(o.name))
 		# Initial params
 		name = QtGui.QStandardItem(o.name)
 		name.setCheckable(True)
@@ -516,27 +519,20 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			clouds.setData(str(FLAG), role=QtCore.Qt.DisplayRole)
 			clouds.setData(QtGui.QBrush(QtGui.QColor(SETTINGS['color']['nodata'])), role=QtCore.Qt.BackgroundRole)
 
-
-
 		return name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds
 
-
-
-
 	def load_obs(self, filepath=None):
-
 		"""
 		Loads a catalogue given a filepath or a user-chosen file (this prompts a select file and a column definition pop-ups)
 
 		:param filepath: optional argument to bypass the Select a file dialogue (but not the column definition pop-up)
 		"""
-
+		logging.debug("Entering loading function, loading {}".format(filepath))
 		logmsg = ''
 
 		# initialize a new obs_model
 		obs_model = QtGui.QStandardItemModel(self.listObs)
 		obs_model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Obs', 'Program', "S", "M", "A", "W", "C"])
-
 
 		# we start from scratch
 		# todo: add an update function to load many obs one after the other
@@ -545,7 +541,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select a file")[0]
 
 		logmsg += '%s ' % filepath
-
 		ext = os.path.splitext(filepath)[1]
 
 		try:
@@ -555,6 +550,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				obsprogramnames = (o["name"] for o in obsprogramlist)
 
 				# header popup
+				logging.debug("Opening header popup...")
 				self.headerPopup = uic.loadUi(os.path.join(herepath, "headerdialog.ui"))
 
 				# split by tabs/spaces
@@ -583,6 +579,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 						obsprogramcol = int(self.headerPopup.headerObsprogramValue.currentIndex())+1
 
 					# obsprogram popup
+					logging.debug("Opening obsprogram popup...")
 					self.popup = QtWidgets.QInputDialog()
 					#todo rename Cancel button as default if possible
 					obsprogram, okop = self.popup.getItem(self, "Select an observing program", " - Existing programs -\nSelect Cancel to use the default configuration.\nThis setting applies only to the observables\nthat do not already have an obsprogram defined in the input file", obsprogramnames, 1, False)
@@ -593,7 +590,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 						# we use the default option
 						obsprogram = "default"
 						logmsg += 'as default '
-
 
 				else:
 					# we exit the load function
@@ -607,11 +603,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 			try:
 				if ext != '.pouet':
-					self.print_status("Loading catalogue...", color=SETTINGS["color"]["warn"])
+					logging.info("Loading catalog...")
+					self.print_status("Loading catalog\n{}".format(filepath), color=SETTINGS["color"]["warn"])
 					self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
 
 					# check that names are unique
 					try:
+						logging.debug("Checking unicity of names in catalog...")
 						names = [o.name for o in self.observables]
 						assert(len(names) == len(set(names)))
 					except:
@@ -619,14 +617,17 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 						return
 
 				else:
-
+					logging.info("Loading .pouet catalog...")
+					self.print_status("Loading .pouet catalog\n{}".format(filepath), color=SETTINGS["color"]["warn"])
 					self.observables = obs.rdbimport(filepath, obsprogram=None)
 
 				run.refresh_status(self.currentmeteo, self.observables)
 
 
 				for o in self.observables:
-					logging.debug("entering compute observability")
+
+					if SETTINGS["misc"]["singletargetlogs"] is "True":
+						logging.debug("Computing observability of {}".format(o.name))
 					o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
 
 					# create the QStandardItem objects
@@ -634,9 +635,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 					# feed the model
 					obs_model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
-
-
-				logging.debug('exiting model update')
 
 				self.listObs.setModel(obs_model)
 				self.listObs.resizeColumnsToContents()
@@ -654,18 +652,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			except:
 				logmsg += ' not loaded - wrong formatting'
 				logging.error(logmsg)
-
 				namecat = filepath.split("/")[-1]
-				self.print_status("%s \nWrong formatting: headers and columns match?" % namecat, SETTINGS['color']['limit'])
+				self.print_status("%s \nWrong formatting: do headers and columns match?" % namecat, SETTINGS['color']['limit'])
 		except:
 			logmsg += ' not loaded - format unknown'
 			logging.error(logmsg)
-
 			self.print_status("%s \nFormat unknown: not a catalog file..." % filepath, SETTINGS['color']['limit'])
-
-
-
-
 
 	def update_obs(self):
 		"""
@@ -673,16 +665,17 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		.. note:: Works only on the non hidden observables
 
-		.. note:: Assumes all the hidden=False observables are in the model - no more, no less - but this should ALWAYS be the case
-
+		.. note:: Assumes all the hidden=False observables are in the model - no more, no less - but this should ALWAYS be the case.
 		"""
 
+		logging.debug("Updating observability...")
 		# refresh the observables observability flags that have hidden == False
 		run.refresh_status(self.currentmeteo, self.observables)
 		for o in self.observables:
 			if o.hidden is False:
+				if SETTINGS["misc"]["singletargetlogs"] is "True":
+					logging.debug("Computing observability of {}".format(o.name))
 				o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False)
-
 
 		# load the display model and the current header
 		obs_model = self.listObs.model()
@@ -702,10 +695,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		wind_index = headers.index("W")
 		clouds_index = headers.index("C")
 
-
 		# we use the obs name as a reference to update the model
 		model_names = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
-
 
 		# compute observability and refresh the model
 		for o in self.observables:
@@ -721,10 +712,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				obs_model.setItem(obs_index, airmass_index, airmass)
 				obs_model.setItem(obs_index, wind_index, wind)
 				obs_model.setItem(obs_index, clouds_index, clouds)
-				logging.debug("observable %s updated" % o.name)
+				if SETTINGS["misc"]["singletargetlogs"] is "True":
+					logging.debug("observable %s updated" % o.name)
 			else:
-				logging.debug("observable %s hidden, status not updated" % o.name)
-
+				if SETTINGS["misc"]["singletargetlogs"] is "True":
+					logging.debug("observable %s hidden, status not updated" % o.name)
 
 		# refresh the display
 		self.listObs.setModel(obs_model)
@@ -733,14 +725,87 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		logging.info(msg)
 		self.print_status(msg, color=SETTINGS['color']['success'])
 
-	def save_obs(self):
+	def update_and_display_model(self):
+		"""
+		Update the current model according to observables status and display it.
 
+		.. note:: This function DOES NOT update the observability. To do this, use :meth:`~main.update_obs()`
+
+		"""
+		logging.debug("Updating display model...")
+
+		# load the current display model
+		obs_model = self.listObs.model()
+
+		model_names = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
+
+		# these are the obs we want to display
+		obs_names = [o.name for o in self.observables if o.hidden == False]
+
+		"""
+		3 cases:
+		
+		1) name is in obs_names and model_names --> we keep
+		2) name is in obs_names only --> we add to model using get_standard_items
+		3) name is in model_names only --> we remove from model
+		
+		"""
+
+		toadd = [n for n in obs_names if not n in model_names]
+		toremove = [n for n in model_names if not n in obs_names]
+
+		# Adding missing obs:
+		for o in [o for o in self.observables if o.name in toadd]:
+			assert o.hidden is False
+
+			# create the QStandardItem objects
+			name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
+
+			obs_model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
+			if SETTINGS["misc"]["singletargetlogs"] is "True":
+				logging.debug("Added %s to the model" % o.name)
+
+		# Removing superfluous obs:
+		for o in [o for o in self.observables if o.name in toremove]:
+			assert o.hidden is True
+
+			# todo: stupid loop, optimize that
+			currentnames = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
+			toremoveindex = currentnames.index(o.name)
+			obs_model.removeRow(toremoveindex)
+			if SETTINGS["misc"]["singletargetlogs"] is "True":
+				logging.debug("Removed %s from the model" % o.name)
+
+		# refresh the display
+		self.listObs.setModel(obs_model)
+
+		msg = "Model refreshed"
+		logging.info(msg)
+		self.print_status(msg, color=SETTINGS['color']['success'])
+
+	def check_obs_status(self, obs_model):
+		"""
+		Reads the observables model and return the check states and corresponding names
+		:param obs_model: observables model
+		:return: states of model observables
+		"""
+		#0 is not checked, 1 is partially checked, 2 is checked --> 0 or 2 for us
+		#obs_model = self.listObs.model()
+
+		states = [obs_model.item(i, 0).checkState() for i in range(obs_model.rowCount())]
+		names = [obs_model.item(i, 0).data(0) for i in range(obs_model.rowCount())]
+
+		states = [0 if s == 0 else 1 for s in states]
+
+		return states, names
+
+	def save_obs(self):
 		"""
 		Save the list of observables into a .pouet file that can be reloaded without asking import questions.
 		"""
+		logging.debug("Saving current target list...")
 
 		tosave = [o for o in self.observables if o.hidden is False]
-
 		filepath = self.saveObsPath.text()
 
 		if not ".pouet" in filepath or len(filepath) < 6:
@@ -767,90 +832,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			self.print_status(msg, color=SETTINGS["color"]["limit"])
 			return
 
-	def update_and_display_model(self):
-		"""
-		Update the current model according to observables status and display it.
-
-		.. note::This function DOES NOT update the observability. To do this, use :meth:`~main.update_obs()`
-
-		"""
-
-		# load the current display model
-		obs_model = self.listObs.model()
-
-		model_names = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
-
-		# these are the obs we want to display
-		obs_names = [o.name for o in self.observables if o.hidden == False]
-
-
-		"""
-		3 cases:
-		
-		1) name is in obs_names and model_names --> we keep
-		2) name is in obs_names only --> we add to model using get_standard_items
-		3) name is in model_names only --> we remove from model
-		
-		"""
-
-		toadd = [n for n in obs_names if not n in model_names]
-		toremove = [n for n in model_names if not n in obs_names]
-
-
-		# Adding missing obs:
-		for o in [o for o in self.observables if o.name in toadd]:
-			assert o.hidden is False
-
-			# create the QStandardItem objects
-			name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
-
-			obs_model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
-
-			logging.info("Added %s to the model" % o.name)
-
-		# Removing superfluous obs:
-		for o in [o for o in self.observables if o.name in toremove]:
-			assert o.hidden is True
-
-			# todo: stupid loop, optimize that
-			currentnames = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
-			toremoveindex = currentnames.index(o.name)
-			obs_model.removeRow(toremoveindex)
-
-
-		# refresh the display
-		self.listObs.setModel(obs_model)
-
-		msg = "Observability refreshed"
-		logging.info(msg)
-		self.print_status(msg, color=SETTINGS['color']['success'])
-
-
-	def check_obs_status(self, obs_model):
-		"""
-		Reads the observables model and return the check states and corresponding names
-
-		:param obs_model: observables model
-
-		:return: states of model observables
-		"""
-
-		#0 is not checked, 1 is partially checked, 2 is checked --> 0 or 2 for us
-		#obs_model = self.listObs.model()
-
-		states = [obs_model.item(i, 0).checkState() for i in range(obs_model.rowCount())]
-		names = [obs_model.item(i, 0).data(0) for i in range(obs_model.rowCount())]
-
-		states = [0 if s == 0 else 1 for s in states]
-
-		return states, names
-
-
 	def hide_observables(self):
 		"""
 		Hide observables according to the criteria selected by the user in the gui. Hiding is done by :meth:'~run.hide_observables'
-
 		"""
+		logging.debug("Checking criterias to hide observables...")
 
 		checked = self.toggleCheckedObs.isChecked()
 		unchecked = self.toggleUncheckedObs.isChecked()
@@ -866,9 +852,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		deltamin = self.toggleDeltaMinObs.isChecked()
 		deltamax = self.toggleDeltaMaxObs.isChecked()
 
-
 		obs_model = self.listObs.model()
-
 
 		# reset hidden to False for all observables
 		for o in self.observables:
@@ -887,7 +871,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				if s:
 					# hide from self
 					self.observables[[o.name for o in self.observables].index(names[i])].hidden = True
-
 
 		# other criterias
 		criteria = []
@@ -977,25 +960,22 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		# ALWAYS update the display after changing the hidden flag
 		self.update_and_display_model()
 
-
 	def unhide_observables(self):
 		"""
 		Set the hidden flag of all the observables to False
 		"""
-
+		logging.debug("Reset hidden flag...")
 		for o in self.observables:
 			o.hidden = False
 
 		# ALWAYS update the display after changing the hidden flag
 		self.update_and_display_model()
 
-
-
 	def listObs_selectall(self):
 		"""
 		When prompted, this method either select all observable or deselect them
 		"""
-
+		logging.debug("Select/Deselect all observables...")
 		obs_model = self.listObs.model()
 
 		if self.listObs_check_state == 0:
@@ -1074,7 +1054,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			self.allskylayerTargets.show_targets(as_xs, as_ys, ord_names)
 
 			logging.debug("Plotted {} targets in All Sky".format(len(d)))
-
 
 	def weather_display(self):
 		"""
