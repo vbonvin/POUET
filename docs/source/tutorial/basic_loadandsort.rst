@@ -109,12 +109,15 @@ The sorting criteria are the following:
   * Airmass smaller than
   * Sun distance larger than [degree]
   * Moon distance larger than [degree]
+  * Wind Angle larger than 90 [degree]
   * Name containing [string pattern]
   * Right Ascension (Alpha) earlier/later than [HH:MM:SS], from 00:00:00 to 24:00:00
   * Declination (Delta) higher/lower than [DD:MM:SS], from -90:00:00 to +90:00:00
   * Clouds index larger than 0. 1 means clear sky, 0 means full cloud coverage.
   * Observability larger than 0. The observability is a combination of airmass, moon distance, wind, cloud coverage, etc... that provide a "smart" way of sorting targets.
   * Selected/unselected targets. You can check targets in the list directly.
+
+.. note:: The value of the wind angle below which your targets are hidden (default = 90 degrees) can be changed in the configuration file (see :ref:`customsite`).
 
 .. note:: In future versions of POUET, users will be able to define their own observability formula per observing program. The default one currently used can be read at :meth:`~obs.compute_observability`.
 

@@ -92,6 +92,9 @@ def hide_observables(observables, criteria):
             elif c["id"] == "sundist":
                 if o.angletosun.degree < c["min"]:
                     o.hidden = True
+            elif c["id"] == "windangle":
+                if o.angletowind.degree < c["min"]:
+                    o.hidden = True
             elif c["id"] == "observability":
                 if o.observability <= c["min"]:
                     o.hidden = True

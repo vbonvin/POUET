@@ -858,6 +858,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		airmass = self.toggleAirmassObs.isChecked()
 		moondist = self.toggleMoondistObs.isChecked()
 		sundist = self.toggleSundistObs.isChecked()
+		windangle = self.toggleWindAngleObs.isChecked()
 		observability = self.toggleObservabilityObs.isChecked()
 		clouds = self.toggleCloudsObs.isChecked()
 		alphamin = self.toggleAlphaMinObs.isChecked()
@@ -902,6 +903,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		if sundist:
 			criteria.append({"id": "sundist", "min": self.sundistMinObs.value()})
+
+		if windangle:
+			criteria.append({"id": "windangle", "min": float(SETTINGS["misc"]["minangletowinddisplay"])})
 
 		if observability:
 			criteria.append({"id": "obs", "min": 0})
@@ -967,7 +971,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			else:
 				self.toggleDeltaMaxObs.setChecked(False)
 				logging.warning("Delta max field not valid - I discard it...")
-
 
 		run.hide_observables(self.observables, criteria)
 

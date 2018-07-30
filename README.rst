@@ -10,8 +10,6 @@ Why using this software and not one of the dozens of alternatives already existi
 Designed by observers for observers. With lots of love and hopefully bug-free.
 
 
-
-
 .. image:: https://travis-ci.org/vbonvin/POUET.svg?branch=master
     :target: https://travis-ci.org/vbonvin/POUET
     :alt: CI Status
