@@ -1,0 +1,41 @@
+
+=================
+v0.4 (31.07.2018)
+=================
+
+ * Added a resizable display for the main POUET window
+ * Rearranged and renamed various buttons on the main interface for clarity
+ * Added a selection criteria with respect to the angle to wind 
+ * Improved the all-sky analysis in the presence of the moon
+ * Added a drop-down menu for specific plots in the targets list view
+ * Created a tutorial + doc on readthedocs
+ * Improved the consistency of logs writing
+ * Added an export function
+ * Added a pop-up displaying the names of the selected obs
+ * Various bug fixes and stability improvements
+
+=================
+v0.3 (27.02.2018)
+=================
+
+
+ * Loaded observables can now be sorted and hidden according to their observability parameters
+ * Finding charts for each observables can now be easily retrieved from online databases
+ * Adding a compact display mode for small screen
+ * And various technical improvements and bugfixes to improve the overall user experience
+
+
+=================
+v0.2 (09.02.2018)
+=================
+
+Working version, this time with a GUI
+
+Enough less user-unfriendly to deserve a new release!
+
+
+=================
+v0.1 (31.01.2018)
+=================
+
+Minimal working version in text mode working! GUI incoming
