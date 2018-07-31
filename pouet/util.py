@@ -22,9 +22,7 @@ import gzip
 #import csv
 import numpy as np
 
-
 import obs
-
 
 import logging
 logger = logging.getLogger(__name__)

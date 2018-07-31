@@ -35,7 +35,6 @@ import design_scalable as design
 # define a bunch of hardcoded global variables (bad!) depending on user config
 
 global SETTINGS  # TKU: I know I did it like this, how to do it better (and stay SIMPLE)
-
 herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 SETTINGS = util.readconfig(os.path.join(herepath, "config/settings.cfg"))
 
@@ -59,7 +58,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		logging.getLogger().addHandler(logTextBox)
 		
 		# You can control the logging level
-		logging.getLogger().setLevel(logging.DEBUG)
+		if SETTINGS["misc"]["debuglogs"] == "True":
+			logging.getLogger().setLevel(logging.DEBUG)
+		else:
+			logging.getLogger().setLevel(logging.INFO)
 
 		logging.info('Startup...')
 
@@ -456,7 +458,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		:param FLAG: A string representing how non-defined variables, such as wind for non-visible observables, are represented.
 		:return: A bunch of QStandardItem: name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds
 		"""
-		if SETTINGS["misc"]["singletargetlogs"] is "True":
+		if SETTINGS["misc"]["singletargetlogs"] == "True":
 			logging.debug("Create QStandardItems for {}...".format(o.name))
 		# Initial params
 		name = QtGui.QStandardItem(o.name)
@@ -626,7 +628,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 				for o in self.observables:
 
-					if SETTINGS["misc"]["singletargetlogs"] is "True":
+					if SETTINGS["misc"]["singletargetlogs"] == "True":
 						logging.debug("Computing observability of {}".format(o.name))
 					o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
 
@@ -673,7 +675,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		run.refresh_status(self.currentmeteo, self.observables)
 		for o in self.observables:
 			if o.hidden is False:
-				if SETTINGS["misc"]["singletargetlogs"] is "True":
+				if SETTINGS["misc"]["singletargetlogs"] == "True":
 					logging.debug("Computing observability of {}".format(o.name))
 				o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False)
 
@@ -712,10 +714,10 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				obs_model.setItem(obs_index, airmass_index, airmass)
 				obs_model.setItem(obs_index, wind_index, wind)
 				obs_model.setItem(obs_index, clouds_index, clouds)
-				if SETTINGS["misc"]["singletargetlogs"] is "True":
+				if SETTINGS["misc"]["singletargetlogs"] == "True":
 					logging.debug("observable %s updated" % o.name)
 			else:
-				if SETTINGS["misc"]["singletargetlogs"] is "True":
+				if SETTINGS["misc"]["singletargetlogs"] == "True":
 					logging.debug("observable %s hidden, status not updated" % o.name)
 
 		# refresh the display
@@ -762,7 +764,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
 
 			obs_model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
-			if SETTINGS["misc"]["singletargetlogs"] is "True":
+			if SETTINGS["misc"]["singletargetlogs"] == "True":
 				logging.debug("Added %s to the model" % o.name)
 
 		# Removing superfluous obs:
@@ -773,7 +775,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			currentnames = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
 			toremoveindex = currentnames.index(o.name)
 			obs_model.removeRow(toremoveindex)
-			if SETTINGS["misc"]["singletargetlogs"] is "True":
+			if SETTINGS["misc"]["singletargetlogs"] == "True":
 				logging.debug("Removed %s from the model" % o.name)
 
 		# refresh the display
@@ -1361,9 +1363,8 @@ class AllSkyView(FigureCanvas):
 		"""
 		Erases everything in the axis. To be called often, before every redraw or if a failure is detected, before showing error message
 		"""
-		logging.debug("Clearing everything...")
-		self.axis.clear()
 
+		self.axis.clear()
 		self.axis.scatter([0,self.imy],[0,self.imx], c='None', s=1)
 
 		self.axis.set_ylim([self.imy, 0])

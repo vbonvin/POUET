@@ -4,21 +4,21 @@ Define the Observable class, the standard object of pouet, and related functions
 
 from numpy import cos, rad2deg, isnan, arange
 import numpy as np
-import os, sys
+import os, sys, inspect
 import copy as pythoncopy
 from astropy.time import Time
 from astropy import units as u
 from astropy.coordinates import angles, angle_utilities
 import astropy.table
-import matplotlib.pyplot as plt
 import importlib
-
 import util
-
-
 
 import logging
 logger = logging.getLogger(__name__)
+
+global SETTINGS
+herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+SETTINGS = util.readconfig(os.path.join(herepath, "config/settings.cfg"))
 
 
 class Observable:
@@ -29,9 +29,7 @@ class Observable:
 
 	Variable parameters (distance to moon, azimuth, observability,...) are undefined until associated methods are called
 	"""
-
-	def __init__(self, name='emptyobservable', obsprogram=None, attributes=None, alpha=None, delta=None, 
-				minangletomoon=None, maxairmass=None, exptime=None):
+	def __init__(self, name='emptyobservable', obsprogram=None, attributes=None, alpha=None, delta=None, minangletomoon=None, maxairmass=None, exptime=None):
 		"""
 		Constructor
 
@@ -47,14 +45,12 @@ class Observable:
 		:param maxairmass: float, maximum airmass below which the target is not to be observed
 		:param exptime: float, expected exposure time of the target
 		"""
-
 		self.name = name
 		self.obsprogram = obsprogram
 
 		if not self.obsprogram == None:
 			try:
 				module_name = "obsprogram.prog{}".format(self.obsprogram)
-				print(self.obsprogram, module_name)
 				program = importlib.import_module(module_name, package=None)
 				self.minangletomoon = program.minangletomoon
 				self.maxairmass = program.maxairmass
@@ -74,49 +70,39 @@ class Observable:
 	
 		self.attributes = attributes
 		self.hidden = False  # a hidden observable should not be updated
-		#self.observability = observability
-
-
 
 	def __str__(self):
 		"""
-
 		:return: message printing the current altitude, azimuth and airmass of the target, if defined.
 
 		.. note:: to have these values defined, you must first call :meth:'~obs.Observable.compute_altaz' and :meth:'~obs.Observable.compute_airmass', using a :py:'meteo.Meteo' object
 		"""
-		# not very elegant
 
 		msg = "="*30+"\nName:\t\t%s\nProgram:\t%s\nAlpha:\t\t%s\n" \
 				  "Delta:\t\t%s\n" %(self.name, self.obsprogram, self.alpha.hour, self.delta.degree)
 
 		try:
-			msg+= "Altitude:\t%s\n"%self.altitude.degree
+			msg += "Altitude:\t%s\n"%self.altitude.degree
 		except AttributeError:
-			msg+= "Altitude:\tNone\n"
-
-		try:	# let's behave like real people and use a correct iso system
-
-			msg+= "Azimuth:\t%s\n"%self.azimuth.degree
-		except AttributeError:
-			msg+= "Azimuth:\tNone\n"
+			msg += "Altitude:\tNone\n"
 
 		try:
-			msg+= "Airmass:\t%s\n"%self.airmass
+			msg += "Azimuth:\t%s\n"%self.azimuth.degree
 		except AttributeError:
-			msg+= "Airmass:\tNone\n"
+			msg += "Azimuth:\tNone\n"
 
+		try:
+			msg += "Airmass:\t%s\n"%self.airmass
+		except AttributeError:
+			msg += "Airmass:\tNone\n"
 
 		return msg
-
 
 	def copy(self):
 		"""
 		:return: an, observable, python deep copy of the current observable
 		"""
-
 		return pythoncopy.deepcopy(self)
-
 
 	def compute_angletomoon(self, meteo):
 		"""
@@ -124,7 +110,8 @@ class Observable:
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
 		"""
-
+		if SETTINGS["misc"]["singletargetlogs"] == "True":
+			logger.debug("Computing angletomoon for {}...".format(self.name))
 		moonalt, moonaz = meteo.moonalt, meteo.moonaz
 		alt, az = self.altitude, self.azimuth
 		separation = angle_utilities.angular_separation(moonaz, moonalt, az, alt) # Warning, separation is in radian!!
@@ -132,14 +119,14 @@ class Observable:
 		angletomoon = angles.Angle(separation.value, unit="radian")
 		self.angletomoon = angletomoon
 
-
 	def compute_angletosun(self, meteo):
 		"""
 		Computes the distance to the Sun
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
 		"""
-
+		if SETTINGS["misc"]["singletargetlogs"] == "True":
+			logger.debug("Computing angletosun for {}...".format(self.name))
 		sunalt, sunaz = meteo.sunalt, meteo.sunaz
 		alt, az = self.altitude, self.azimuth
 		separation = angle_utilities.angular_separation(sunaz, sunalt, az, alt) # Warning, separation is in radian!!
@@ -147,15 +134,14 @@ class Observable:
 		angletosun = angles.Angle(separation.value, unit="radian")
 		self.angletosun = angletosun
 
-
 	def compute_angletowind(self, meteo):
 		"""
 		Computes the angle to wind
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
-
 		"""
-
+		if SETTINGS["misc"]["singletargetlogs"] == "True":
+			logger.debug("Computing angletowind for {}...".format(self.name))
 		winddirection = meteo.winddirection
 		if winddirection < 0 or winddirection > 360:
 			self.angletowind = None
@@ -164,7 +150,9 @@ class Observable:
 		try:
 			angletowind = abs(winddirection-self.azimuth.degree)
 			self.angletowind = angles.Angle(angletowind, unit='degree')
+		#todo: mmmh, maybe we should raise an error that crashes pouet but do something differently...?
 		except AttributeError:
+			logger.error("{} has no azimuth! \n Compute its azimuth first !".format(self.name))
 			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
 		
 	def compute_altaz(self, meteo):
@@ -174,10 +162,11 @@ class Observable:
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
 
 		"""
+		if SETTINGS["misc"]["singletargetlogs"] == "True":
+			logger.debug("Computing Altitude and Azimuth for {}...".format(self.name))
 		azimuth, altitude = meteo.get_AzAlt(self.alpha, self.delta, obs_time=meteo.time)
 		self.altitude = altitude
 		self.azimuth = azimuth
-
 
 	def compute_airmass(self, meteo):
 		"""
@@ -186,10 +175,9 @@ class Observable:
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
 
 		"""
-
+		if SETTINGS["misc"]["singletargetlogs"] == "True":
+			logger.debug("Computing airmass for {}...".format(self.name))
 		self.airmass = util.elev2airmass(self.altitude.radian, meteo.elev)
-
-
 
 	def is_cloudfree(self, meteo):
 		"""
@@ -199,10 +187,13 @@ class Observable:
 
 		todo: instead of taking altaz coordinates in memory, shouldn't we use meteo.time to recompute altaz on the fly?
 
-		
 		.. note:: is_cloudfree is actualized with 0: cloudy or 1: no clouds. If unavailable, returns 2: connection error, if error during computation of observability from map: 3
 		"""
 
+		# TODO: the cloud status should be done in a status function of the meteo object, not here! This will also allow a cleaner log writing.
+
+		if SETTINGS["misc"]["singletargetlogs"] == "True":
+			logger.debug("Computing cloud coverage for {}...".format(self.name))
 		ERROR_CONN = 2.
 		ERROR_COMPUTE = 3.
 
@@ -210,7 +201,8 @@ class Observable:
 		
 		if meteo.cloudmap is None:
 			self.cloudfree = ERROR_CONN
-			logger.debug("No cloud map in meteo object")
+			if SETTINGS["misc"]["singletargetlogs"] == "True":
+				logger.warning("No cloud map in meteo object")
 			return
 		
 		try:
@@ -225,13 +217,12 @@ class Observable:
 			except IndexError:
 				self.cloudfree = ERROR_COMPUTE
 
-		if self.cloudfree == ERROR_COMPUTE: 
-			logger.warning("Computational error in clouds")
+		if self.cloudfree == ERROR_COMPUTE:
+			if SETTINGS["misc"]["singletargetlogs"] == "True":
+				logger.warning("Computational error in clouds")
 			return
-		
-		
-		self.cloudcover = 1.-np.floor(float(self.cloudfree)*10.)/10.
 
+		self.cloudcover = 1.-np.floor(float(self.cloudfree)*10.)/10.
 
 	def update(self, meteo):
 		"""
@@ -239,7 +230,8 @@ class Observable:
 
 		:param meteo: a Meteo object, whose time attribute has been actualized beforehand
 		"""
-
+		if SETTINGS["misc"]["singletargetlogs"] == "True":
+			logger.debug("Updating parameters for {}...".format(self.name))
 		self.compute_altaz(meteo)
 		self.compute_angletowind(meteo)
 		self.compute_airmass(meteo)
@@ -260,13 +252,13 @@ class Observable:
 		:param displayall: boolean, if verbose is True, then print also the targets that are not observable.
 		:param future: boolean, if set to True then cloud coverage and wind are note taken into account in the observability.
 		"""
-
-		logger.info("current time is %s"  % meteo.time)
+		if SETTINGS["misc"]["singletargetlogs"] == "True":
+			logger.debug("Computing observability for {}...".format(self.name))
+			logger.info("Current time is %s" % meteo.time)
 		self.update(meteo=meteo)
 		observability = 1  # by default, we can observe
 
 		if np.abs(meteo.time - Time.now()).to(u.s).value / 60. > cwvalidity: future=True
-
 
 		# Let's start with a simple yes/no version
 		# We add a small message to display if it's impossible to observe:
@@ -281,7 +273,6 @@ class Observable:
 		# check the	moondistance:
 		self.obs_moondist = True
 		if self.angletomoon.degree < self.minangletomoon:
-			#observability -= 0.2 #TODO: this seems a bit dangerous: observability could go below zero! --> only if we code the combination in a bad way !
 			observability *= 0.8
 			self.obs_moondist = False
 			msg += '\nMoonDist:%0.1f' % self.angletomoon.degree
@@ -290,7 +281,6 @@ class Observable:
 		self.obs_highairmass = True
 		if self.airmass > 1.5:
 			self.obs_highairmass = False
-			#observability -= 0.3 #TODO: this seems a bit dangerous: observability could go below zero!  --> only if we code the combination in a bad way !
 			observability *= 0.7
 			msg += '\nAirmass:%0.2f' % self.airmass
 
@@ -320,7 +310,6 @@ class Observable:
 				warnings += '\nNo wind info'
 		else:
 			self.obs_wind_info = False
-
 
 		# check the clouds
 		self.obs_clouds, self.obs_clouds_info = cloudscheck, True
@@ -355,7 +344,6 @@ class Observable:
 				observability = self.internalobs
 				msg += '\nSpreadsheet NO'
 
-
 		### Program specific conditions:
 		pobs, pmsg, pwarn = self.program.observability(self.attributes, meteo.time)
 		if pobs == 0: observability = 0
@@ -366,8 +354,8 @@ class Observable:
 		if hasattr(self, 'comment'):
 			msg += '\n %s' % self.comment
 
+		to_print = "%s | %s\nalpha=%s, delta=%s\naz=%0.2f, alt=%0.2f%s" % (self.name, meteo.time.iso, self.alpha, self.delta, rad2deg(self.azimuth.value), rad2deg(self.altitude.value), msg)
 		if verbose:
-			to_print = "%s | %s\nalpha=%s, delta=%s\naz=%0.2f, alt=%0.2f%s" % (self.name, meteo.time.iso, self.alpha, self.delta, rad2deg(self.azimuth.value), rad2deg(self.altitude.value), msg)
 			if observability == 1:
 				print((util.hilite(to_print, True, True)))
 				if not warnings == '': print((util.hilite(warnings, False, False)))
@@ -379,7 +367,10 @@ class Observable:
 					print(("="*20))
 				else:
 					pass
-
+		else:
+			# then we send the print message to the logger
+			if SETTINGS["misc"]["singletargetlogs"] == "True":
+				logger.info(to_print)
 		self.observability = observability
 
 
@@ -391,11 +382,8 @@ def showstatus(observables, meteo, displayall=True, cloudscheck=True):
 	:param displayall: boolean, if set to True then display the status of all the targets, even those which are not visible.
 	:param cloudscheck: boolean, if set to True then use the cloud coverage in the observability computation.
 	"""
-
 	for observable in observables:
-		observable.compute_observability(meteo=meteo, displayall=displayall,
-								cloudscheck=cloudscheck, verbose=True)
-
+		observable.compute_observability(meteo=meteo, displayall=displayall,cloudscheck=cloudscheck, verbose=True)
 
 
 #todo: refactor rdbimport and rdbexport to pouetimport and pouetexport
@@ -415,7 +403,6 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, obsp
 
 	.. note:: providing an obsprogramcol overloads the given obsprogram, as long as there is a valid field in the rdb obsprogramcol. You can use both to load a catalogue that has only part of its programcol defined.
 	"""
-
 	logger.debug("Reading \"%s\"..." % (os.path.basename(filepath)))
 
 	# data_start = 2 is to deal with the rdb file... (ascii.rdb doesn't work good)
@@ -440,9 +427,8 @@ def rdbimport(filepath, namecol=1, alphacol=2, deltacol=3, obsprogramcol=4, obsp
 
 
 		observables.append(Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta))
-
+	logger.info("Imported \"%s\"..." % (os.path.basename(filepath)))
 	return observables
-
 
 
 def rdbexport(filepath, observables, append=False):
@@ -455,12 +441,11 @@ def rdbexport(filepath, observables, append=False):
 
 	.. note:: append=True only works if the file you want to append to has the correct formatting. See headerline and headersubline in the source code.
 	"""
-
+	logger.debug("Saving observables...")
 	headerline = "name\talpha\tdelta\tobsprogram\n"
 	headersubline = "----\t-----\t-----\t----------\n"
 
 	#todo: add a backup function
-
 
 	# check that the base folder exists
 	dirpath = os.path.dirname(os.path.abspath(filepath))
@@ -496,6 +481,7 @@ def rdbexport(filepath, observables, append=False):
 		f.write("%s\t%s\t%s\t%s\n" % (o.name, o.alpha.to_string(unit=u.hour, sep=':', pad=True), o.delta.to_string(unit=u.degree, sep=':', pad=True), o.obsprogram))
 
 	f.close()
+	logger.info("List of observable saved under {}".format(filepath))
 	return
 
 	# astropy tables does not work (bug??), puts a line with "S" in the rdb file...

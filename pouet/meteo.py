@@ -32,11 +32,8 @@ class Meteo:
 
     Typically, a Meteo object is created when POUET starts, and then update itself every XX minutes
     """
-
-    def __init__(self, name='uknsite', time=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None,
-            winddirection=-1, windspeed=-1, cloudscheck=True, fimage=None, debugmode=False):
+    def __init__(self, name='uknsite', time=None, moonaltitude=None, moonazimuth=None, sunaltitude=None, sunazimuth=None, winddirection=-1, windspeed=-1, cloudscheck=True, fimage=None, debugmode=False):
         """
-
         :param name: string, name of the meteo object (typically the site where you are located, i.e. LaSilla. Must correspond to a .cfg file in :file:`config` that contains the location of the site. See :file:`config/LaSilla.cfg` for example.
         :param time: Astropy Time object. If None, use the current time as default
         :param moonaltitude: Astropy Angle object, altitude of the moon . If none, is computed using the site location when :meth:`~meteo.update` is called.
@@ -52,7 +49,6 @@ class Meteo:
         .. warning:: the moon and sun position, wind speed and angle default values provided at construction will be overwritten by :meth:`~meteo.update`
 
         """
-
         self.name = name
         self.location = util.readconfig(os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 , "config", "{}.cfg".format(name)))
@@ -78,7 +74,6 @@ class Meteo:
             self.allsky = clouds.Clouds(name=name, fimage=fimage, debugmode=debugmode)
 
         self.update()
-        
 
     def updatemoonpos(self, obs_time=Time.now()):
         """
@@ -86,7 +81,7 @@ class Meteo:
 
         :param obs_time: Astropy Time object, time at which you want to compute the moon coordinates
         """
-
+        logger.debug("Updating moon position...")
         Az, Alt = self.get_moon(obs_time=obs_time)
         self.moonalt = Alt
         self.moonaz = Az
@@ -97,24 +92,22 @@ class Meteo:
 
         :param obs_time: Astropy Time object, time at which you want to compute the Sun coordinates
         """
-
+        logger.debug("Updating Sun position...")
         Az, Alt = self.get_sun(obs_time=obs_time)
         self.sunalt = Alt
         self.sunaz = Az
 
-        
     def updateclouds(self):
         """
         Excecutes the clouds code in :meth:`~clouds.Clouds`, if map not available, saves None to cloudmap
         """
-    
+        logger.debug("Updating clouds coverage...")
         try:
             self.allsky.update()
             self.cloudmap = self.allsky.observability_map
         except:
             logger.warning("Could not retrieve cloud map")
             self.cloudmap = None
-        
 
     def update(self, obs_time=Time.now(), minimal=False):
         """
@@ -123,7 +116,7 @@ class Meteo:
         :param obs_time: Astropy Time object. If None, use the current time as default.
         :param minimal: boolean. If True, update only the moon and sun position. Useful for predictions where wind and cloud coverage cannot be estimated.
         """
-
+        logger.debug("Starting meteo update...")
         self.time=obs_time
         self.updatemoonpos(obs_time=obs_time)
         self.updatesunpos(obs_time=obs_time)
@@ -131,11 +124,9 @@ class Meteo:
             self.updateweather()
             if self.cloudscheck:
                 self.updateclouds()
-            
 
     def __str__(self, obs_time=Time.now()):
         # not very elegant
-
         msg = "="*30+"\nName:\t\t%s\nDate:\t%s\n" %(self.name, self.time)
 
         try:
@@ -160,12 +151,11 @@ class Meteo:
 
         return msg
 
-
     def updateweather(self):
         """
         Updates the weather-related parameters from the site weather report.
         """
-
+        logger.debug("Updating meteo from online weather report...")
         self.winddirection, self.windspeed, self.temperature, self.humidity = self.weatherReport.get(debugmode=self.debugmode)
         
         """
@@ -188,7 +178,7 @@ class Meteo:
         :param obs_time:  Astropy Time object. If None, use the current time as default.
         :return: altitude and azimuth angles as Astropy Angle objects
         """
-
+        logger.debug("Computing Moon coordinates...")
         observer = ephem.Observer()
         observer.date = obs_time.iso
         observer.lat, observer.lon, observer.elevation = self.lat.degree, self.lon.degree, self.elev
@@ -211,13 +201,12 @@ class Meteo:
         :param obs_time:  Astropy Time object. If None, use the current time as default.
         :return: altitude and azimuth angles as Astropy Angle objects
         """
-
+        logger.debug("Computing Sun coordinates...")
         observer = ephem.Observer()
         observer.date = obs_time.iso
         observer.lat, observer.lon, observer.elevation = self.lat.degree, self.lon.degree, self.elev
     
         self.sun = ephem.Sun()
-    
         self.sun.compute(observer)
     
         # Warning, ass-coding here: output of sun.ra is different from sun.ra.__str__()... clap clap clap - again
@@ -233,9 +222,7 @@ class Meteo:
         #todo: can't we do it with astropy as well?
         idea from http://aa.usno.navy.mil/faq/docs/Alt_Az.php
     
-        Compute the azimuth and altitude of a source at a given time (by default current time of 
-        execution), given its alpha and delta coordinates.
-
+        Compute the azimuth and altitude of a source at a given time (by default current time of execution), given its alpha and delta coordinates.
 
         :param alpha: Astrophy Angle object, right ascencion of the target you want to translate into altaz
         :param delta: Astrophy Angle object, declination of the target you want to translate into altaz
@@ -243,7 +230,6 @@ class Meteo:
         :param ref_dir: float, zero point of the azimuth. Default is 0, corresponding to North.
         :return: altitude and azimuth angles as Astropy Angle objects
         """
-
         if not obs_time:
             obs_time = self.time
 
@@ -282,12 +268,12 @@ class Meteo:
 
         :return: latitude, longitude and elevation of the telescope as Astropy Angle objects
         """
+        logger.debug("Retrieving telescope parameters...")
         self.lat=angles.Angle(self.location.get("location", "latitude"))
         self.lon=angles.Angle(self.location.get("location", "longitude"))
         self.elev = float(self.location.get("location", "elevation"))
         
         return self.lat, self.lon, self.elev
-    
 
     def get_nighthours(self, obs_night, twilight="nautical", nhours=100):
         """
@@ -300,7 +286,7 @@ class Meteo:
         :return: list of Astropy Time objects, regularly spaced between twilights.
 
         """
-    
+        logger.debug("Determining night hours...")
         sunrise, sunset = self.get_twilights(obs_night, twilight)
         
         sunrise = sunrise.tuple()
@@ -323,7 +309,7 @@ class Meteo:
 
         .. note:: The twilight times in PyEphem don't take into account the altitude ! See `https://github.com/brandon-rhodes/pyephem/issues/102`
         """
-    
+        logger.debug("Determining twilights times")
         lat, lon, elev = self.lat, self.lon, self.elev
     
         obs_time = Time('%s 05:00:00' % obs_night, format='iso', scale='utc') #5h UT is approx. the middle of the night
@@ -353,6 +339,5 @@ class Meteo:
         sunrise = observer.next_rising(sun)
     
         return sunrise, sunset
-
 
 #todo: generalize get_sun and get_moon into a single get_distance_to_obj function.

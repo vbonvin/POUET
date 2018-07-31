@@ -5,25 +5,22 @@ Running the script should provide a minimal text output
 
 import os, sys, inspect
 from astropy.time import Time
-
-
-import obs, meteo, plots
-
-
+import obs, meteo, plots, util
 import importlib
-
 import logging
+
+global SETTINGS
 herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+SETTINGS = util.readconfig(os.path.join(herepath, "config/settings.cfg"))
 
 logger = logging.getLogger(__name__)
 
 def startup(name='LaSilla', cloudscheck=True, debugmode=False):
     """
-	Initialize meteo
-
+    Initialize meteo
     :return: Meteo object
     """
-    logging.debug("Loading a new meteo...")
+    logger.debug("Loading a new meteo...")
     currentmeteo = meteo.Meteo(name=name, cloudscheck=cloudscheck, debugmode=debugmode)
 
     return currentmeteo
@@ -37,7 +34,7 @@ def refresh_status(meteo, observables=None, minimal=False, obs_time=None):
     :param obs_time:
     :return:
     """
-
+    logger.debug("Refreshing the observables status...")
     # update meteo
     if obs_time == None:
         obs_time = meteo.time
@@ -45,18 +42,18 @@ def refresh_status(meteo, observables=None, minimal=False, obs_time=None):
     meteo.update(obs_time, minimal=minimal)
 
     if observables:
+        #todo: does using a tuple instead of a list speed up the update process? we should find out !!
         [obs.update(meteo) for obs in observables if obs.hidden == False]
 
 
 def retrieve_obsprogramlist():
     """
     Return a list of existing obsprogram in the obsprogram folder, minus the default obsprogram
-
     :return: list of exising obsprogram, minus the default one.
 
     .. warning:: path to obsprogram folder is hardcoded. This is wrong and should be changed!
     """
-
+    logger.debug("Revrieving obsprograms...")
     obsprogramlist = []
     #todo: obsprogram path is hardcoded, this is wrong!
     files = [f for f in os.listdir(os.path.join(herepath,'obsprogram')) if 'prog' in f and '.py'in f and not 'pyc' in f and not "default" in f]
@@ -68,7 +65,6 @@ def retrieve_obsprogramlist():
     return obsprogramlist
 
 
-
 def hide_observables(observables, criteria):
     """
     Hide the observables not matching the given criteria
@@ -77,7 +73,7 @@ def hide_observables(observables, criteria):
     :param criteria: list of dictionnaries. Each dict contains an "id" and associated keywords used for the hiding. See :meth:'~main.hide_observables'.
 
     """
-    logging.debug("Hiding observables...")
+    logger.debug("Hiding observables...")
     for c in criteria:
         for o in observables:
             if c["id"] == "matchname":
@@ -196,15 +192,13 @@ def hide_observables(observables, criteria):
 
             else:
                 pass
-    logging.info("Observables hidden.")
+    logger.info("Observables hidden.")
 
+
+"""
 if __name__ == "__main__":
 
-
-    import logging
-
-    logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',
-                        level=logging.DEBUG)
+    logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s', level=logging.DEBUG)
     logger = logging.getLogger(__name__)
 
     logger.critical("This should say Python >= 3.0: {}".format(sys.version))
@@ -215,15 +209,9 @@ if __name__ == "__main__":
     # load a catalogue of observables
     observables = obs.rdbimport("../cats/2m2lenses.rdb", obsprogramcol=None, obsprogram='lens')
 
-    #observables = [o for o in observables if o.name == "PSJ1606-2333"]
-
-    for o in observables:
-        print(o.alpha.to_string(sep=":"))
-
     #sys.exit()
     obs_night = Time("2018-02-12 01:00:00", format='iso', scale='utc')
     #plots.shownightobs(observable=observables[0], meteo=currentmeteo, obs_night="2018-02-12", savefig=False, verbose=True)
-
 
     # show current status of all observables
     obs.showstatus(observables, currentmeteo, displayall=True)
@@ -233,3 +221,4 @@ if __name__ == "__main__":
 
     # newtime
     # todo create a new time object, play with it
+"""

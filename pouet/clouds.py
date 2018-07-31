@@ -17,9 +17,9 @@ import util
 import logging
 logger = logging.getLogger(__name__)
 
-###################################################################################################
-# Definition of the class
-###################################################################################################
+global SETTINGS
+herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+SETTINGS = util.readconfig(os.path.join(herepath, "config/settings.cfg"))
 
 class Clouds():
     """
@@ -38,9 +38,7 @@ class Clouds():
         :param name: (default is "LaSilla") name of the location to load the right config file
         :param debugmode: whether or not POUET is in debugmode. If true, it ought to return some static and dummy data
         """
-        
         self.location = name
-        
         self.station = (util.load_station(name)).AllSky()
         self.last_im_refresh = None
         self.debugmode = debugmode
@@ -60,7 +58,6 @@ class Clouds():
         Downloads the current all sky from the server and saves it to disk.
         The url of the image is retrived from the corresponding configuration file.
         """
-
         if not self.debugmode:
             try:
                 logger.info("Loading all sky from {}...".format(self.station.params['url']))
@@ -83,20 +80,17 @@ class Clouds():
         
         :return: an observability map with the same dimension as the input image. Then, use all sky get image coordinate method to retrieve observability for a given target.
         """
-
+        logger.debug("Updating the all-sky image")
         if not self.last_im_refresh is None and (astropy.time.Time.now() - self.last_im_refresh).to(u.s).value / 60. < donotdownloadtime:
             logger.info("Last image was downloaded more recently than {} minutes ago, I don't download it again".format(donotdownloadtime))
             #Seems to be okay#logger.critical("TODO: make sure that this map is correct and there's no .T missing (see get_observability_map)")
             return self.observability_map
         
         self.retrieve_image()
-        
         if self.failed_connection:
             logger.warning("Connection down and not running in debugmode so cannot analyse All Sky")
             return None
-        
         x, y = self.detect_stars()
-        
         if x is None or y is None:
             return None
         
@@ -161,7 +155,7 @@ class Clouds():
                 resx.append(xx)
                 resy.append(yy)
                 #resfwhm.append(f)
-        logger.debug("Done. {} stars found".format(len(resx)))
+        logger.info("Done. {} stars found".format(len(resx)))
         
         if return_all:
             return resx, resy, x, y
@@ -180,7 +174,7 @@ class Clouds():
         
         :return: an observability map with the same dimension as the input image.
         """
-        
+        logger.debug("Creating an observability map...")
         observability = copy.copy(self.im_masked) * 0.
         
         if len(x) > 0:
@@ -196,12 +190,8 @@ class Clouds():
             observability = filters.gaussian_filter(observability, filter_sigma)
         
         self.observability_map = observability.T
-        
         return observability
 
-###################################################################################################
-# Utilitaries for clouds (only specific functions for that particular module
-###################################################################################################
 
 def rgb2gray(arr):
     """
@@ -214,6 +204,7 @@ def rgb2gray(arr):
     blue = arr[:,:,2]
     
     return 0.299 * red + 0.587 * green + 0.144 * blue
+
 
 def loadallsky(fnimg, station, return_complete=False):
     """
@@ -271,7 +262,7 @@ def gaussian(params, stamp, stampsize):
 
     return np.ravel(g)
     
-def fwhm(data,xc,yc,stampsize,show=False, verbose=False):
+def fwhm(data,xc,yc,stampsize,show=False):
     """
     Fits a 2D Gaussian profile and returns the FWHM in px
     
@@ -285,21 +276,23 @@ def fwhm(data,xc,yc,stampsize,show=False, verbose=False):
     :return: fwhm in px
     """
 
-    #TODO: remove verbose since I use loggger?
-    
+    if SETTINGS["misc"]["cloudsdetailedlogs"] == "True":
+        logger.debug("Computing fwhm of stars in all-sky...")
     if xc < stampsize or yc < stampsize or data.shape[1]-xc < stampsize or data.shape[0]-yc < stampsize:
-        if verbose: logger.debug("WARNING: Star at %d %d could not be measured (too close to edge)" % (xc,yc))
+        if SETTINGS["misc"]["cloudsdetailedlogs"] == "True":
+            logger.debug("WARNING: Star at %d %d could not be measured (too close to edge)" % (xc, yc))
         return np.nan
-    assert stampsize % 2==0 #make sure it's an integer
+    assert stampsize % 2 == 0 #make sure it's an integer
     
-    xi=int(xc-stampsize/2.)
-    xf=int(xc+stampsize/2.)
-    yi=int(yc-stampsize/2.)
-    yf=int(yc+stampsize/2.)
-    stamp=data[yi:yf,xi:xf]
+    xi = int(xc-stampsize/2.)
+    xf = int(xc+stampsize/2.)
+    yi = int(yc-stampsize/2.)
+    yf = int(yc+stampsize/2.)
+    stamp = data[yi:yf, xi:xf]
     
     if np.isnan(np.sum(stamp)):
-        if verbose: logger.debug("WARNING: Star at %d %d could not be measured (contains NaN)" % (xc,yc))
+        if SETTINGS["misc"]["cloudsdetailedlogs"] == "True":
+            logger.debug("WARNING: Star at %d %d could not be measured (contains NaN)" % (xc,yc))
         return np.nan
 
     if show:
@@ -320,9 +313,10 @@ def fwhm(data,xc,yc,stampsize,show=False, verbose=False):
 
 
     if p[2]<0.2 or p[2]>1e3:
-        if verbose: logger.debug("WARNING: Star at %d %d could not be measured (width unphysical)" % (xc,yc))
-        #return np.nan
-    if verbose:
+        if SETTINGS["misc"]["cloudsdetailedlogs"] == "True":
+            logger.debug("WARNING: Star at %d %d could not be measured (width unphysical)" % (xc,yc))
+
+    if SETTINGS["misc"]["cloudsdetailedlogs"] == "True":
         logger.debug(p)
         logger.debug('x=%.2f' % (xi+p[0]))
         logger.debug('y=%.2f' % (yi+p[1]))
@@ -344,6 +338,7 @@ def fwhm(data,xc,yc,stampsize,show=False, verbose=False):
     return p[2] * 2. * np.sqrt(2.*np.log(2.))
 
 
+"""
 ###################################################################################################
 # Standard examples to be analysed when running clouds.py
 ###################################################################################################
@@ -362,15 +357,15 @@ if __name__ == "__main__":
     imgs = []
     for fim in list_of_images:
         imgs.append(loadallsky(fim, station=station))
-    """
-    img = None
-    for fim in list_of_images:
-        if img is None:
-            img = util.loadallsky(fim)
-        else:
-            img += util.loadallsky(fim)
-    imgs = [img]
-    """
+    
+    #img = None
+    #for fim in list_of_images:
+    #    if img is None:
+    #        img = util.loadallsky(fim)
+    #    else:
+    #        img += util.loadallsky(fim)
+    #imgs = [img]
+    
     #plt.imshow(img, interpolation='nearest')
     #plt.show(); exit()
         
@@ -415,3 +410,4 @@ if __name__ == "__main__":
     
         plt.show()
 
+"""

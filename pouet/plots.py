@@ -14,13 +14,13 @@ import util
 
 def plot_airmass_on_sky(target, meteo, ax=None):
 	"""
-	 Plots the airmass evolution on the sky of a given target at a given time.
+	Plots the airmass evolution on the sky of a given target at a given time.
 
-	 :param target: a `pouet.obs.Observable` class instance
-	 :param meteo: a `pouet.meteo.Meteo` class instance
-	 :param ax: the matplotlib axis to plot on. If None, then plot on a new figure
-	 """
-
+	:param target: a `pouet.obs.Observable` class instance
+	:param meteo: a `pouet.meteo.Meteo` class instance
+	:param ax: the matplotlib axis to plot on. If None, then plot on a new figure
+	"""
+	logger.debug("Creating airmass plot for {}".format(target.name))
 	delta_ts = np.linspace(-5, 5, 101)
 	assert 0 in delta_ts
 	index_zero = np.where(delta_ts == 0)[0][0]
@@ -65,24 +65,20 @@ def plot_airmass_on_sky(target, meteo, ax=None):
 		ax.set_theta_direction(-1)
 
 	# Plot target coordinates.
-	sp = ax.scatter(azimuths, altitudes, c=airmasses, s=20, vmin=1, vmax=2.0,
-	                cmap=plt.get_cmap("coolwarm"))  # , alpha=0.7) # previous cmap: YlGn_r
+	sp = ax.scatter(azimuths, altitudes, c=airmasses, s=20, vmin=1, vmax=2.0,cmap=plt.get_cmap("coolwarm"))  # , alpha=0.7) # previous cmap: YlGn_r
 
 	# Airmass colobar
 	cbar = plt.colorbar(sp, pad=.1, ax=ax, shrink=0.9)
 	cbar.set_label("Airmass")
 
 	ax.set_title(
-		"Airmass between {} and {} for {}".format(util.time2hhmm(obs_times[0]), util.time2hhmm(obs_times[-1]),
-		                                          target.name), \
-		fontsize=10, y=1.08)
+		"Airmass between {} and {} for {}".format(util.time2hhmm(obs_times[0]), util.time2hhmm(obs_times[-1]), target.name), fontsize=10, y=1.08)
 
 	# Now plot for obs_time, and add some time ticks
 	degree_sign = u'\N{DEGREE SIGN}'
 	ax.scatter(azimuths[index_zero], altitudes[index_zero], marker="x", c='darkorange')
 	str_time = util.time2hhmm(obs_times[index_zero])
-	ax.annotate(str_time, xy=(azimuths[index_zero], altitudes[index_zero]), fontsize=12, ha="center", va="top",
-	            color="darkorange")
+	ax.annotate(str_time, xy=(azimuths[index_zero], altitudes[index_zero]), fontsize=12, ha="center", va="top", color="darkorange")
 
 	for ele in [15, 30, 45, 60, 75]:
 		if ele < 40:
@@ -90,20 +86,13 @@ def plot_airmass_on_sky(target, meteo, ax=None):
 		else:
 			fmt = "{:1.1f}"
 
-		ax.annotate('{:d}{:s}'.format(ele, degree_sign), xy=(np.deg2rad(-23), ele), fontsize=8, color="grey",
-		            ha='center',
-		            va='bottom', rotation=-25)
-		ax.annotate(fmt.format(util.elev2airmass(np.deg2rad(90. - ele), meteo.elev)), xy=(np.deg2rad(23), ele),
-		            fontsize=8,
-		            color="grey", ha='center', va='bottom', rotation=25)
+		ax.annotate('{:d}{:s}'.format(ele, degree_sign), xy=(np.deg2rad(-23), ele), fontsize=8, color="grey", ha='center', va='bottom', rotation=-25)
+		ax.annotate(fmt.format(util.elev2airmass(np.deg2rad(90. - ele), meteo.elev)), xy=(np.deg2rad(23), ele), fontsize=8, color="grey", ha='center', va='bottom', rotation=25)
 
 	ax.annotate("Airmass", xy=(np.deg2rad(23), 88), fontsize=8, color="grey", ha='center', va='bottom', rotation=25)
-	ax.annotate('0' + degree_sign + ' Alt', xy=(np.deg2rad(-23), 89), fontsize=8, color="grey", ha='center',
-	            va='bottom',
-	            rotation=-23)
+	ax.annotate('0' + degree_sign + ' Alt', xy=(np.deg2rad(-23), 89), fontsize=8, color="grey", ha='center', va='bottom', rotation=-23)
 
 	for ii in range(np.size(airmasses)):
-
 		if not ii % 20 == 0:
 			continue
 
@@ -117,16 +106,15 @@ def plot_airmass_on_sky(target, meteo, ax=None):
 
 	# Redraw the figure for interactive sessions.
 	ax.figure.canvas.draw()
+	logger.info("Airmass plot for {} done".format(target.name))
 
 
 def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None, verbose=False):
 	"""
 	Plot the observability of one observable along the night
-
-
 	#todo: add the option to be returned in an Axes object instead of plotting
 	"""
-
+	logger.debug("Creating night observability plot for {}".format(observable.name))
 	if not obs_night:
 		meteo.time.format = 'iso'
 		hour = int(meteo.time.value.split()[1][:2])
@@ -142,9 +130,7 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 
 	#mymeteo = pythoncopy.deepcopy(meteo) # as we don't want to affect the current meteo, we make a copy that we update with the time
 
-
 	mymeteo = meteo
-
 	obss = []
 	moonseps = []
 	airmasses = []
@@ -155,7 +141,6 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 		obss.append(observable.observability)
 		moonseps.append(observable.angletomoon.degree)
 		airmasses.append(observable.airmass)
-
 
 	# create the x ticks labels every hour
 	Time('%s 05:00:00' % obs_night, format='iso', scale='utc')
@@ -218,8 +203,6 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 	starttime = starttime.iso
 	stoptime = stoptime.iso
 
-
-
 	plt.figure(figsize=(8,1.3))
 	plt.subplots_adjust(left=0.02, right=0.98, bottom=0.45, top=0.7)
 	ax = plt.subplot(1, 1, 1)
@@ -261,17 +244,17 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 		print(("Plot saved on %s" % path))
 	else:
 		plt.show()
-		
-		
+	logger.info("Night observability plot for {} done".format(observable.name))
+
+
 def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, boxsize=None, survey='DSS', cmap="Greys"):
 	"""
 	Uses astroquery (hopefully soon accessible from `astropy.vo`) to plot an image of the target
 	"""
-	
+	logger.debug("Retrieving finding chart for {}".format(target.name))
 	from astroquery.skyview import SkyView
 	from astropy.coordinates import SkyCoord
-	
-	
+
 	skycoord = SkyCoord(target.alpha, target.delta)
 	position = skycoord.icrs
 	
@@ -279,7 +262,6 @@ def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, b
 		boxsize = 10.*u.arcmin
 	else: 
 		boxsize *= 1.*u.arcmin
-
 
 	try:
 		hdu = SkyView.get_images(position=position, coordinates='icrs', survey=survey, radius=boxsize, grid=True)[0][0]
@@ -295,8 +277,7 @@ def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, b
 		ax.clear()
 		
 		ax.plot([-1,1],[-1,1], lw=4, c='red')
-		ax.annotate('No image for {} in survey {}'.format(target.name, survey), xy=(0, -0.8), rotation=0,
-							   horizontalalignment='center', verticalalignment='center', fontsize=10)
+		ax.annotate('No image for {} in survey {}'.format(target.name, survey), xy=(0, -0.8), rotation=0, horizontalalignment='center', verticalalignment='center', fontsize=10)
 		
 		ax.patch.set_facecolor("None")
 		ax.axis('off')
@@ -305,8 +286,7 @@ def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, b
 	
 	except:
 		logger.warning("Cannot download Sky Chart image from survey {}. Either you or the server is offline!".format(survey))
-		
-		
+
 		if figure is None:
 			ax = plt.gca()
 		else:
@@ -317,8 +297,7 @@ def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, b
 		ax.plot([-1,1],[-1,1], lw=4, c='k')
 		ax.plot([-1,1],[1,-1], lw=4, c='k')
 		
-		ax.annotate('No connection to GSFC NASA Server', xy=(0, -0.8), rotation=0,
-							   horizontalalignment='center', verticalalignment='center', fontsize=10)
+		ax.annotate('No connection to GSFC NASA Server', xy=(0, -0.8), rotation=0,horizontalalignment='center', verticalalignment='center', fontsize=10)
 		
 		ax.patch.set_facecolor("None")
 		ax.axis('off')
@@ -352,36 +331,27 @@ def plot_target_on_sky(target, figure=None, northisup=True, eastisright=False, b
 	
 	if northisup:
 		ax.invert_yaxis()
-		ax.annotate('', xy=(0.85, 0.25), xytext=(0.85, 0.05), xycoords="axes fraction", textcoords="axes fraction",
-            arrowprops=arrowkwargs,
-            )
+		ax.annotate('', xy=(0.85, 0.25), xytext=(0.85, 0.05), xycoords="axes fraction", textcoords="axes fraction", arrowprops=arrowkwargs)
 		ax.annotate('N', xy=(0.835, 0.255), xycoords="axes fraction", color=cr)
 	else:
-		ax.annotate('', xy=(0.85, 0.05), xytext=(0.85, 0.25), xycoords="axes fraction", textcoords="axes fraction",
-            arrowprops=arrowkwargs,
-            )
+		ax.annotate('', xy=(0.85, 0.05), xytext=(0.85, 0.25), xycoords="axes fraction", textcoords="axes fraction", arrowprops=arrowkwargs)
 		ax.annotate('N', xy=(0.833, 0.02), xycoords="axes fraction", color=cr)
 		
 	if eastisright:
 		ax.invert_xaxis()
-		ax.annotate('', xy=(0.95, 0.15), xytext=(0.75, 0.15), xycoords="axes fraction", textcoords="axes fraction",
-            arrowprops=arrowkwargs,
-            )
+		ax.annotate('', xy=(0.95, 0.15), xytext=(0.75, 0.15), xycoords="axes fraction", textcoords="axes fraction", arrowprops=arrowkwargs)
 		ax.annotate('E', xy=(0.95, 0.137), xycoords="axes fraction", color=cr)
 	else:
-		ax.annotate('', xy=(0.75, 0.15), xytext=(0.95, 0.15), xycoords="axes fraction", textcoords="axes fraction",
-            arrowprops=arrowkwargs,
-            )
+		ax.annotate('', xy=(0.75, 0.15), xytext=(0.95, 0.15), xycoords="axes fraction", textcoords="axes fraction", arrowprops=arrowkwargs)
 		ax.annotate('E', xy=(0.72, 0.137), xycoords="axes fraction", color=cr)
 	
 	# Redraw the figure for interactive sessions.
 	ax.figure.canvas.draw()
-	
-	
+
+	logger.debug("Finding chart for {} retrieved".format(target.name))
 	return ax
 
-
-
+"""
 if __name__ == "__main__":
 
 	print("Welcome to demo mode")
@@ -401,5 +371,5 @@ if __name__ == "__main__":
 	shownightobs(target, currentmeteo)
 
 	plt.show()
-
+"""
 
