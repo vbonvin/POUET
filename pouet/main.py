@@ -992,12 +992,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		"""
 		Plots the selected targets in the visbility and all sky.
 
-
 		.. note:: The user can select in which plot they want to see the target (2 checkboxes in the config tab).
 
 		.. note:: displayed in all sky only if delta time between obs_time and all sky last refresh is smaller than `showallskytargets` (in global settings) - OR if debug mode.
 		"""
-
+		logging.debug("Read selected targets...")
 		obs_model = self.listObs.model()
 
 		if obs_model is None:
@@ -1038,28 +1037,26 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			# for the show_coordinate in all_sky, so by passing.
 			# (however visibilitytool_draw_exec is fast...)
 
-
 			self.visibilitytool.show_targets(alphas, deltas, ord_names, meteo=self.currentmeteo)
 
-			logging.debug("Plotted {} targets in visibility".format(len(d)))
+			logging.info("Plotted {} targets in visibility".format(len(d)))
 
 		#-------- Plots on all sky layer
 		self.allskylayerTargets.erase()
 		if self.configShowTargetsAllSkyValue.checkState() == 2:
 
 			if not self.allsky_debugmode and (self.currentmeteo.allsky.last_im_refresh is None or np.abs(self.currentmeteo.time - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > float(SETTINGS['validity']['showallskytargets'])):
-				logging.debug("Not showing targets on All Sky, delta time too large")
+				logging.info("Not showing targets on All Sky, delta time too large")
 				return
 
 			self.allskylayerTargets.show_targets(as_xs, as_ys, ord_names)
-
-			logging.debug("Plotted {} targets in All Sky".format(len(d)))
+			logging.info("Plotted {} targets in All Sky".format(len(d)))
 
 	def weather_display(self):
 		"""
 		Prompts a weather report update and displays the results in the `station` tab.
 		"""
-
+		logging.debug("Starting weather update...")
 		if not self.currentmeteo.lastest_weatherupdate_time is None and (Time.now() - self.currentmeteo.lastest_weatherupdate_time).to(u.s).value < float(SETTINGS['validity']['weatherreportfrequency']):
 			logging.info("Last weather report was downloaded more recently than {} seconds ago, I don't download it again".format(SETTINGS['validity']['weatherreportfrequency']))
 			draw_wind = False
@@ -1105,13 +1102,12 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		"""
 		Computes and displays information about the site and the position of the bright objects in the `station` tab.
 		"""
-
+		logging.debug("Starting Site update...")
 		self.siteLocationValue.setText(str('Lat={:s}\tLon={:s}\tElev={:s} m'.format(self.currentmeteo.location.get("location", "longitude"), self.currentmeteo.location.get("location", "latitude"), self.currentmeteo.location.get("location", "elevation"))))
 
 		obs_time = self.currentmeteo.time
 
-		#-------------------------------------------------------- Bright objects now
-
+		# Bright objects now
 		sunAz, sunAlt = self.currentmeteo.get_sun(obs_time)
 		sunAlt = sunAlt.to(u.degree).value
 		sunAz = sunAz.to(u.degree).value
@@ -1160,8 +1156,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		self.does_warn_station()
 
-
-		#-------------------------------------------------------- Night here only (we change the obs_time so this must the last things to run!)
+		logging.debug("Bright objects update done")
+		# Night here only (we change the obs_time so this must the last things to run!)
 
 		cobs_time = copy.copy(obs_time)
 		#cobs_time = Time('2018-02-08 01:00:00', format='iso', scale='utc')
@@ -1194,23 +1190,23 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		self.nightEndAstroValue.setText(str('{:s}'.format(str(sunrise))))
 
 		self.nightLastUpdateValue.setText("for night {} to {}".format(str(day_before).split('.')[0], str(day_after).split('.')[0]))
+		logging.debug("Night update done")
 
 	def allsky_refresh(self):
 		"""
 		Starts a refresh of the all sky by erasing the image and starting a new thread to get the new image and analyse it.
 		"""
-
+		logging.debug("Refreshing the all sky...")
 		self.print_status("Refreshing All Sky...", SETTINGS['color']['warn'])
-
 		self.allskylayer.erase()
-
 		self.threadAllskyUpdate.start()
+		logging.info("All sky refresh done")
 
 	def allsky_redisplay(self):
 		"""
 		Calls the drawing of the all sky in the widget. (including the wind)
 		"""
-
+		logging.debug("Drawing all sky...")
 		if self.configCloudsShowLayersValue.checkState() == 0:
 			plot_analysis = False
 		else:
@@ -1222,8 +1218,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		self.allsky.display_wind_limits(self.currentmeteo)
 		self.allSkyUpdateWindValue.setText("Wind update: {}".format(str(self.currentmeteo.lastest_weatherupdate_time).split('.')[0]))
 
-		msg = "Drawn All Sky."
-		logging.debug(msg)
+		logging.info("All Sky drawn.")
 
 	def visibilitytool_draw_exec(self):
 		"""
@@ -1231,7 +1226,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		.. note:: if there is a too large delta time between weather report and obs_time, does not display weather info (threshold defined in global settings, `validity`/`weatherreport`)
 		"""
-
 		airmass = self.visibilityAirmassValue.value()
 		anglemoon = self.visibilityMoonAngleValue.value()
 
@@ -1243,13 +1237,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		self.visibilitytool.visbility_draw(meteo=self.currentmeteo, airmass=airmass, anglemoon=float(anglemoon), check_wind=check_wind)
 
-		logging.debug("Drawn visibility with airmass={:1.1f}, anglemoon={:d}d".format(airmass, anglemoon))
+		logging.info("Drawn visibility with airmass={:1.1f}, anglemoon={:d}d".format(airmass, anglemoon))
 
 	def visibilitytool_draw(self):
 		"""
 		Method to prompt the drawing of the visibility and plot the selected targets in the visibility tool.
 		"""
-
+		logging.debug("Drawing visibility...")
 		self.visibilitytool_draw_exec()
 		self.listObs_plot_targets()
 
@@ -1259,8 +1253,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		.. note:: the user can choose in the config tab the frequency of the update and if to update the all sky and the weather report
 		"""
-
-		logging.info("Auto-refresh")
+		logging.debug("Auto-refresh started...")
 		self.print_status("Auto-refresh started...", SETTINGS['color']['warn'])
 
 		if self.configCloudsAutoRefreshValue.checkState() == 2:
@@ -1277,12 +1270,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			self.allSkyUpdateWindValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
 			self.weatherLastUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
 
-
 		if self.currentmeteo.allsky.last_im_refresh is None or (Time.now() - self.currentmeteo.allsky.last_im_refresh).to(u.s).value / 60. > float(SETTINGS['validity']['allsky']):
 			self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['warn']))
 		else:
 			self.allSkyUpdateValue.setStyleSheet("QLabel { color : %s; }" % format(SETTINGS['color']['nominal']))
-
+		logging.info("Auto-refresh done.")
 		self.print_status("Auto-refresh done.", SETTINGS['color']['success'])
 
 
@@ -1294,7 +1286,6 @@ class MyLogger(logging.Handler):
 	def __init__(self, logWriter):
 		"""
 		Constructor.
-
 		:param logWriter: an instance of the logWriter class
 		"""
 		super().__init__()
@@ -1312,7 +1303,6 @@ class LogWriter(QtCore.QThread):
 	"""
 	A class in a different thread to handle the logging events correctly. Otherwise (and because we display the log in a textbox), pouet crashes.
 	"""
-
 	dataSent = QtCore.pyqtSignal(str)
 
 	def __init__(self, parent=None):
@@ -1321,7 +1311,6 @@ class LogWriter(QtCore.QThread):
 	def set_msg(self, msg):
 		"""
 		records a message and sends it to the GUI for display.
-
 		:param msg: Text to be displayed
 		"""
 		self.dataSent.emit(msg)
@@ -1331,7 +1320,6 @@ class AllSkyView(FigureCanvas):
 	"""
 	Class to draw data in the AllSkyView widget, including the analysed image, the selected targets and the mouse-over-visibility position.
 	"""
-
 	def __init__(self, meteo, parent=None, width=4.66, height=3.5):
 		"""
 		Constructor.
@@ -1341,7 +1329,6 @@ class AllSkyView(FigureCanvas):
 		:param width: width of the figure
 		:param height: height of the figure
 		"""
-
 		self.figure = Figure(figsize=(width, height))
 		self.figure.patch.set_facecolor("None")
 
@@ -1374,7 +1361,7 @@ class AllSkyView(FigureCanvas):
 		"""
 		Erases everything in the axis. To be called often, before every redraw or if a failure is detected, before showing error message
 		"""
-
+		logging.debug("Clearing everything...")
 		self.axis.clear()
 
 		self.axis.scatter([0,self.imy],[0,self.imx], c='None', s=1)
@@ -1395,7 +1382,6 @@ class AllSkyView(FigureCanvas):
 		:param y: allsky image y coordinate
 		:param color: color of the reticule
 		"""
-
 		self.erase()
 
 		self.axis.axhline(y, color='k', c=color)
@@ -1411,14 +1397,13 @@ class AllSkyView(FigureCanvas):
 		:param ys: list of allsky y image coordinate
 		:param names: list of the names
 		"""
-
+		logging.debug("Showing targets...")
 		self.erase()
 
 		self.axis.scatter(xs, ys, c='k', s=4)
 
 		for x, y, name in zip(xs, ys, names):
-			self.axis.annotate('{}'.format(name), xy=(x+6, y+1),
-							   horizontalalignment='left', verticalalignment='center', size=8)
+			self.axis.annotate('{}'.format(name), xy=(x+6, y+1),horizontalalignment='left', verticalalignment='center', size=8)
 
 		self.draw()
 
@@ -1428,7 +1413,7 @@ class AllSkyView(FigureCanvas):
 
 		:param startup: if `True` shows a message saying that the user should try to reload manually
 		"""
-
+		logging.debug("Displaying error image...")
 		self.axis.clear()
 		self.axis.plot([-1,1],[-1,1], lw=4, c=SETTINGS['color']['nominal'])
 		self.axis.plot([-1,1],[1,-1], lw=4, c=SETTINGS['color']['nominal'])
@@ -1453,7 +1438,7 @@ class AllSkyView(FigureCanvas):
 		.. note:: if there is a processing error of the image and the method cannot plot it, it will call `AllSkyView.error_image()` with `startup=True`, i.e. for the user to manually refresh
 
 		"""
-
+		logging.debug("Drawing all-sky...")
 		self.axis.clear()
 
 		allsky = meteo.allsky
@@ -1524,6 +1509,7 @@ class AllSkyView(FigureCanvas):
 
 		self.axis.set_axis_off()
 		self.draw()
+		logging.info("All-sky drawn.")
 
 	def display_wind_limits(self, meteo):
 		"""
@@ -1533,7 +1519,7 @@ class AllSkyView(FigureCanvas):
 
 		.. note::If the wind is below the warn limit, does nothing, if above hatches in orange the region 90deg away from the wind and if above limit hatches all the image in red.
 		"""
-
+		logging.debug("Displaying wind limits...")
 		params = meteo.allsky.station.params
 
 		r0 = params['r0']
@@ -1569,23 +1555,19 @@ class AllSkyView(FigureCanvas):
 								   horizontalalignment='center', verticalalignment='center', color=cw, fontsize=25)
 
 			self.axis.plot([cx, wdcoordinatesx], [cy, wdcoordinatesy], lw=3, color=cw)
-
 		self.draw()
 
 class AirmassView(FigureCanvas):
 	"""
 	Classes to handle the display of the airmass view
 	"""
-
 	def __init__(self, parent=None, width=6, height=5):
 		"""
 		Constructor
-
 		:param parent: parent widget
 		:param width: width of the matplotlib figure
 		:param height: height of the matplotlib figure
 		"""
-
 		self.figure = Figure(figsize=(width, height))
 		self.figure.patch.set_facecolor("None")
 
@@ -1615,7 +1597,6 @@ class AirmassView(FigureCanvas):
 		:param target: an observable instance
 		:param meteo: the meteo instance (used for the obs_time)
 		"""
-
 		self.axis.clear()
 		plots.plot_airmass_on_sky(target, meteo, ax=self.axis)
 
@@ -1625,7 +1606,6 @@ class SkychartView(FigureCanvas):
 	"""
 	Handles the GUI of the Sky Chart (:meth:`~plots.plot_target_on_sky()`)
 	"""
-
 	def __init__(self, target, parent=None, width=6, height=5):
 		"""
 		Constructor
@@ -1643,7 +1623,6 @@ class SkychartView(FigureCanvas):
 
 		.. warning:: the default values are hard-coded this could prove to be wrong in certain cases -> monitor!
 		"""
-
 		self.figure = Figure(figsize=(width, height))
 		self.figure.patch.set_facecolor("None")
 
@@ -1675,8 +1654,7 @@ class SkychartView(FigureCanvas):
 		"""
 		Flips the image vertically
 		"""
-
-		logging.debug("Sky Chart: flipping North")
+		logging.debug("Sky Chart: flipping North/South")
 
 		if self.northisup:
 			self.northisup = False
@@ -1690,8 +1668,7 @@ class SkychartView(FigureCanvas):
 		Flips the image horizontally
 		"""
 
-		logging.debug("Sky Chart: flipping East")
-
+		logging.debug("Sky Chart: flipping East/West")
 		if self.eastisright:
 			self.eastisright = False
 		else:
@@ -1705,7 +1682,6 @@ class SkychartView(FigureCanvas):
 		"""
 
 		logging.debug("Sky Chart: inverting cmap")
-
 		if self.cmap == "Greys":
 			self.cmap = "Greys_r"
 		else:
@@ -1717,7 +1693,6 @@ class SkychartView(FigureCanvas):
 		"""
 		Writes a text asking the user to be patient. Downloading can be slow, even with a fast connection
 		"""
-
 		self.axis.clear()
 		self.axis.annotate("This can take a while...", xy=(0.5, 0.5), xycoords="axes fraction", ha="center")
 		self.axis.patch.set_facecolor("None")
@@ -1730,15 +1705,10 @@ class SkychartView(FigureCanvas):
 		"""
 		Change the images from one survey to another
 		"""
-
-		self.show_takeawhile()
-
 		logging.debug("Sky Chart: changing image from {} to {}".format(self.survey, value))
-
+		self.show_takeawhile()
 		self.survey = value
-
 		self.show()
-
 
 	def changeBoxSize(self, value):
 		# todo: define what value is in the doc
@@ -1747,34 +1717,26 @@ class SkychartView(FigureCanvas):
 
 		.. todo:: This calls a new Skyview, maybe we can only change the size of the window and only download when necessary
 		"""
-		#TODO: see todo in description. That is above. Learn to read. Damn!
-
-		self.show_takeawhile()
-
 		logging.debug("Sky Chart: changing size from {} to {}".format(self.boxsize, value))
-
+		self.show_takeawhile()
 		self.boxsize = value
-
 		self.show()
 
 	def show(self):
 		"""
 		Draws the sky chart image
 		"""
-
+		logging.debug("Showing the sky chart...")
 		ax = plots.plot_target_on_sky(self.target, figure=self.figure, northisup=self.northisup, eastisright=self.eastisright, boxsize=self.boxsize, survey=self.survey, cmap=self.cmap)
 		self.axis = ax
 		self.axis.patch.set_facecolor("None")
 		self.axis.figure.canvas.draw()
 
 
-
 class VisibilityView(FigureCanvas):
 	"""
 	Class to handle the visibility widget
 	"""
-
-
 	def __init__(self, parent=None, width=4.66, height=3.5):
 		"""
 		Constructor
@@ -1783,7 +1745,6 @@ class VisibilityView(FigureCanvas):
 		:param width: width of the matplotlib figure
 		:param height: height of the matplotlib figure
 		"""
-
 		self.figure = Figure(figsize=(width, height))
 		self.figure.patch.set_facecolor("None")
 
@@ -1811,7 +1772,6 @@ class VisibilityView(FigureCanvas):
 								   QtWidgets.QSizePolicy.Expanding)
 		FigureCanvas.updateGeometry(self)
 
-
 	def show_targets(self, xs, ys, names, meteo):
 		# todo: remove meteo from method param, as it seems to be useless (to be tested...that's why we need to push often and to have CI working !
 		"""
@@ -1823,13 +1783,10 @@ class VisibilityView(FigureCanvas):
 
 		.. warning:: this is done in the same frame as the visibility plot, so each time the user clics on targets to display, the visibility should be re-drawn.
 		"""
-
+		logging.debug("Displaying targets in the all sky...")
 		self.axis.scatter(xs, ys, color='k', s=2)
 		for x, y, name in zip(xs, ys, names):
-			self.axis.annotate('{}'.format(name), xy=(x-0.2, y), color='k',
-							   horizontalalignment='left', verticalalignment='center', size=7)
-
-
+			self.axis.annotate('{}'.format(name), xy=(x-0.2, y), color='k',horizontalalignment='left', verticalalignment='center', size=7)
 		self.draw()
 
 	def visbility_draw(self, meteo, airmass, anglemoon, check_wind=True):
@@ -1843,7 +1800,7 @@ class VisibilityView(FigureCanvas):
 
 		.. note:: if above wind warning: displays the region 90deg away from the wind in orange. If above limit whole plot in red
 		"""
-
+		logging.debug("Displaying targets in the visibility plot...")
 		self.axis.clear()
 		self.cax.clear()
 
@@ -1893,12 +1850,8 @@ class VisibilityView(FigureCanvas):
 					if check_wind and WS >= wsl:
 						wind[j, i] = 1.
 						cw = SETTINGS['color']['limit']
-						#ct = 'WIND LIMIT REACHED'
-						#cts = 35
 					elif check_wind and WS >= wpl:
 						cw = SETTINGS['color']['warn']
-						#ct = 'Pointing limit!'
-						#cts = 20
 						ws = ephem.separation((star.alt, np.deg2rad(WD)), (star.alt, star.az))
 						if ws < np.pi / 2.:
 							wind[j, i] = 1.
@@ -1940,28 +1893,26 @@ class VisibilityView(FigureCanvas):
 		self.axis.set_xlabel('Right ascension', fontsize=9, )
 		self.axis.set_ylabel('Declination', fontsize=9, )
 
-
-		self.axis.set_title("%s - Moon sep %d deg - max airmass %1.1f" % (str(obs_time).split('.')[0], \
-																		  anglemoon, airmass), fontsize=9)
+		self.axis.set_title("%s - Moon sep %d deg - max airmass %1.1f" % (str(obs_time).split('.')[0], anglemoon, airmass), fontsize=9)
 
 		self.axis.set_xticks(np.linspace(0, 24, 25))
 		self.axis.set_yticks(np.linspace(-90, 90, 19))
-
 		self.finish_plot(tel_lat)
 
 	def finish_plot(self, tel_lat):
 		# todo: define what tel_lat is in doc
 		"""
 		helper to finish the plot correctly.
+
+		.. todo:: is it really necessary to have a function for that? Is it called more than once?
 		"""
 
+		logging.debug("Nice display function called...")
 		self.axis.set_xlim([0, 24])
 		lat = float(tel_lat.to_string(unit=u.degree, decimal=True))
 		self.axis.set_ylim([np.max([lat - 90, -90]), np.min([lat + 90, 90])])
-
 		self.axis.grid()
 		self.axis.invert_xaxis()
-
 		self.draw()
 		
 
@@ -1988,19 +1939,11 @@ class ThreadAllskyUpdate(QtCore.QThread):
 		"""
 		We should not directly update the GUI allsky, so we get it from the parent (at its current state) and returns it by emitting a signal
 		"""
-
 		logging.debug("threadAllsky firing up.")
-
 		allskycopy = copy.copy(self.parent.currentmeteo.allsky)
-
 		allskycopy.update(float(SETTINGS['validity']['allskyfrequency']))
-
-		logging.info("Updated All Sky")
-
-		logging.debug("threadAllsky done.")
-
 		self.allskyUpdate.emit([allskycopy])
-
+		logging.info("Updated All Sky")
 
 def main():
 	app = QtWidgets.QApplication(sys.argv)  # A new instance of QApplication
