@@ -22,7 +22,8 @@ import gzip
 #import csv
 import numpy as np
 
-import obs
+# DO NOT IMPORT obs as it import util already, this create a loop and break function import.
+#import obs
 
 import logging
 logger = logging.getLogger(__name__)
@@ -223,8 +224,9 @@ def time2hhmm(obstime):
 	return (str(obstime).split(" ")[1]).split(".")[0][:-3]
 
 
+"""
 def excelimport(filename, obsprogram=None):
-	"""
+	'''
 	Wrapper around openpyxl to transform excel sheets into POUET.
 
 	.. info:: This feature is still experimental and completely spreadsheet dependent. Requirex openpyxl installed, otherwise exits.
@@ -238,7 +240,7 @@ def excelimport(filename, obsprogram=None):
 
 	.. warning:: I directly read the excel values, I do NOT evaluate the formulas in them. It is up to the user to put the right mjd in the excel sheets.
 
-	"""
+	'''
 
 	if noexcelimport:
 		raise NotImplemented("Excel files cannot be imported at the moment - you need to install openpyxl")
@@ -248,13 +250,13 @@ def excelimport(filename, obsprogram=None):
 
 		#### For BEBOP
 		if obsprogram == 'bebop':
-			"""
+			'''
 			special properties:
 
 			phases : a list of dictionnaries : [{mjd, phase, hourafterstart }]
 			comment : a string of comments (exptime, requested phase,...)
 			internalobs : a boolean (0 or 1), allowing or not observability
-			"""
+			'''
 
 			try:
 				wb = openpyxl.load_workbook(filename,
@@ -287,7 +289,7 @@ def excelimport(filename, obsprogram=None):
 
 			# Read only the non "None" data and put it in a table of dict, because fuck excel and fuck openpyxl.
 			data = ws['A1':'%s%s' % (breakcolind, breakrowind)]
-			"""
+			'''
 			Structure of the spreadsheet:
 			Infos are from A1 to W2
 			Datas are from A3 ro W30
@@ -300,7 +302,7 @@ def excelimport(filename, obsprogram=None):
 			M1 to W1 : mjd over the night
 			M2 to W2 : corresponding time after night start, in hours
 			M to W : phases
-			"""
+			'''
 
 			phasesnames = ['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W']
 			values = {}
@@ -353,13 +355,13 @@ def excelimport(filename, obsprogram=None):
 
 		if obsprogram == "superwasp":
 			# http://openpyxl.readthedocs.org/en/latest/optimized.html --- that will be useful for Amaury's monstruous spreadsheet
-			"""
+			'''
 			special properties:
 
 			phases : a list of dictionnaries : [{mjd, phase, hourafterstart }]
 			comment : a string of comments (exptime, requested phase,...)
 			internalobs : a boolean (0 or 1), allowing or not observability
-			"""
+			'''
 
 			logger.info('reading %s...' % filename)
 			try:
@@ -395,7 +397,8 @@ def excelimport(filename, obsprogram=None):
 
 			# Read only the non "None" data and put it in a table of dict, because fuck excel and fuck openpyxl.
 			data = ws['A1':'%s%s' % (breakcolind, breakrowind)]
-			"""
+			
+			'''
 			Structure of the spreadsheet:
 			Infos are from A1 to W2
 			Datas are from A3 ro W30
@@ -408,9 +411,10 @@ def excelimport(filename, obsprogram=None):
 			M1 to W1 : mjd over the night
 			M2 to W2 : corresponding time after night start, in hours
 			M to W : phases
-			"""
+			'''
 
 		if obsprogram == "followup":
 			pass
 
 		return observables
+"""
