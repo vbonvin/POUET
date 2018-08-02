@@ -17,6 +17,7 @@ from PyQt5.QtCore import Qt
 app = QApplication(sys.argv)
 
 
+
 class PouetTest(unittest.TestCase):
 	'''Test the pouet GUI'''
 

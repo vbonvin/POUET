@@ -36,6 +36,7 @@ obs.showstatus(observables, currentmeteo, displayall=True)
 for o in observables:
     print(o)
     o.is_cloudfree(currentmeteo)
+
 # update meteo at now
 currentmeteo.update(obs_time=Time.now())
 
