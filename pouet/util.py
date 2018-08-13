@@ -206,7 +206,7 @@ def load_station(name):
 	"""
 	Load the parameters corresponding to an observation station
 
-	:param name: string, name of the station. The corresponding file must be located in :py:`config`
+	:param name: string, name of the station. The corresponding file must be located in :meth:`config`
 
 	:return: station parameters
 	"""

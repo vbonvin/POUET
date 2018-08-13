@@ -42,8 +42,8 @@ class Meteo:
         :param sunazimuth: Astropy Angle object, azimuth of the Sun . If none, is computed using the site location when :meth:`~meteo.update` is called.
         :param winddirection: float, direction of the wind, in degree. If none, is computed using the site weather report when :meth:`~meteo.update` is called.
         :param windspeed: float, speed of the wind in m/s. If none, is computed using the site weather report when :meth:`~meteo.update` is called.
-        :param cloudscheck: boolean. If True, uses :py:`clouds.Clouds` to analyze an all-sky image and create a mapping of the clouds in the plane of the sky
-        :param fimage:string, name of the filename of the all-sky image to analyse
+        :param cloudscheck: boolean. If True, uses :meth:`clouds.Clouds` to analyze an all-sky image and create a mapping of the clouds in the plane of the sky
+        :param fimage: string, name of the filename of the all-sky image to analyse
         :param debugmode: boolean. If True, use dummy values for the wind and all-sky
 
         .. warning:: the moon and sun position, wind speed and angle default values provided at construction will be overwritten by :meth:`~meteo.update`

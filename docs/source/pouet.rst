@@ -57,7 +57,7 @@ pouet\.util module
     :show-inheritance:
 
 pouet\.plots module
-------------------
+-------------------
 
 .. automodule:: plots
     :members:
