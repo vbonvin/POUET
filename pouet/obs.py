@@ -8,7 +8,7 @@ import os, sys, inspect
 import copy as pythoncopy
 from astropy.time import Time
 from astropy import units as u
-from astropy.coordinates import angles, angle_utilities
+from astropy.coordinates import angles, angle_utilities, SkyCoord
 import astropy.table
 import importlib
 import util
@@ -146,15 +146,15 @@ class Observable:
 		if winddirection < 0 or winddirection > 360:
 			self.angletowind = None
 			return
-			
+		
 		try:
-			angletowind = abs(winddirection-self.azimuth.degree)
-			self.angletowind = angles.Angle(angletowind, unit='degree')
-		#todo: mmmh, maybe we should raise an error that crashes pouet but do something differently...?
+			winddirection = angles.Angle(winddirection, unit='degree')
+			self.angletowind = angle_utilities.angular_separation(winddirection, 0., self.azimuth, 0.)
+			self.angletowind = angles.Angle(self.angletowind, unit="radian")
 		except AttributeError:
 			logger.error("{} has no azimuth! \n Compute its azimuth first !".format(self.name))
 			raise AttributeError("%s has no azimuth! \n Compute its azimuth first !")
-		
+
 	def compute_altaz(self, meteo):
 		"""
 		Computes the altitude and azimuth of the observable.
