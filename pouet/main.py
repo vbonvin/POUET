@@ -65,7 +65,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		logging.info('Startup...')
 
-		self.allsky_debugmode = False
+		self.allsky_debugmode = True
 		self.name_location = 'LaSilla'
 		self.cloudscheck = True
 		self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
@@ -553,7 +553,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 				# header popup
 				logging.debug("Opening header popup...")
-				self.headerPopup = uic.loadUi(os.path.join(herepath, "headerdialog.ui"))
+				self.headerPopup = uic.loadUi(os.path.join(herepath, "design_importHeaders.ui"))
 
 				# split by tabs/spaces
 				#todo: if columns are empty, the reader misses that. Either correct or print a warning, e.g. assert len(headers) == len(lines[0]) ??
@@ -564,8 +564,19 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 						cb.addItem(h)
 					cb.setCurrentIndex(i)
 
+
 				self.headerPopup.headerObsprogramValue.addItem("None")
 				self.headerPopup.headerObsprogramValue.setCurrentIndex(self.headerPopup.headerObsprogramValue.findText("None"))
+
+				# now the default obsprogram values:
+				for opn in obsprogramnames:
+					self.headerPopup.headerObsprogramDefaultValue.addItem(opn)
+
+				try:  # if there is still a default config file
+					self.headerPopup.headerObsprogramDefaultValue.setCurrentIndex(self.headerPopup.headerObsprogramDefaultValue.findText("default"))
+				except:
+					pass
+
 
 				# ok is 0 if rejected, 1 if accepted
 				ok = self.headerPopup.exec()
@@ -575,23 +586,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 					alphacol = int(self.headerPopup.headerRAValue.currentIndex())+1
 					deltacol = int(self.headerPopup.headerDecValue.currentIndex())+1
 
-					if self.headerPopup.headerObsprogramValue.currentText() == "None":
-						obsprogramcol = None
-					else:
+					if self.headerPopup.headerObsprogramValue.currentText() != "None":
 						obsprogramcol = int(self.headerPopup.headerObsprogramValue.currentIndex())+1
-
-					# obsprogram popup
-					logging.debug("Opening obsprogram popup...")
-					self.popup = QtWidgets.QInputDialog()
-					#todo rename Cancel button as default if possible
-					obsprogram, okop = self.popup.getItem(self, "Select an observing program", " - Existing programs -\nSelect Cancel to use the default configuration.\nThis setting applies only to the observables\nthat do not already have an obsprogram defined in the input file", obsprogramnames, 1, False)
-
-					if okop:
-						logmsg += 'as %s ' % obsprogram
 					else:
-						# we use the default option
-						obsprogram = "default"
-						logmsg += 'as default '
+						obsprogramcol = None
+
+					obsprogram = self.headerPopup.headerObsprogramDefaultValue.currentText()
+
 
 				else:
 					# we exit the load function
@@ -651,15 +652,15 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				self.allskylayerTargets.show_targets([], [], [])
 				self.visibilitytool_draw_exec()
 
-			except:
-				logmsg += ' not loaded - wrong formatting'
+			except Exception as e:
+				logmsg += ' not loaded - wrong formatting\n %s' % str(e)
 				logging.error(logmsg)
 				namecat = filepath.split("/")[-1]
-				self.print_status("%s \nWrong formatting: do headers and columns match?" % namecat, SETTINGS['color']['limit'])
-		except:
-			logmsg += ' not loaded - format unknown'
+				self.print_status("%s \nWrong formatting: do headers and columns match?\n %s" % (namecat, str(e)), SETTINGS['color']['limit'])
+		except Exception as e:
+			logmsg += ' not loaded - %s' % str(e)
 			logging.error(logmsg)
-			self.print_status("%s \nFormat unknown: not a catalog file..." % filepath, SETTINGS['color']['limit'])
+			self.print_status("%s \nFormat unknown: not a catalog file...\n %s" % (filepath, str(e)), SETTINGS['color']['limit'])
 
 	def update_obs(self):
 		"""

@@ -49,14 +49,14 @@ def refresh_status(meteo, observables=None, minimal=False, obs_time=None):
 def retrieve_obsprogramlist():
     """
     Return a list of existing obsprogram in the obsprogram folder, minus the default obsprogram
-    :return: list of exising obsprogram, minus the default one.
+    :return: list of exising obsprogram, including the default one (new in 0.5)
 
     .. warning:: path to obsprogram folder is hardcoded. This is wrong and should be changed!
     """
     logger.debug("Revrieving obsprograms...")
     obsprogramlist = []
     #todo: obsprogram path is hardcoded, this is wrong!
-    files = [f for f in os.listdir(os.path.join(herepath,'obsprogram')) if 'prog' in f and '.py'in f and not 'pyc' in f and not "default" in f]
+    files = [f for f in os.listdir(os.path.join(herepath,'obsprogram')) if 'prog' in f and '.py'in f and not 'pyc' in f] #and not "default" in f]
     for f in files:
         name = f.split('prog')[1].split('.py')[0]
         program = importlib.import_module("obsprogram.prog{}".format(name), package=None)
