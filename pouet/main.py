@@ -13,6 +13,7 @@ import obs, run, util, plots
 
 from astropy import units as u
 from astropy.time import Time, TimeDelta
+from astropy.table import Table
 import astropy.coordinates.angles as angles
 import copy
 import ephem
@@ -555,14 +556,27 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				logging.debug("Opening header popup...")
 				self.headerPopup = uic.loadUi(os.path.join(herepath, "design_importHeaders.ui"))
 
-				# split by tabs/spaces
-				#todo: if columns are empty, the reader misses that. Either correct or print a warning, e.g. assert len(headers) == len(lines[0]) ??
-				headers_input = open(filepath, 'r').readlines()[0].split('\n')[0].split()
+				# get columns names
+				rdbtable = Table.read(filepath, format="ascii", data_start=0)
+				headers_input = rdbtable.colnames
+
+				# list of potential header's keywords to be associated with
+				# 1) Name, 2) alpha, 3) Delta, 4) Catalog name
+				headers_kws_lists = [
+					["name", "Name", "code", "Code"],
+					["RA", "ra", "r.a.", "Ra", "alpha", "alphacat", "Alpha", "Right Ascension"],
+					["DEC", "dec", "Dec", "delta", "deltacat", "Delta", "Declination"],
+					["catalog", "obsprogram", "program", "Program"]
+				]
 
 				for i, cb in enumerate([self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]):
-					for h in headers_input:
+
+					hi = i
+					for ih, h in enumerate(headers_input):
 						cb.addItem(h)
-					cb.setCurrentIndex(i)
+						if h in headers_kws_lists[i]:
+							hi = ih
+					cb.setCurrentIndex(hi)
 
 
 				self.headerPopup.headerObsprogramValue.addItem("None")
