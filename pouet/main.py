@@ -524,11 +524,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		return name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds
 
-	def load_obs(self, filepath=None):
+	def load_obs(self, filepath=None, autotest_mode=False):
 		"""
 		Loads a catalogue given a filepath or a user-chosen file (this prompts a select file and a column definition pop-ups)
 
 		:param filepath: optional argument to bypass the Select a file dialogue (but not the column definition pop-up)
+
+		:param autotest_mode: boolean, for internal testing use only. If True, the pop-up window is automatically accepted as it is. Should disappear in future version when the authors will manage to do this in a cleaner way
 		"""
 		logging.debug("Entering loading function, loading {}".format(filepath))
 		logmsg = ''
@@ -591,9 +593,23 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				except:
 					pass
 
-
 				# ok is 0 if rejected, 1 if accepted
-				ok = self.headerPopup.exec()
+
+				if autotest_mode:
+					#todo: find the courage to do this in a cleaner way
+					"""
+					Since I haven't managed to trigger this behavious from the testing script, I do it from inside the load_obs function.
+					"""
+					self.headerPopup.show()
+					headerpopup_Okbutton = self.headerPopup.headerButtonBox.button(self.headerPopup.headerButtonBox.Ok)
+					from PyQt5.QtTest import mouseClick as mC
+					from PyQt5.QtCore.Qt import LeftButton as LB
+					mC(headerpopup_Okbutton, LB)
+					ok = True
+
+				else:
+					ok = self.headerPopup.exec()
+
 				if ok:
 
 					namecol = int(self.headerPopup.headerNameValue.currentIndex())+1
