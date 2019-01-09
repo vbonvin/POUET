@@ -13,6 +13,7 @@ import obs, run, util, plots
 
 from astropy import units as u
 from astropy.time import Time, TimeDelta
+from astropy.table import Table
 import astropy.coordinates.angles as angles
 import copy
 import ephem
@@ -523,11 +524,13 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		return name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds
 
-	def load_obs(self, filepath=None):
+	def load_obs(self, filepath=None, autotest_mode=False):
 		"""
 		Loads a catalogue given a filepath or a user-chosen file (this prompts a select file and a column definition pop-ups)
 
 		:param filepath: optional argument to bypass the Select a file dialogue (but not the column definition pop-up)
+
+		:param autotest_mode: boolean, for internal testing use only. If True, the pop-up window is automatically accepted as it is. Should disappear in future version when the authors will manage to do this in a cleaner way
 		"""
 		logging.debug("Entering loading function, loading {}".format(filepath))
 		logmsg = ''
@@ -553,45 +556,73 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 				# header popup
 				logging.debug("Opening header popup...")
-				self.headerPopup = uic.loadUi(os.path.join(herepath, "headerdialog.ui"))
+				self.headerPopup = uic.loadUi(os.path.join(herepath, "design_importHeaders.ui"))
 
-				# split by tabs/spaces
-				#todo: if columns are empty, the reader misses that. Either correct or print a warning, e.g. assert len(headers) == len(lines[0]) ??
-				headers_input = open(filepath, 'r').readlines()[0].split('\n')[0].split()
+				# get columns names
+				rdbtable = Table.read(filepath, format="ascii", data_start=0)
+				headers_input = rdbtable.colnames
+
+				# list of potential header's keywords to be associated with
+				# 1) Name, 2) alpha, 3) Delta, 4) Catalog name
+				headers_kws_lists = [
+					["name", "Name", "code", "Code"],
+					["RA", "ra", "r.a.", "Ra", "alpha", "alphacat", "Alpha", "Right Ascension"],
+					["DEC", "dec", "Dec", "delta", "deltacat", "Delta", "Declination"],
+					["catalog", "obsprogram", "program", "Program"]
+				]
 
 				for i, cb in enumerate([self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]):
-					for h in headers_input:
+
+					hi = i
+					for ih, h in enumerate(headers_input):
 						cb.addItem(h)
-					cb.setCurrentIndex(i)
+						if h in headers_kws_lists[i]:
+							hi = ih
+					cb.setCurrentIndex(hi)
+
 
 				self.headerPopup.headerObsprogramValue.addItem("None")
 				self.headerPopup.headerObsprogramValue.setCurrentIndex(self.headerPopup.headerObsprogramValue.findText("None"))
 
+				# now the default obsprogram values:
+				for opn in obsprogramnames:
+					self.headerPopup.headerObsprogramDefaultValue.addItem(opn)
+
+				try:  # if there is still a default config file
+					self.headerPopup.headerObsprogramDefaultValue.setCurrentIndex(self.headerPopup.headerObsprogramDefaultValue.findText("default"))
+				except:
+					pass
+
 				# ok is 0 if rejected, 1 if accepted
-				ok = self.headerPopup.exec()
+
+				if autotest_mode:
+					#todo: find the courage to do this in a cleaner way
+					"""
+					Since I haven't managed to trigger this behavious from the testing script, I do it from inside the load_obs function.
+					"""
+					self.headerPopup.show()
+					headerpopup_Okbutton = self.headerPopup.headerButtonBox.button(self.headerPopup.headerButtonBox.Ok)
+					from PyQt5.QtTest import mouseClick as mC
+					from PyQt5.QtCore.Qt import LeftButton as LB
+					mC(headerpopup_Okbutton, LB)
+					ok = True
+
+				else:
+					ok = self.headerPopup.exec()
+
 				if ok:
 
 					namecol = int(self.headerPopup.headerNameValue.currentIndex())+1
 					alphacol = int(self.headerPopup.headerRAValue.currentIndex())+1
 					deltacol = int(self.headerPopup.headerDecValue.currentIndex())+1
 
-					if self.headerPopup.headerObsprogramValue.currentText() == "None":
-						obsprogramcol = None
-					else:
+					if self.headerPopup.headerObsprogramValue.currentText() != "None":
 						obsprogramcol = int(self.headerPopup.headerObsprogramValue.currentIndex())+1
-
-					# obsprogram popup
-					logging.debug("Opening obsprogram popup...")
-					self.popup = QtWidgets.QInputDialog()
-					#todo rename Cancel button as default if possible
-					obsprogram, okop = self.popup.getItem(self, "Select an observing program", " - Existing programs -\nSelect Cancel to use the default configuration.\nThis setting applies only to the observables\nthat do not already have an obsprogram defined in the input file", obsprogramnames, 1, False)
-
-					if okop:
-						logmsg += 'as %s ' % obsprogram
 					else:
-						# we use the default option
-						obsprogram = "default"
-						logmsg += 'as default '
+						obsprogramcol = None
+
+					obsprogram = self.headerPopup.headerObsprogramDefaultValue.currentText()
+
 
 				else:
 					# we exit the load function
@@ -651,15 +682,15 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				self.allskylayerTargets.show_targets([], [], [])
 				self.visibilitytool_draw_exec()
 
-			except:
-				logmsg += ' not loaded - wrong formatting'
+			except Exception as e:
+				logmsg += ' not loaded - wrong formatting\n %s' % str(e)
 				logging.error(logmsg)
 				namecat = filepath.split("/")[-1]
-				self.print_status("%s \nWrong formatting: do headers and columns match?" % namecat, SETTINGS['color']['limit'])
-		except:
-			logmsg += ' not loaded - format unknown'
+				self.print_status("%s \nWrong formatting: do headers and columns match?\n %s" % (namecat, str(e)), SETTINGS['color']['limit'])
+		except Exception as e:
+			logmsg += ' not loaded - %s' % str(e)
 			logging.error(logmsg)
-			self.print_status("%s \nFormat unknown: not a catalog file..." % filepath, SETTINGS['color']['limit'])
+			self.print_status("%s \nFormat unknown: not a catalog file...\n %s" % (filepath, str(e)), SETTINGS['color']['limit'])
 
 	def update_obs(self):
 		"""

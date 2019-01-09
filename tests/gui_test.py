@@ -27,6 +27,19 @@ class PouetTest(unittest.TestCase):
 		self.form = main.POUET()
 
 
+	def test_load_catalog(self):
+
+		pass
+
+		"""
+		# So far, I haven't found a way to test automatically the load import. The problem seems to be that the headerPopup is created as a modal window in the load_obs() function, because we execute it (.exec()) in order to force the user to make his choices and click on ok or cancel. 
+		
+		I bypass this behaviour by implementing an autotest_mode keyword, but this is by far not ideal...
+		"""
+
+		self.form.load_obs(filepath="../cats/example.cat", autotest_mode=True)
+
+
 	def test_obs_selection(self):
 		self.form.toggleAlphaMinObs.setChecked(True)
 		self.form.hide_observables()
