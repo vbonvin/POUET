@@ -145,9 +145,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		# testing stuff at startup...
 		herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 
-		#self.load_obs(filepath=os.path.join(herepath, '../cats/example.pouet'))
-		self.load_obs(filepath=os.path.join(herepath, '/home/vivien/work/2m2_planning/target_catalog/targets_list.csv'))
-		obs_model = self.listObs.model()
+		self.load_obs(filepath=os.path.join(herepath, '../cats/example.pouet'))
+		#obs_model = self.listObs.model()
 
 		logging.info("Start-up successfully done")
 		self.print_status("Start-up successfully done", SETTINGS["color"]["success"])
@@ -560,7 +559,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 				self.headerPopup = uic.loadUi(os.path.join(herepath, "design_importHeaders.ui"))
 
 				# get columns names
-				rdbtable = Table.read(filepath, format="ascii", data_start=0)
+				rdbtable = Table.read(filepath, format="ascii", data_start=2)
 				headers_input = rdbtable.colnames
 
 				# list of potential header's keywords to be associated with
