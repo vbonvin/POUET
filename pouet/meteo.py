@@ -70,8 +70,9 @@ class Meteo:
         
         self.cloudscheck = cloudscheck
         self.cloudmap = None
-        if cloudscheck:
-            self.allsky = clouds.Clouds(name=name, fimage=fimage, debugmode=debugmode)
+
+
+        self.allsky = clouds.Clouds(name=name, fimage=fimage, debugmode=debugmode)
 
         self.update()
 

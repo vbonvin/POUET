@@ -66,9 +66,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		logging.info('Startup...')
 
-		self.allsky_debugmode = False
+		self.allsky_debugmode = True
 		self.name_location = 'LaSilla'
-		self.cloudscheck = True
+		self.cloudscheck = False
 		self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
 		self.set_configTimeNow()
 		self.save_Time2obstime()
@@ -145,7 +145,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		# testing stuff at startup...
 		herepath = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 
-		self.load_obs(filepath=os.path.join(herepath, '../cats/example.pouet'))
+		#self.load_obs(filepath=os.path.join(herepath, '../cats/example.pouet'))
+		self.load_obs(filepath=os.path.join(herepath, '/home/vivien/work/2m2_planning/target_catalog/targets_list.csv'))
 		obs_model = self.listObs.model()
 
 		logging.info("Start-up successfully done")

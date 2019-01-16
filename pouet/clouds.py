@@ -43,7 +43,7 @@ class Clouds():
         self.last_im_refresh = None
         self.debugmode = debugmode
         self.failed_connection = False
-        
+
         if fimage is None:
             fimage = "current.jpg"
             if debugmode:
