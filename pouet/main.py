@@ -556,7 +556,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 				# header popup
 				logging.debug("Opening header popup...")
-				self.headerPopup = uic.loadUi(os.path.join(herepath, "design_importHeaders.ui"))
+				self.headerPopup = uic.loadUi(os.path.join(herepath, "dialogImportHeaders.ui"))
 
 				# get columns names
 				rdbtable = Table.read(filepath, format="ascii", data_start=2)
