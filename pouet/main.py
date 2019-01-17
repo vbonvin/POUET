@@ -125,9 +125,11 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		# initialize regular expression validators for alpha and delta selecters
 		alpha_regexp = QtCore.QRegExp('([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([\.][0-9]?[0-9]?|)')
 		delta_regexp = QtCore.QRegExp('-?[0-8][0-9]:[0-5][0-9]:[0-5][0-9]([\.][0-9]?[0-9]?|)')
+		name_regexp = QtCore.QRegExp('([a-zA-z0-9+-_]){3,}')
 
 		self.alpha_validator = QtGui.QRegExpValidator(alpha_regexp)
 		self.delta_validator = QtGui.QRegExpValidator(delta_regexp)
+		self.name_validator = QtGui.QRegExpValidator(name_regexp)
 
 		# we do not set validators as attribute of QLineEdit as it prevents the user to enter what he wants. Instead, we test against them when the textfield is changed
 
@@ -274,6 +276,26 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		self.sender().setStyleSheet('QLineEdit { background-color: %s }' % color)
 
+
+	def validate_name(self):
+		"""
+		Validate that the use input for the name fields match minimum standards (3 letters, +, - and _,  no funny characters.
+
+		Add a boolean to the sender field (isValid), set to True only when the validator returns an Acceptable
+		"""
+
+		state = self.name_validator.validate(self.sender().text(), 0)[0]
+		if state == QtGui.QValidator.Acceptable:
+			color = '#c4df9b'
+			self.sender().isValid = True
+		elif state == QtGui.QValidator.Intermediate:
+			color = '#fff79a'  # yellow
+			self.sender().isValid = False
+		else:
+			color = '#f6989d'  # red
+			self.sender().isValid = False
+
+		self.sender().setStyleSheet('QLineEdit { background-color: %s }' % color)
 
 	@QtCore.pyqtSlot(str)
 	def on_threadlog(self, msg):
@@ -701,11 +723,63 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		logging.debug("Opening new target popup...")
 		self.newTargetDialog = uic.loadUi(os.path.join(herepath, "dialogNewTarget.ui"))
 
-		# colorize the alpha and delta fields
-		self.newTargetDialog.alpha.textChanged.connect(self.validate_alpha)
-		self.newTargetDialog.delta.textChanged.connect(self.validate_delta)
+		# fill the obsprogram list
+		obsprogramlist = run.retrieve_obsprogramlist()
+		obsprogramnames = (o["name"] for o in obsprogramlist)
 
+		for opn in obsprogramnames:
+			self.newTargetDialog.obsprogramValue.addItem(opn)
+
+		try:  # if there is still a default config file
+			self.newTargetDialog.obsprogramValue.setCurrentIndex(
+				self.newTargetDialog.obsprogramValue.findText("default"))
+		except:
+			pass
+
+		# default fields validation is False
+		self.newTargetDialog.alphaValue.isValid = False
+		self.newTargetDialog.deltaValue.isValid = False
+		self.newTargetDialog.nameValue.isValid = False
+
+		# colorize the value fields
+		self.newTargetDialog.alphaValue.textChanged.connect(self.validate_alpha)
+		self.newTargetDialog.deltaValue.textChanged.connect(self.validate_delta)
+		self.newTargetDialog.nameValue.textChanged.connect(self.validate_name)
+
+		# grey the Ok button as long as the fields are not all valid
+		okbutton = self.newTargetDialog.buttonBox.button(self.newTargetDialog.buttonBox.Ok)
+		okbutton.setEnabled(False)
+
+		def isValid_allfields():
+			if self.newTargetDialog.alphaValue.isValid and self.newTargetDialog.deltaValue.isValid and self.newTargetDialog.nameValue.isValid:
+				okbutton.setEnabled(True)
+			else:
+				okbutton.setEnabled(False)
+
+		self.newTargetDialog.alphaValue.textChanged.connect(isValid_allfields)
+		self.newTargetDialog.deltaValue.textChanged.connect(isValid_allfields)
+		self.newTargetDialog.nameValue.textChanged.connect(isValid_allfields)
+
+		# note for future copypaste: don't forget to create signals and slots in designer! (or create them at initialization of POUET if working on the main window)
 		ok = self.newTargetDialog.exec()
+
+		if ok:
+			name = self.newTargetDialog.nameValue.text()
+			alpha = self.newTargetDialog.alphaValue.text()
+			delta = self.newTargetDialog.deltaValue.text()
+			obsprogram = self.newTargetDialog.obsprogramValue.currentText()
+
+			# create the observable, compute its observability with respect to the current meteo
+			myobs = obs.Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta)
+			myobs.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False)
+
+			# add it to the pool of existing targets
+			self.observables.append(myobs)
+			# update the display model first
+			self.update_and_display_model()
+			# refresh the observability
+			self.update_obs()
+
 
 	def update_obs(self):
 		"""
