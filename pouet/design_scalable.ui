@@ -492,7 +492,7 @@
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="saveExportLayout">
+           <layout class="QHBoxLayout" name="saveExportAddLayout">
             <item>
              <widget class="QPushButton" name="saveObs">
               <property name="text">
@@ -544,6 +544,26 @@
              <widget class="QPushButton" name="printNamesObs">
               <property name="text">
                <string>Show selected names</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_6">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="addNewObs">
+              <property name="text">
+               <string>Add new target</string>
               </property>
              </widget>
             </item>

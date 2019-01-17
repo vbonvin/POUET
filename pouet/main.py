@@ -101,8 +101,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		self.updateSelectall.clicked.connect(self.listObs_selectall)
 		self.displaySelectedObs.clicked.connect(self.hide_observables)
 		self.displayAllObs.clicked.connect(self.unhide_observables)
-		self.printNamesObs.clicked.connect(self.showSelectedNames)#self.print_selected_names)
+		self.printNamesObs.clicked.connect(self.showSelectedNames)
 		self.saveObs.clicked.connect(self.save_obs)
+		self.addNewObs.clicked.connect(self.add_obs)
 
 		#self.toggleAirmassObs.selfChecked.connect()
 		self.visibilitytool.figure.canvas.mpl_connect('motion_notify_event', self.on_visibilitytoolmotion)
@@ -122,8 +123,8 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		self.threadAllskyUpdate.allskyUpdate.connect(self.on_threadAllskyUpdate)
 
 		# initialize regular expression validators for alpha and delta selecters
-		alpha_regexp = QtCore.QRegExp('([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]')
-		delta_regexp = QtCore.QRegExp('-?[0-8][0-9]:[0-5][0-9]:[0-5][0-9]')
+		alpha_regexp = QtCore.QRegExp('([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([\.][0-9]?[0-9]?|)')
+		delta_regexp = QtCore.QRegExp('-?[0-8][0-9]:[0-5][0-9]:[0-5][0-9]([\.][0-9]?[0-9]?|)')
 
 		self.alpha_validator = QtGui.QRegExpValidator(alpha_regexp)
 		self.delta_validator = QtGui.QRegExpValidator(delta_regexp)
@@ -136,7 +137,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		self.deltaMinObs.textChanged.connect(self.validate_delta)
 		self.deltaMaxObs.textChanged.connect(self.validate_delta)
 
-		#todo: initialize the validation at startup - it avoids having to define these flags here
+
 		self.alphaMinObs.isValid = True
 		self.alphaMaxObs.isValid = True
 		self.deltaMinObs.isValid = True
@@ -234,7 +235,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 	def validate_alpha(self):
 		"""
-		Validate that the user input for the alpha min and max fields are well inside predefined boudaries (00:00:00 to 23:59:59)
+		Validate that the user input for the alpha fields are well inside predefined boudaries (00:00:00 to 23:59:59)
 
 		Add a boolean to the sender field (isValid)
 		"""
@@ -255,7 +256,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 	def validate_delta(self):
 		"""
-		Validate that the user input for the delta min and max fields are well inside predefined boudaries (-89:59:59 to 89:59:59)
+		Validate that the user input for the deltafields are well inside predefined boudaries (-89:59:59 to 89:59:59)
 
 		Add a boolean to the sender field (isValid), set to True only when the validator returns an Acceptable
 		"""
@@ -691,6 +692,20 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			logmsg += ' not loaded - %s' % str(e)
 			logging.error(logmsg)
 			self.print_status("%s \nFormat unknown: not a catalog file...\n %s" % (filepath, str(e)), SETTINGS['color']['limit'])
+
+	def add_obs(self):
+		"""
+		Add a single observable to the list of current observables by providing its alpha, delta, name and optionnally obsprogramm.
+		"""
+
+		logging.debug("Opening new target popup...")
+		self.newTargetDialog = uic.loadUi(os.path.join(herepath, "dialogNewTarget.ui"))
+
+		# colorize the alpha and delta fields
+		self.newTargetDialog.alpha.textChanged.connect(self.validate_alpha)
+		self.newTargetDialog.delta.textChanged.connect(self.validate_delta)
+
+		ok = self.newTargetDialog.exec()
 
 	def update_obs(self):
 		"""
