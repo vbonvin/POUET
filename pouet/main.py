@@ -547,173 +547,297 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		return name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds
 
-	def load_obs(self, filepath=None, autotest_mode=False):
+
+	def get_header_info(self, table, autotest_mode=False):
 		"""
-		Loads a catalogue given a filepath or a user-chosen file (this prompts a select file and a column definition pop-ups)
+		Opens an astropy Table and display a Dialog for the user to chose which columns to use when importing a catalog.
 
-		:param filepath: optional argument to bypass the Select a file dialogue (but not the column definition pop-up)
+		To be used in combination with :meth:`~main.load_obs()` or :meth:`~main.add_list_obs()`
 
+		:param table: astropy Table, usually obtained after loading a csv/rdb
 		:param autotest_mode: boolean, for internal testing use only. If True, the pop-up window is automatically accepted as it is. Should disappear in future version when the authors will manage to do this in a cleaner way
+
+		:return: indexes of the columns in which the relevant information are stored, as well as the default obsprogram to load, and the boolean value of the append checkbox: (alphacol, deltacol, namecol, obsprogramcol, obsprogram, append)
 		"""
-		logging.debug("Entering loading function, loading {}".format(filepath))
-		logmsg = ''
+
+		# header popup
+		logging.debug("Opening header popup...")
+		self.headerPopup = uic.loadUi(os.path.join(herepath, "dialogImportHeaders.ui"))
+
+		obsprogramlist = run.retrieve_obsprogramlist()
+		obsprogramnames = (o["name"] for o in obsprogramlist)
+
+		# get columns names
+		headers_input = table.colnames
+
+
+		# list of potential header's keywords to be associated with
+		# 1) Name, 2) alpha, 3) Delta, 4) Catalog name
+		headers_kws_lists = [
+			["name", "Name", "code", "Code"],
+			["RA", "ra", "r.a.", "Ra", "alpha", "alphacat", "Alpha", "Right Ascension"],
+			["DEC", "dec", "Dec", "delta", "deltacat", "Delta", "Declination"],
+			["catalog", "obsprogram", "program", "Program"]
+		]
+
+		for i, cb in enumerate(
+				[self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue,
+				 self.headerPopup.headerObsprogramValue]):
+
+			hi = i
+			for ih, h in enumerate(headers_input):
+				cb.addItem(h)
+				if h in headers_kws_lists[i]:
+					hi = ih
+			cb.setCurrentIndex(hi)
+
+		self.headerPopup.headerObsprogramValue.addItem("None")
+		self.headerPopup.headerObsprogramValue.setCurrentIndex(self.headerPopup.headerObsprogramValue.findText("None"))
+
+		# now the default obsprogram values:
+		for opn in obsprogramnames:
+			self.headerPopup.headerObsprogramDefaultValue.addItem(opn)
+
+		try:  # if there is still a default config file
+			self.headerPopup.headerObsprogramDefaultValue.setCurrentIndex(
+				self.headerPopup.headerObsprogramDefaultValue.findText("default"))
+		except:
+			pass
+
+		# ok is 0 if rejected, 1 if accepted
+
+		if autotest_mode:
+			# todo: find the courage to do this in a cleaner way
+			"""
+			Since I haven't managed to trigger this behavious from the testing script, I do it from inside the load_obs function.
+			"""
+			self.headerPopup.show()
+			headerpopup_Okbutton = self.headerPopup.headerButtonBox.button(self.headerPopup.headerButtonBox.Ok)
+			from PyQt5.QtTest import mouseClick as mC
+			from PyQt5.QtCore.Qt import LeftButton as LB
+			mC(headerpopup_Okbutton, LB)
+			ok = True
+
+		else:
+			ok = self.headerPopup.exec()
+
+		if ok:
+
+			namecol = int(self.headerPopup.headerNameValue.currentIndex()) + 1
+			alphacol = int(self.headerPopup.headerRAValue.currentIndex()) + 1
+			deltacol = int(self.headerPopup.headerDecValue.currentIndex()) + 1
+
+			if self.headerPopup.headerObsprogramValue.currentText() != "None":
+				obsprogramcol = int(self.headerPopup.headerObsprogramValue.currentIndex()) + 1
+			else:
+				obsprogramcol = None
+
+			obsprogram = self.headerPopup.headerObsprogramDefaultValue.currentText()
+
+			append = self.headerPopup.appendCheckBox.isChecked()
+			return (namecol, alphacol, deltacol, obsprogramcol, obsprogram, append)
+
+		else:
+			return
+
+
+	def init_display_model(self):
+		"""
+		Initialise/reinitialise the display model used in POUET main window
+
+		:return:
+		"""
 
 		# initialize a new obs_model
 		obs_model = QtGui.QStandardItemModel(self.listObs)
 		obs_model.setHorizontalHeaderLabels(['Name', 'Alpha', 'Delta', 'Obs', 'Program', "S", "M", "A", "W", "C"])
 
-		# we start from scratch
-		# todo: add an update function to load many obs one after the other
+		# we remove what was already in the listObs
 		self.listObs.clearSpans()
+		# add the new "empty" model
+		self.listObs.setModel(obs_model)
+
+
+	def update_and_display_model(self):
+		"""
+		Update the current model according to observables status and display it.
+
+		.. note:: This function DOES NOT update the observability. To do this, use :meth:`~main.update_obs()`
+
+		"""
+		logging.debug("Updating display model...")
+
+		# load the current display model
+		obs_model = self.listObs.model()
+		model_names = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
+
+		# these are the obs we want to display
+		obs_names = [o.name for o in self.observables if o.hidden == False]
+
+		"""
+		3 cases:
+
+		1) name is in obs_names and model_names --> we keep
+		2) name is in obs_names only --> we add to model using get_standard_items
+		3) name is in model_names only --> we remove from model
+
+		"""
+
+		toadd = [n for n in obs_names if not n in model_names]
+		toremove = [n for n in model_names if not n in obs_names]
+
+		# Adding missing obs:
+		for o in [o for o in self.observables if o.name in toadd]:
+			# todo: this assertion will fail if I try to append a new catalog which has duplicates whose originals are hidden...
+			assert o.hidden is False
+
+			# create the QStandardItem objects
+			name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(
+				o)
+
+			obs_model.appendRow(
+				[name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
+			if SETTINGS["misc"]["singletargetlogs"] == "True":
+				logging.debug("Added %s to the model" % o.name)
+
+		# Removing superfluous obs:
+		for o in [o for o in self.observables if o.name in toremove]:
+			assert o.hidden is True
+
+			# todo: stupid loop, optimize that
+			currentnames = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
+			toremoveindex = currentnames.index(o.name)
+			obs_model.removeRow(toremoveindex)
+			if SETTINGS["misc"]["singletargetlogs"] == "True":
+				logging.debug("Removed %s from the model" % o.name)
+
+		# refresh the display
+		self.listObs.setModel(obs_model)
+
+		msg = "Model refreshed"
+		logging.info(msg)
+		self.print_status(msg, color=SETTINGS['color']['success'])
+
+
+	def load_obs(self, filepath=None, firstload=True):
+		"""
+		Loads a catalogue given a filepath or a user-chosen file (this prompts a select file and a column definition pop-ups, using :meth:`~main._get_header_info()`)
+
+		:param filepath: optional argument to bypass the Select a file dialogue (but not the column definition pop-up)
+		"""
+		logging.debug("Entering loading function, loading {}".format(filepath))
+		logmsg = ''
+
 		if not filepath:
 			filepath = QtWidgets.QFileDialog.getOpenFileName(self, "Select a file")[0]
 
 		logmsg += '%s ' % filepath
 		ext = os.path.splitext(filepath)[1]
 
+
+		# explore the header to get the info
 		try:
 			if ext != '.pouet':  # then it's a first load:
 
-				obsprogramlist = run.retrieve_obsprogramlist()
-				obsprogramnames = (o["name"] for o in obsprogramlist)
-
-				# header popup
-				logging.debug("Opening header popup...")
-				self.headerPopup = uic.loadUi(os.path.join(herepath, "dialogImportHeaders.ui"))
-
 				# get columns names
-				rdbtable = Table.read(filepath, format="ascii", data_start=2)
-				headers_input = rdbtable.colnames
+				table = Table.read(filepath, format="ascii", data_start=2)
 
-				# list of potential header's keywords to be associated with
-				# 1) Name, 2) alpha, 3) Delta, 4) Catalog name
-				headers_kws_lists = [
-					["name", "Name", "code", "Code"],
-					["RA", "ra", "r.a.", "Ra", "alpha", "alphacat", "Alpha", "Right Ascension"],
-					["DEC", "dec", "Dec", "delta", "deltacat", "Delta", "Declination"],
-					["catalog", "obsprogram", "program", "Program"]
-				]
-
-				for i, cb in enumerate([self.headerPopup.headerNameValue, self.headerPopup.headerRAValue, self.headerPopup.headerDecValue, self.headerPopup.headerObsprogramValue]):
-
-					hi = i
-					for ih, h in enumerate(headers_input):
-						cb.addItem(h)
-						if h in headers_kws_lists[i]:
-							hi = ih
-					cb.setCurrentIndex(hi)
-
-
-				self.headerPopup.headerObsprogramValue.addItem("None")
-				self.headerPopup.headerObsprogramValue.setCurrentIndex(self.headerPopup.headerObsprogramValue.findText("None"))
-
-				# now the default obsprogram values:
-				for opn in obsprogramnames:
-					self.headerPopup.headerObsprogramDefaultValue.addItem(opn)
-
-				try:  # if there is still a default config file
-					self.headerPopup.headerObsprogramDefaultValue.setCurrentIndex(self.headerPopup.headerObsprogramDefaultValue.findText("default"))
-				except:
-					pass
-
-				# ok is 0 if rejected, 1 if accepted
-
-				if autotest_mode:
-					#todo: find the courage to do this in a cleaner way
-					"""
-					Since I haven't managed to trigger this behavious from the testing script, I do it from inside the load_obs function.
-					"""
-					self.headerPopup.show()
-					headerpopup_Okbutton = self.headerPopup.headerButtonBox.button(self.headerPopup.headerButtonBox.Ok)
-					from PyQt5.QtTest import mouseClick as mC
-					from PyQt5.QtCore.Qt import LeftButton as LB
-					mC(headerpopup_Okbutton, LB)
-					ok = True
-
-				else:
-					ok = self.headerPopup.exec()
-
-				if ok:
-
-					namecol = int(self.headerPopup.headerNameValue.currentIndex())+1
-					alphacol = int(self.headerPopup.headerRAValue.currentIndex())+1
-					deltacol = int(self.headerPopup.headerDecValue.currentIndex())+1
-
-					if self.headerPopup.headerObsprogramValue.currentText() != "None":
-						obsprogramcol = int(self.headerPopup.headerObsprogramValue.currentIndex())+1
-					else:
-						obsprogramcol = None
-
-					obsprogram = self.headerPopup.headerObsprogramDefaultValue.currentText()
-
-
-				else:
+				header_info = self.get_header_info(table, autotest_mode=False)
+				if header_info == None:
 					# we exit the load function
 					logging.info("Load of % aborted by user" % filepath)
 					return
 
+				# unpack the data
+				(namecol, alphacol, deltacol, obsprogramcol, obsprogram, append) = header_info
+
+
 			else:  # then it's a pouet file. We assume it follows our own convention for the rdbimport
 				# col#1 = name, col#2 = alpha, col#3 = dec, col#4 = obsprogram
 				pass
-
-
-			try:
-				if ext != '.pouet':
-					logging.info("Loading catalog...")
-					self.print_status("Loading catalog\n{}".format(filepath), color=SETTINGS["color"]["warn"])
-					self.observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
-
-					# check that names are unique
-					try:
-						logging.debug("Checking unicity of names in catalog...")
-						names = [o.name for o in self.observables]
-						assert(len(names) == len(set(names)))
-					except:
-						logging.error("Names in your catalog are not unique!")
-						return
-
-				else:
-					logging.info("Loading .pouet catalog...")
-					self.print_status("Loading .pouet catalog\n{}".format(filepath), color=SETTINGS["color"]["warn"])
-					self.observables = obs.rdbimport(filepath, obsprogram=None)
-
-				run.refresh_status(self.currentmeteo, self.observables)
-
-
-				for o in self.observables:
-
-					if SETTINGS["misc"]["singletargetlogs"] == "True":
-						logging.debug("Computing observability of {}".format(o.name))
-					o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
-
-					# create the QStandardItem objects
-					name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
-
-					# feed the model
-					obs_model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
-
-				self.listObs.setModel(obs_model)
-				self.listObs.resizeColumnsToContents()
-
-				logmsg += 'successfully loaded'
-				logging.info(logmsg)
-				namecat = filepath.split("/")[-1]
-				self.print_status("%s \nSucessfully loaded" % namecat, SETTINGS['color']['success'])
-				# update the catalog name
-				self.loadedCatValue.setText(os.path.basename(namecat))
-				# clear the allsky display
-				self.allskylayerTargets.show_targets([], [], [])
-				self.visibilitytool_draw_exec()
-
-			except Exception as e:
-				logmsg += ' not loaded - wrong formatting\n %s' % str(e)
-				logging.error(logmsg)
-				namecat = filepath.split("/")[-1]
-				self.print_status("%s \nWrong formatting: do headers and columns match?\n %s" % (namecat, str(e)), SETTINGS['color']['limit'])
+				#todo: but what if a .pouet file is corrupted?
+				#todo: we need a popup to ask if we want or not to append to the existing catalog
 		except Exception as e:
 			logmsg += ' not loaded - %s' % str(e)
 			logging.error(logmsg)
 			self.print_status("%s \nFormat unknown: not a catalog file...\n %s" % (filepath, str(e)), SETTINGS['color']['limit'])
+
+
+		# import the observables
+		try:
+			if ext != '.pouet':
+				logging.info("Loading catalog...")
+				self.print_status("Loading catalog\n{}".format(filepath), color=SETTINGS["color"]["warn"])
+				new_observables = obs.rdbimport(filepath, obsprogram=obsprogram, namecol=namecol, alphacol=alphacol, deltacol=deltacol, obsprogramcol=obsprogramcol)
+
+				# check that names are unique
+				try:
+					logging.debug("Checking unicity of names in catalog...")
+					names = [o.name for o in new_observables]
+					assert(len(names) == len(set(names)))
+				except:
+					logging.error("Names in your catalog are not unique!")
+					return
+
+			else:
+				logging.info("Loading .pouet catalog...")
+				self.print_status("Loading .pouet catalog\n{}".format(filepath), color=SETTINGS["color"]["warn"])
+				new_observables = obs.rdbimport(filepath, obsprogram=None)
+
+
+		except Exception as e:
+			logmsg += ' not loaded - wrong formatting\n %s' % str(e)
+			logging.error(logmsg)
+			namecat = filepath.split("/")[-1]
+			self.print_status("%s \nWrong formatting: do headers and columns match?\n %s" % (namecat, str(e)), SETTINGS['color']['limit'])
+
+
+		try:
+			if append:
+				firstload=False
+		except:
+			logging.debug("append checkbox not defined for .pouet import. CORRECT THIS")
+
+		# reinitialize the display model if it's a first/erasing load
+		if firstload:
+			self.init_display_model()
+
+
+		# compute observability for the new obs and create/add them to the self observables
+		if firstload:
+			for o in new_observables:
+				if SETTINGS["misc"]["singletargetlogs"] == "True":
+					logging.debug("Computing observability of {}".format(o.name))
+				o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
+			self.observables = new_observables
+
+
+		else:
+			for o in new_observables:
+				if SETTINGS["misc"]["singletargetlogs"] == "True":
+					logging.debug("Computing observability of {}".format(o.name))
+				o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
+				self.observables.append(o)
+
+		# update the display model first
+		self.update_and_display_model()
+		# refresh the observability
+		self.update_obs()
+
+
+		self.listObs.resizeColumnsToContents()
+
+
+		logmsg += 'successfully loaded'
+		logging.info(logmsg)
+		namecat = filepath.split("/")[-1]
+		self.print_status("%s \nSucessfully loaded" % namecat, SETTINGS['color']['success'])
+		# update the catalog name
+		self.loadedCatValue.setText(os.path.basename(namecat))
+		# clear the allsky display
+		self.allskylayerTargets.show_targets([], [], [])
+		self.visibilitytool_draw_exec()
+
 
 	def add_obs(self):
 		"""
@@ -771,7 +895,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 			# create the observable, compute its observability with respect to the current meteo
 			myobs = obs.Observable(name=name, obsprogram=obsprogram, alpha=alpha, delta=delta)
-			myobs.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False)
+			myobs.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
 
 			# add it to the pool of existing targets
 			self.observables.append(myobs)
@@ -847,63 +971,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 		logging.info(msg)
 		self.print_status(msg, color=SETTINGS['color']['success'])
 
-	def update_and_display_model(self):
-		"""
-		Update the current model according to observables status and display it.
 
-		.. note:: This function DOES NOT update the observability. To do this, use :meth:`~main.update_obs()`
-
-		"""
-		logging.debug("Updating display model...")
-
-		# load the current display model
-		obs_model = self.listObs.model()
-
-		model_names = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
-
-		# these are the obs we want to display
-		obs_names = [o.name for o in self.observables if o.hidden == False]
-
-		"""
-		3 cases:
-		
-		1) name is in obs_names and model_names --> we keep
-		2) name is in obs_names only --> we add to model using get_standard_items
-		3) name is in model_names only --> we remove from model
-		
-		"""
-
-		toadd = [n for n in obs_names if not n in model_names]
-		toremove = [n for n in model_names if not n in obs_names]
-
-		# Adding missing obs:
-		for o in [o for o in self.observables if o.name in toadd]:
-			assert o.hidden is False
-
-			# create the QStandardItem objects
-			name, alpha, delta, observability, obsprogram, moondist, sundist, airmass, wind, clouds = self.get_standard_items(o)
-
-			obs_model.appendRow([name, alpha, delta, observability, obsprogram, sundist, moondist, airmass, wind, clouds])
-			if SETTINGS["misc"]["singletargetlogs"] == "True":
-				logging.debug("Added %s to the model" % o.name)
-
-		# Removing superfluous obs:
-		for o in [o for o in self.observables if o.name in toremove]:
-			assert o.hidden is True
-
-			# todo: stupid loop, optimize that
-			currentnames = [obs_model.item(i).data(0) for i in range(obs_model.rowCount())]
-			toremoveindex = currentnames.index(o.name)
-			obs_model.removeRow(toremoveindex)
-			if SETTINGS["misc"]["singletargetlogs"] == "True":
-				logging.debug("Removed %s from the model" % o.name)
-
-		# refresh the display
-		self.listObs.setModel(obs_model)
-
-		msg = "Model refreshed"
-		logging.info(msg)
-		self.print_status(msg, color=SETTINGS['color']['success'])
 
 	def check_obs_status(self, obs_model):
 		"""
