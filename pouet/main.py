@@ -66,9 +66,9 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		logging.info('Startup...')
 
-		self.allsky_debugmode = True
+		self.allsky_debugmode = False
 		self.name_location = 'LaSilla'
-		self.cloudscheck = False
+		self.cloudscheck = True
 		self.currentmeteo = run.startup(name=self.name_location, cloudscheck=self.cloudscheck, debugmode=self.allsky_debugmode)
 		self.set_configTimeNow()
 		self.save_Time2obstime()
