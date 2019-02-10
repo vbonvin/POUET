@@ -40,6 +40,11 @@ class PouetTest(unittest.TestCase):
 		self.form.load_obs(filepath="../cats/example.cat", autotest_mode=True)
 
 
+	def test_add_obs(self):
+		self.form.add_obs()
+
+
+
 	def test_obs_selection(self):
 		self.form.toggleAlphaMinObs.setChecked(True)
 		self.form.hide_observables()
