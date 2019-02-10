@@ -10,7 +10,7 @@ Buttons, buttons everywhere
 And they all serve a purpose. Let's have a look again at what a freshly opened session of POUET looks like:
 
 .. _main_colored:
-.. figure:: plots/POUET_mainwindow_colored.png
+.. figure:: plots/POUET_mainwindow_colored_v05.png
     :align: center
     :alt: POUET mainwindow with colored boxes
     :figclass: align-center
@@ -50,7 +50,7 @@ The reading is done by :meth:`~obs.rdbimport`, which is a simple wrapper around 
 .. note:: If you do not have a separator line, you should use ``data_start=1`` in the :meth:`astropy.table.Table.read()` called in :meth:`~obs.rdbimport()`.
 
 
-To load your catalog in POUET, clic on ``Load catalog`` and chose your file. Then, if the file extension is not ``.pouet`` (more on this on the :ref:`qol` page), two consecutive popups will appear:
+To load your catalog in POUET, clic on ``Load catalog`` and chose your file. Then, if the file extension is not ``.pouet`` (more on this on the :ref:`qol` page), a popup will appear:
 
 
 .. figure:: plots/POUET_load_popup_1.png
@@ -60,18 +60,15 @@ To load your catalog in POUET, clic on ``Load catalog`` and chose your file. The
 
     Headers selection pop-up
 .. _obsprogrampopup:
-.. figure:: plots/POUET_load_popup_2.png
-    :align: center
-    :alt: POUET loading pop-up 2
-    :figclass: align-center
 
-    Default obsprogram selection pop-up
 
-The first pop-up asks you to associate the headers found in your catalog with the ones POUET needs. The fourth header, called Obsprogram, is optional. It relates to the observing program associated to your targets. The observing program defines a set of properties that some of your targets share. Currently, this is limited to the minimal distance to the Moon and the maximum airmass of your target. If you do not have such a property, select ``None`` and then click ``Ok``. The second pop-up asks you to chose a default observing program for the targets that have none assigned. If you click on Cancel, the default observing program will be used.
+The pop-up asks you to associate the headers found in your catalog with the ones POUET needs. The fourth header, called Obs program, is optional. It relates to the observing program associated to your targets. The observing program defines a set of properties that some of your targets share. Currently, this is limited to the minimal distance to the Moon and the maximum airmass of your target. If you do not have such a property, simply select ``None``. Below, you can chose a default observing program for the targets that have none assigned.
 
 .. note:: currently, the properties of each observing program are simply used to raise warning flags if your targets are too close to the moon or at too high airmass. It does not prevent your targets to be displayed in POUET, so you can feel safe to use the default observing program (max airmass = 1.5, minimal distance to the moon = 30 deg). Learn how to define your own observing program on the :ref:`qol` page.
 
-.. warning:: the current import process will be simplified in a future version.
+The ``append`` checkbox in the bottom part of the loading pop-up allows you define if you want to append the targets you are loading to the ones already in POUET, or if you want to overwrite them.
+
+.. note:: if you append targets that are duplicate of existing ones, they will not be loaded. However, if the original targets were hidden (see more below about that), loading duplicates will make the original corresponding targets visible again.
 
 
 Once a catalog is loaded, all its targets appear in the list view. Try to load the ``example.cat`` catalog available on the ``cats`` folder, chosing the ``lens`` obsprogram. The output should look as follows:
@@ -97,6 +94,11 @@ Each target appear as a line in the list view. Non-straightforwardly understanda
 The keyword cells get colored in green or red, depending if the current value matches the obsprogram constraints or not. A description of the wind angle can be found on the ref:`warningmessages` page. The observability and cloud index are detailed in the following section.
 
 .. note:: The wind angle and cloud index are displayed only if the observing time is less than 30min off from the actual time.
+
+
+Finally, you can manually add single targets on the fly to the current list of targets by clicking the ``Add new target`` button in the bottom right corner of the list view.
+
+.. warning:: Be aware that POUET does not check that the name of the targets added manually are not duplicates of existing targets.
 
 
 Sort your targets

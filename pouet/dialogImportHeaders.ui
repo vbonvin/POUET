@@ -6,16 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>697</width>
-    <height>337</height>
+    <width>535</width>
+    <height>463</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Headers selection</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QLabel" name="headerInstructions">
        <property name="text">
@@ -100,17 +100,45 @@
        <item row="2" column="1">
         <widget class="QComboBox" name="headerNameValue"/>
        </item>
-       <item row="7" column="1">
-        <widget class="QDialogButtonBox" name="headerButtonBox">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Obs program header is optional. Select &quot;None&quot; if you don't have any.
+For the targets without obs program, please chose the default program to use below.</string>
          </property>
-         <property name="standardButtons">
-          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item>
+        <widget class="QComboBox" name="headerObsprogramDefaultValue"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="headerInstructions_2">
+         <property name="text">
+          <string>Check the &quot;Append&quot; box if you want to add your new targets
+to the existing list instead of overwriting it.
+
+If you click no, the current list will be overwritten.
+
+If you click yes and are importing duplicates,
+the original will be kept (hidden ones will be visible again)</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="appendCheckBox">
          <property name="text">
           <string>Append</string>
@@ -120,23 +148,31 @@
       </layout>
      </item>
      <item>
-      <widget class="QLabel" name="headerInstructions_2">
-       <property name="text">
-        <string>Check the &quot;Append&quot; box if you want to add your new observables to the existing list instead of overwriting it.
-If you click no, the current list will be overwritten.
-If you click yes and are importing duplicates, the original will be kept (hidden ones will be visible again)
-
-Obs program header is optional. Select &quot;None&quot; if you don't have any.
-
-For the observables without obsprogram, please chose the default program below.</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="headerObsprogramDefaultValue"/>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>448</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QDialogButtonBox" name="headerButtonBox">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
