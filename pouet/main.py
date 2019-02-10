@@ -688,7 +688,6 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		# Adding missing obs:
 		for o in [o for o in self.observables if o.name in toadd]:
-			# todo: this assertion will fail if I try to append a new catalog which has duplicates whose originals are hidden...
 			assert o.hidden is False
 
 			# create the QStandardItem objects
@@ -737,7 +736,7 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 		# explore the header to get the info
 		try:
-			if ext != '.pouet':  # then it's a first load:
+			if ext != '.pouet':  # columns need to be defined:
 
 				# get columns names
 				table = Table.read(filepath, format="ascii", data_start=2)
@@ -754,9 +753,19 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 			else:  # then it's a pouet file. We assume it follows our own convention for the rdbimport
 				# col#1 = name, col#2 = alpha, col#3 = dec, col#4 = obsprogram
-				pass
 				#todo: but what if a .pouet file is corrupted?
-				#todo: we need a popup to ask if we want or not to append to the existing catalog
+				obs_model = self.listObs.model()
+				if hasattr(obs_model, "rowCount"):
+					if obs_model.rowCount() > 0:
+						self.append_new = uic.loadUi(os.path.join(herepath, "dialogAppendNew.ui"))
+						# 1 is yes, 0 if no
+						append = self.append_new.exec()
+					else:
+						append = 0
+				else:
+					append = 0
+
+
 		except Exception as e:
 			logmsg += ' not loaded - %s' % str(e)
 			logging.error(logmsg)
@@ -789,19 +798,17 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 			logmsg += ' not loaded - wrong formatting\n %s' % str(e)
 			logging.error(logmsg)
 			namecat = filepath.split("/")[-1]
-			self.print_status("%s \nWrong formatting: do headers and columns match?\n %s" % (namecat, str(e)), SETTINGS['color']['limit'])
+			self.print_status("%s \nWrong formatting: do headers and columns match?\n %s..." % (namecat, str(e)[:50]), SETTINGS['color']['limit'])
+			return
 
 
-		try:
-			if append:
-				firstload=False
-		except:
-			logging.debug("append checkbox not defined for .pouet import. CORRECT THIS")
+
+		if append:
+			firstload = False
 
 		# reinitialize the display model if it's a first/erasing load
 		if firstload:
 			self.init_display_model()
-
 
 		# compute observability for the new obs and create/add them to the self observables
 		if firstload:
@@ -813,11 +820,29 @@ class POUET(QtWidgets.QMainWindow, design.Ui_POUET):
 
 
 		else:
+			# add the observable only if not already in the model, otherwise keep the original one and make it visible if it was hidden
+			current_obs_names = [o.name for o in self.observables]
+			unhide_names = []
 			for o in new_observables:
-				if SETTINGS["misc"]["singletargetlogs"] == "True":
-					logging.debug("Computing observability of {}".format(o.name))
-				o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
-				self.observables.append(o)
+				# handle duplicates by keeping the old ones
+				if o.name in current_obs_names:
+					unhide_names.append(o.name)
+
+				else:
+					if SETTINGS["misc"]["singletargetlogs"] == "True":
+						logging.debug("Computing observability of {}".format(o.name))
+					o.compute_observability(self.currentmeteo, cloudscheck=self.cloudscheck, verbose=False, cwvalidity=float(SETTINGS['validity']['cloudwindanalysis']))
+					self.observables.append(o)
+
+
+			logging.debug("Duplicate targets that are not loaded: {}".format(unhide_names))
+			# unhide duplicates that are reloaded.
+			for o in self.observables:
+				if o.name in unhide_names:
+					o.hidden = False
+
+
+
 
 		# update the display model first
 		self.update_and_display_model()

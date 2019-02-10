@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>340</width>
-    <height>351</height>
+    <width>697</width>
+    <height>337</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
         <string>Please associate the headers found in your input file</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -122,14 +122,13 @@
      <item>
       <widget class="QLabel" name="headerInstructions_2">
        <property name="text">
-        <string>Check the &quot;Append&quot; box if you want to add your new
-targets to the existing list instead of overwriting it.
+        <string>Check the &quot;Append&quot; box if you want to add your new observables to the existing list instead of overwriting it.
+If you click no, the current list will be overwritten.
+If you click yes and are importing duplicates, the original will be kept (hidden ones will be visible again)
 
-Obs program header is optional
-select &quot;None&quot; if you don't have any.
+Obs program header is optional. Select &quot;None&quot; if you don't have any.
 
-For the observables without obsprogram,
-please chose the default program below.</string>
+For the observables without obsprogram, please chose the default program below.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
