@@ -6,23 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
+
     <width>535</width>
     <height>463</height>
+
    </rect>
   </property>
   <property name="windowTitle">
    <string>Headers selection</string>
   </property>
+
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
+
      <item>
       <widget class="QLabel" name="headerInstructions">
        <property name="text">
         <string>Please associate the headers found in your input file</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignCenter</set>
+        <set>Qt::AlignJustify|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
@@ -173,6 +177,7 @@ the original will be kept (hidden ones will be visible again)</string>
         </widget>
        </item>
       </layout>
+
      </item>
     </layout>
    </item>
