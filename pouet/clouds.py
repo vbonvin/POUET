@@ -5,6 +5,7 @@ import scipy.ndimage.filters as filters
 import scipy.ndimage as ndimage
 from scipy.spatial import cKDTree
 import copy
+import imageio
 #todo: there seem to be a problem with urllib.request which does not exists anymore...?
 #import urllib.request, urllib.parse, urllib.error        
 import requests
@@ -215,7 +216,7 @@ def loadallsky(fnimg, station, return_complete=False):
     :return: Masked image or masked image and original image. Note that if cannot download, returns `None` or `None, None`. 
     """
     logger.debug("Loading image {}...".format(fnimg))
-    im = scipy.ndimage.imread(fnimg)
+    im = imageio.imread(fnimg)
     ar = np.array(im)
     if len(np.shape(ar)) != 3:
         logging.warning("Something went wrong during the AllSky download, skipping this")
