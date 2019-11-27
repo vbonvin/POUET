@@ -6,8 +6,8 @@ import os
 import cPickle as pickle
 import gzip
 import copy
+import imageio
 
-import scipy.ndimage
 import numpy as np
 
 import urllib2, re
@@ -40,7 +40,7 @@ def get_mask(ar):
 	return mask
 
 def loadallsky(fnimg, return_complete=False):
-	im = scipy.ndimage.imread(fnimg)
+	im = imageio.imread(fnimg)
 	ar = np.array(im)
 	ar = rgb2gray(ar)
 	rest = copy.copy(ar)

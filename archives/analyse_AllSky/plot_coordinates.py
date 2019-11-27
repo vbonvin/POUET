@@ -1,8 +1,8 @@
 import numpy as np
 import pylab as plt
 import glob
-import scipy.ndimage
 import util
+import imageio
 
 
 theta_coordinates = np.deg2rad([-146,0,45,90,0,180,170,190,200,0, 270, 315])#np.arange(0, 360, 45))
@@ -27,7 +27,7 @@ coordinatesy = np.sin(north + theta_coordinates) * r0 + cy
 list_of_image = glob.glob("current*.JPG")
 for fnimg in list_of_image:
 	
-	im = scipy.ndimage.imread(fnimg)
+	im = imageio.imread(fnimg)
 	ar = np.array(im)
 	ar = util.rgb2gray(ar)
 
