@@ -143,10 +143,14 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 		airmasses.append(observable.airmass)
 
 	# create the x ticks labels every hour
-	Time('%s 05:00:00' % obs_night, format='iso', scale='utc')
-	hstart=22
-	hend=12
-	nhbm = 24-hstart  # number of hours before midnight...
+
+	midnight_local = 24 - int(meteo.lon.hour)
+	hstart = midnight_local - 7
+	hend = (midnight_local + 7) % 24
+
+	#hstart=22
+	#hend=12
+	nhbm = 24-hstart  # number of hours before midnight utc...
 	myhours = []
 	for hour in np.arange(nhbm)[::-1]:
 		myhours.append(24-(hour+1))
@@ -207,7 +211,7 @@ def shownightobs(observable, meteo, obs_night=None, savefig=False, dirpath=None,
 	plt.subplots_adjust(left=0.02, right=0.98, bottom=0.45, top=0.7)
 	ax = plt.subplot(1, 1, 1)
 	xticks = np.arange(len(obss))
-	plt.xticks(xs, labels, fontsize=16)
+	plt.xticks(xs, labels, fontsize=15)
 	# green, everything is fine
 	if 1 in obss:
 		plt.axvspan(obss.index(1), len(obss)-obss[::-1].index(1), color='chartreuse')
