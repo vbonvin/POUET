@@ -11,6 +11,7 @@ Observables interact only with Meteo to get their constaints (position to the mo
 
 import astropy.coordinates.angles as angles
 from astropy.time import Time
+from datetime import datetime, timedelta
 #todo: using requests instead of urllib, that has versioning issues ?
 #import urllib.request, urllib.error, urllib.parse
 import ephem
@@ -312,14 +313,13 @@ class Meteo:
         """
         logger.debug("Determining twilights times")
         lat, lon, elev = self.lat, self.lon, self.elev
-    
-        obs_time = Time('%s 05:00:00' % obs_night, format='iso', scale='utc') #5h UT is approx. the middle of the night
-    
-        obs_time = Time(obs_time.mjd + 1, format='mjd', scale='utc') # That corresponds to the next middle of the observing night.
+
+        midnight = datetime.strptime('%s 23:59:59' % obs_night, "%Y-%m-%d %H:%M:%S")  # "UTC zero midnight"
+        midnight = midnight - timedelta(hours=lon.hour)  # shift by longitude
     
         observer = ephem.Observer()
         observer.pressure = 0
-        observer.date = obs_time.iso
+        observer.date = midnight.strftime("%Y-%m-%d %H:%M:%S")
         observer.lat = str(lat.degree)
         observer.lon = str(lon.degree)
         observer.elevation = elev

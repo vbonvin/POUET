@@ -8,7 +8,7 @@ path = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), '../pouet')
 sys.path.append(path)
 
 
-import main
+import pouet.main as main
 import unittest
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtTest import QTest
